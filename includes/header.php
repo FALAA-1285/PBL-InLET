@@ -7,8 +7,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <header id="site-header" class="fixed-top">
     <div class="container">
         <nav class="navbar navbar-expand-lg navbar-light">
-            <a class="navbar-brand" href="index.php">
-                <i class="im"></i>InLet
+            <a class="navbar-brand d-flex align-items-center" href="index.php">
+                <img src="assets/images/Logo-inlet.png" alt="InLet Logo" style="height: 80px; width: auto; margin-right: 10px;">
+                <span>InLet</span>
             </a>
             <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false"
@@ -19,16 +20,20 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <div class="collapse navbar-collapse" id="navbarScroll">
                 <ul class="navbar-nav ms-auto my-2 my-lg-0 navbar-nav-scroll">
                     <li class="nav-item">
-                        <a class="nav-link <?= ($current_page == 'index.php') ? 'active' : '' ?>" href="index.php">Home</a>
+                        <a class="nav-link <?= ($current_page == 'index.php') ? 'active' : '' ?>"
+                            href="index.php">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?= ($current_page == 'research.php') ? 'active' : '' ?>" href="research.php">Research</a>
+                        <a class="nav-link <?= ($current_page == 'research.php') ? 'active' : '' ?>"
+                            href="research.php">Research</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?= ($current_page == 'member.php') ? 'active' : '' ?>" href="member.php">Member</a>
+                        <a class="nav-link <?= ($current_page == 'member.php') ? 'active' : '' ?>"
+                            href="member.php">Member</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?= ($current_page == 'news.php') ? 'active' : '' ?>" href="news.php">News</a>
+                        <a class="nav-link <?= ($current_page == 'news.php') ? 'active' : '' ?>"
+                            href="news.php">News</a>
                     </li>
                 </ul>
             </div>
@@ -55,18 +60,18 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
 <!-- tambahkan CSS khusus active link -->
 <style>
-.nav-link {
-    color: #333;
-    transition: color 0.3s, border-bottom 0.3s;
-}
+    .nav-link {
+        color: #333;
+        transition: color 0.3s, border-bottom 0.3s;
+    }
 
-.nav-link:hover {
-    color: #007bff;
-}
+    .nav-link:hover {
+        color: #007bff;
+    }
 
-.nav-link.active {
-    color: #ff4081 !important;
-    font-weight: 600;
-    border-bottom: 2px solid #ff4081;
-}
+    .nav-link.active {
+        color: #ff4081 !important;
+        font-weight: 600;
+        border-bottom: 2px solid #ff4081;
+    }
 </style>
