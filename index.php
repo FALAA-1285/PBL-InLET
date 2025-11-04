@@ -1,10 +1,3 @@
-<!--
-Author: W3layouts
-Author URL: http://w3layouts.com
--->
-<!doctype html>
-<html lang="en">
-
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -18,7 +11,7 @@ Author URL: http://w3layouts.com
 </head>
 
 <body>
-    <?php include 'includes/header.html'; ?>
+    <?php include 'includes/header.php'; ?>
     <!-- banner section -->
     <div class="slider">
         <div class="slide current">
@@ -26,7 +19,7 @@ Author URL: http://w3layouts.com
                 <div class="content">
                     <h6>Start Your Company With Us</h6>
                     <h3>Plan Business to Active Goal!</h3>
-                    <a href="about.html" class="btn btn-style mt-4">Learn More</a>
+                    <a href="about.php" class="btn btn-style mt-4">Learn More</a>
                 </div>
             </div>
         </div>
@@ -35,7 +28,7 @@ Author URL: http://w3layouts.com
                 <div class="content">
                     <h6>Business & Finance Consultancy</h6>
                     <h3>To grow & manage your business!</h3>
-                    <a href="about.html" class="btn btn-style mt-4">Learn More</a>
+                    <a href="about.php" class="btn btn-style mt-4">Learn More</a>
                 </div>
             </div>
         </div>
@@ -44,7 +37,7 @@ Author URL: http://w3layouts.com
                 <div class="content">
                     <h6>Start Your Company</h6>
                     <h3>Your Vision, <br>Our Achievement!</h3>
-                    <a href="about.html" class="btn btn-style mt-4">Learn More</a>
+                    <a href="about.php" class="btn btn-style mt-4">Learn More</a>
                 </div>
             </div>
         </div>
@@ -53,7 +46,7 @@ Author URL: http://w3layouts.com
                 <div class="content">
                     <h6>Business Consultancy</h6>
                     <h3>Building a future together!</h3>
-                    <a href="about.html" class="btn btn-style mt-4">Learn More</a>
+                    <a href="about.php" class="btn btn-style mt-4">Learn More</a>
                 </div>
             </div>
         </div>
@@ -81,7 +74,7 @@ Author URL: http://w3layouts.com
                         <h4><a href="#url">Financial planing</a></h4>
                         <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
                             doloret quas saepe autem, dolor set.</p>
-                        <a href="services.html" class="read">Read more</a>
+                        <a href="services.php" class="read">Read more</a>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mt-md-0 mt-4">
@@ -93,7 +86,7 @@ Author URL: http://w3layouts.com
                         <h4><a href="#url">Training services</a></h4>
                         <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
                             doloret quas saepe autem, dolor set.</p>
-                        <a href="services.html" class="read">Read more</a>
+                        <a href="services.php" class="read">Read more</a>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mt-lg-0 mt-4">
@@ -105,7 +98,7 @@ Author URL: http://w3layouts.com
                         <h4><a href="#url">Marketing services</a></h4>
                         <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
                             doloret quas saepe autem, dolor set.</p>
-                        <a href="services.html" class="read">Read more</a>
+                        <a href="services.php" class="read">Read more</a>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mt-lg-0 mt-4">
@@ -117,7 +110,7 @@ Author URL: http://w3layouts.com
                         <h4><a href="#url">Taxation services</a></h4>
                         <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
                             doloret quas saepe autem, dolor set.</p>
-                        <a href="services.html" class="read">Read more</a>
+                        <a href="services.php" class="read">Read more</a>
                     </div>
                 </div>
             </div>
@@ -480,7 +473,7 @@ Author URL: http://w3layouts.com
         </div>
     </div>
     <!-- //blog section -->
-    <?php include 'includes/footer.html'; ?>
+    <?php include 'includes/footer.php'; ?>
 
     <!-- Js scripts -->
     <!-- move top -->
@@ -611,5 +604,3 @@ Author URL: http://w3layouts.com
     <!-- //bootstrap -->
     <!-- //Js scripts -->
 </body>
-
-</html>

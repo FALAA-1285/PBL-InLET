@@ -1,6 +1,3 @@
-<!doctype html>
-<html lang="en">
-
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -14,7 +11,7 @@
 </head>
 
 <body>
-    <?php include 'includes/header.html'; ?>
+    <?php include 'includes/header.php'; ?>
 
     <!-- inner banner -->
     <section class="inner-banner py-5">
@@ -22,7 +19,7 @@
             <div class="container pt-5 pb-sm-4">
                 <h4 class="inner-text-title font-weight-bold pt-sm-5 pt-4">About Us</h4>
                 <ul class="breadcrumbs-custom-path">
-                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.php">Home</a></li>
                     <li class="active"><i class="fas fa-angle-right mx-2"></i>About</li>
                 </ul>
             </div>
@@ -48,7 +45,7 @@
                             ullamco
                             laboris</li>
                     </ul>
-                    <a class="btn btn-style mt-lg-5 mt-4" href="services.html">View Our Services</a>
+                    <a class="btn btn-style mt-lg-5 mt-4" href="news.php">View Our News</a>
                 </div>
                 <div class="col-lg-6 about-2-secs-right mt-lg-4 mt-5">
                     <img src="assets/images/about.jpg" alt="" class="img-fluid radius-image" />
@@ -359,7 +356,7 @@
     </section>
     <!-- team section -->
 
-    <?php include 'includes/footer.html'; ?>
+    <?php include 'includes/footer.php'; ?>
 
     <!-- Js scripts -->
     <!-- move top -->
@@ -444,5 +441,3 @@
     <!-- //bootstrap -->
     <!-- //Js scripts -->
 </body>
-
-</html>

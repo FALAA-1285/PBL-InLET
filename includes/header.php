@@ -1,3 +1,8 @@
+<?php
+// Deteksi halaman aktif otomatis
+$current_page = basename($_SERVER['PHP_SELF']);
+?>
+
 <!-- header -->
 <header id="site-header" class="fixed-top">
     <div class="container">

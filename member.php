@@ -1,10 +1,3 @@
-<!--
-Author: W3layouts
-Author URL: http://w3layouts.com
--->
-<!doctype html>
-<html lang="en">
-
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -18,7 +11,7 @@ Author URL: http://w3layouts.com
 </head>
 
 <body>
-    <?php include 'includes/header.html'; ?>
+    <?php include 'includes/header.php'; ?>
 
     <!-- inner banner -->
     <section class="inner-banner py-5">
@@ -26,7 +19,7 @@ Author URL: http://w3layouts.com
             <div class="container pt-5 pb-sm-4">
                 <h4 class="inner-text-title font-weight-bold pt-sm-5 pt-4">Services</h4>
                 <ul class="breadcrumbs-custom-path">
-                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.php">Home</a></li>
                     <li class="active"><i class="fas fa-angle-right mx-2"></i>Services</li>
                 </ul>
             </div>
@@ -51,7 +44,7 @@ Author URL: http://w3layouts.com
                         <h4><a href="#url">Financial planing</a></h4>
                         <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
                             doloret quas saepe autem, dolor set.</p>
-                        <a href="services.html" class="read">Read more</a>
+                        <a href="services.php" class="read">Read more</a>
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6 mt-md-0 mt-4">
@@ -63,7 +56,7 @@ Author URL: http://w3layouts.com
                         <h4><a href="#url">Training services</a></h4>
                         <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
                             doloret quas saepe autem, dolor set.</p>
-                        <a href="services.html" class="read">Read more</a>
+                        <a href="services.php" class="read">Read more</a>
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6 mt-lg-0 mt-4">
@@ -75,7 +68,7 @@ Author URL: http://w3layouts.com
                         <h4><a href="#url">Marketing services</a></h4>
                         <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
                             doloret quas saepe autem, dolor set.</p>
-                        <a href="services.html" class="read">Read more</a>
+                        <a href="services.php" class="read">Read more</a>
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6 mt-4">
@@ -87,7 +80,7 @@ Author URL: http://w3layouts.com
                         <h4><a href="#url">Taxation services</a></h4>
                         <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
                             doloret quas saepe autem, dolor set.</p>
-                        <a href="services.html" class="read">Read more</a>
+                        <a href="services.php" class="read">Read more</a>
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6 mt-4">
@@ -99,7 +92,7 @@ Author URL: http://w3layouts.com
                         <h4><a href="#url">Start Ups</a></h4>
                         <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
                             doloret quas saepe autem, dolor set.</p>
-                        <a href="services.html" class="read">Read more</a>
+                        <a href="services.php" class="read">Read more</a>
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-6 mt-4">
@@ -111,7 +104,7 @@ Author URL: http://w3layouts.com
                         <h4><a href="#url">Business Planning</a></h4>
                         <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
                             doloret quas saepe autem, dolor set.</p>
-                        <a href="services.html" class="read">Read more</a>
+                        <a href="services.php" class="read">Read more</a>
                     </div>
                 </div>
             </div>
@@ -128,7 +121,7 @@ Author URL: http://w3layouts.com
                     <p class="mt-4 text-light">Lorem ipsum dolor sit amet elit. Velit beatae
                         rem ullam dolore nisi esse quasi. Integer sit amet. Lorem ipsum dolor sit
                         amet elit.</p>
-                    <a href="contact.html" class="btn btn-style mt-md-5 mt-4">Contact Us</a>
+                    <a href="contact.php" class="btn btn-style mt-md-5 mt-4">Contact Us</a>
                 </div>
             </div>
         </div>
@@ -181,7 +174,7 @@ Author URL: http://w3layouts.com
     </div>
     <!-- //3grids with bg-image section -->
 
-    <?php include 'includes/footer.html'; ?>
+    <?php include 'includes/footer.php'; ?>
 
     <!-- Js scripts -->
     <!-- move top -->
@@ -262,5 +255,3 @@ Author URL: http://w3layouts.com
     <!-- //bootstrap -->
     <!-- //Js scripts -->
 </body>
-
-</html>
