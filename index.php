@@ -1,9 +1,3 @@
-<<<<<<< lely
-<!doctype html>
-<html lang="en">
-
-=======
->>>>>>> main
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
@@ -23,60 +17,36 @@
         <div class="slide current">
             <div class="bg-layer">
                 <div class="content">
-<<<<<<< lely
                     <h6>Innovation in Language & Educational Technology</h6>
                     <h3>Transforming Language Learning Through Technology!</h3>
                     <a href="research.php" class="btn btn-style mt-4">Learn More</a>
-=======
-                    <h6>Start Your Company With Us</h6>
-                    <h3>Plan Business to Active Goal!</h3>
-                    <a href="about.php" class="btn btn-style mt-4">Learn More</a>
->>>>>>> main
                 </div>
             </div>
         </div>
         <div class="slide">
             <div class="bg-layer">
                 <div class="content">
-<<<<<<< lely
                     <h6>Research & Development Excellence</h6>
                     <h3>Advancing Digital Language Education!</h3>
                     <a href="research.php" class="btn btn-style mt-4">Learn More</a>
-=======
-                    <h6>Business & Finance Consultancy</h6>
-                    <h3>To grow & manage your business!</h3>
-                    <a href="about.php" class="btn btn-style mt-4">Learn More</a>
->>>>>>> main
                 </div>
             </div>
         </div>
         <div class="slide">
             <div class="bg-layer">
                 <div class="content">
-<<<<<<< lely
                     <h6>Educational Technology Innovation</h6>
                     <h3>Bridging Language, <br>Learning & Technology!</h3>
                     <a href="research.php" class="btn btn-style mt-4">Learn More</a>
-=======
-                    <h6>Start Your Company</h6>
-                    <h3>Your Vision, <br>Our Achievement!</h3>
-                    <a href="about.php" class="btn btn-style mt-4">Learn More</a>
->>>>>>> main
                 </div>
             </div>
         </div>
         <div class="slide">
             <div class="bg-layer">
                 <div class="content">
-<<<<<<< lely
                     <h6>Smart Learning Solutions</h6>
                     <h3>Empowering Future Educators & Learners!</h3>
                     <a href="research.php" class="btn btn-style mt-4">Learn More</a>
-=======
-                    <h6>Business Consultancy</h6>
-                    <h3>Building a future together!</h3>
-                    <a href="about.php" class="btn btn-style mt-4">Learn More</a>
->>>>>>> main
                 </div>
             </div>
         </div>
@@ -101,17 +71,10 @@
                             <i class="fas fa-donate"></i>
                         </div>
                         <h4 class="number">01</h4>
-<<<<<<< lely
                         <h4><a href="#url">Digital Learning Tools</a></h4>
                         <p>Developing innovative digital platforms and applications to enhance 
                             language learning experiences through technology integration.</p>
                         <a href="member.php" class="read">Read more</a>
-=======
-                        <h4><a href="#url">Financial planing</a></h4>
-                        <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
-                            doloret quas saepe autem, dolor set.</p>
-                        <a href="services.php" class="read">Read more</a>
->>>>>>> main
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mt-md-0 mt-4">
@@ -120,17 +83,10 @@
                             <i class="fas fa-marker"></i>
                         </div>
                         <h4 class="number">02</h4>
-<<<<<<< lely
                         <h4><a href="#url">AI in Education</a></h4>
                         <p>Leveraging artificial intelligence and machine learning to create 
                             adaptive and personalized language learning solutions.</p>
                         <a href="member.php" class="read">Read more</a>
-=======
-                        <h4><a href="#url">Training services</a></h4>
-                        <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
-                            doloret quas saepe autem, dolor set.</p>
-                        <a href="services.php" class="read">Read more</a>
->>>>>>> main
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mt-lg-0 mt-4">
@@ -139,17 +95,10 @@
                             <i class="fas fa-user-tie"></i>
                         </div>
                         <h4 class="number">03</h4>
-<<<<<<< lely
                         <h4><a href="#url">Instructional Design</a></h4>
                         <p>Designing effective learning methodologies and curricula that integrate 
                             technology for optimal educational outcomes.</p>
                         <a href="member.php" class="read">Read more</a>
-=======
-                        <h4><a href="#url">Marketing services</a></h4>
-                        <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
-                            doloret quas saepe autem, dolor set.</p>
-                        <a href="services.php" class="read">Read more</a>
->>>>>>> main
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mt-lg-0 mt-4">
@@ -158,17 +107,10 @@
                             <i class="fas fa-calculator"></i>
                         </div>
                         <h4 class="number">04</h4>
-<<<<<<< lely
                         <h4><a href="#url">Learning Analytics</a></h4>
                         <p>Utilizing data analytics and assessment tools to measure and improve 
                             language learning effectiveness and student performance.</p>
                         <a href="member.php" class="read">Read more</a>
-=======
-                        <h4><a href="#url">Taxation services</a></h4>
-                        <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
-                            doloret quas saepe autem, dolor set.</p>
-                        <a href="services.php" class="read">Read more</a>
->>>>>>> main
                     </div>
                 </div>
             </div>
