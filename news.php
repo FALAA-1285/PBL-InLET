@@ -1,5 +1,4 @@
-<!doctype html>
-<html lang="en">
+
 
 <head>
     <!-- Required meta tags -->
@@ -14,14 +13,14 @@
 </head>
 
 <body>
-    <?php include 'includes/header.html'; ?>
+    <?php include 'includes/header.php'; ?>
     <!-- inner banner -->
     <section class="inner-banner py-5">
         <div class="w3l-breadcrumb py-lg-5">
             <div class="container pt-5 pb-sm-4">
                 <h4 class="inner-text-title font-weight-bold pt-sm-5 pt-4">Contact Us</h4>
                 <ul class="breadcrumbs-custom-path">
-                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.php">Home</a></li>
                     <li class="active"><i class="fas fa-angle-right mx-2"></i>Contact Us</li>
                 </ul>
             </div>
@@ -96,7 +95,7 @@
     </div>
     <!-- //contact -->
 
-    <?php include 'includes/footer.html'; ?>
+    <?php include 'includes/footer.php'; ?>
 
     <!-- Js scripts -->
     <!-- move top -->
@@ -177,5 +176,3 @@
     <!-- //bootstrap -->
     <!-- //Js scripts -->
 </body>
-
-</html>
