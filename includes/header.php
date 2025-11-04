@@ -8,8 +8,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <div class="container">
         <nav class="navbar navbar-expand-lg navbar-light">
             <a class="navbar-brand d-flex align-items-center" href="index.php">
-                <img src="assets/images/Logo-inlet.png" alt="InLet Logo" style="height: 80px; width: auto; margin-right: 10px;">
-                <span>InLet</span>
+                <img src="assets/images/Logo-inlet.png" alt="InLet Logo" style="height: 70px; width: auto; margin-right: 10px;">
             </a>
             <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false"
@@ -70,8 +69,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
     }
 
     .nav-link.active {
-        color: #ff4081 !important;
+        color: #0004daff !important;
         font-weight: 600;
-        border-bottom: 2px solid #ff4081;
+        border-bottom: 2px solid #422dfcff;
     }
 </style>
