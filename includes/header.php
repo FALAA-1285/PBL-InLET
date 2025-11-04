@@ -31,10 +31,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         <a class="nav-link <?= ($current_page == 'news.php') ? 'active' : '' ?>" href="news.php">News</a>
                     </li>
                 </ul>
-                <form action="#search" method="GET" class="d-flex search-header ms-lg-2">
-                    <input class="form-control" type="search" placeholder="Enter Keyword..." aria-label="Search" required>
-                    <button class="btn btn-style" type="submit"><i class="fas fa-search"></i></button>
-                </form>
             </div>
 
             <!-- toggle switch for light and dark theme -->
