@@ -1,7 +1,3 @@
-<!--
-Author: W3layouts
-Author URL: http://w3layouts.com
--->
 <!doctype html>
 <html lang="en">
 
@@ -24,36 +20,36 @@ Author URL: http://w3layouts.com
         <div class="slide current">
             <div class="bg-layer">
                 <div class="content">
-                    <h6>Start Your Company With Us</h6>
-                    <h3>Plan Business to Active Goal!</h3>
-                    <a href="about.html" class="btn btn-style mt-4">Learn More</a>
+                    <h6>Innovation in Language & Educational Technology</h6>
+                    <h3>Transforming Language Learning Through Technology!</h3>
+                    <a href="research.php" class="btn btn-style mt-4">Learn More</a>
                 </div>
             </div>
         </div>
         <div class="slide">
             <div class="bg-layer">
                 <div class="content">
-                    <h6>Business & Finance Consultancy</h6>
-                    <h3>To grow & manage your business!</h3>
-                    <a href="about.html" class="btn btn-style mt-4">Learn More</a>
+                    <h6>Research & Development Excellence</h6>
+                    <h3>Advancing Digital Language Education!</h3>
+                    <a href="research.php" class="btn btn-style mt-4">Learn More</a>
                 </div>
             </div>
         </div>
         <div class="slide">
             <div class="bg-layer">
                 <div class="content">
-                    <h6>Start Your Company</h6>
-                    <h3>Your Vision, <br>Our Achievement!</h3>
-                    <a href="about.html" class="btn btn-style mt-4">Learn More</a>
+                    <h6>Educational Technology Innovation</h6>
+                    <h3>Bridging Language, <br>Learning & Technology!</h3>
+                    <a href="research.php" class="btn btn-style mt-4">Learn More</a>
                 </div>
             </div>
         </div>
         <div class="slide">
             <div class="bg-layer">
                 <div class="content">
-                    <h6>Business Consultancy</h6>
-                    <h3>Building a future together!</h3>
-                    <a href="about.html" class="btn btn-style mt-4">Learn More</a>
+                    <h6>Smart Learning Solutions</h6>
+                    <h3>Empowering Future Educators & Learners!</h3>
+                    <a href="research.php" class="btn btn-style mt-4">Learn More</a>
                 </div>
             </div>
         </div>
@@ -68,8 +64,8 @@ Author URL: http://w3layouts.com
     <section class="home-services py-5" id="services">
         <div class="container py-lg-5 py-md-4 py-2">
             <div class="title-main text-center mx-auto mb-md-5 mb-4" style="max-width:700px;">
-                <h5 class="small-title mb-2">Valued Services</h5>
-                <h3 class="title-style">More than 30+ years we provide business consulting</h3>
+                <h5 class="small-title mb-2">Our Research Focus</h5>
+                <h3 class="title-style">Pioneering Innovation in Language & Educational Technology</h3>
             </div>
             <div class="row justify-content-center">
                 <div class="col-lg-3 col-md-6">
@@ -78,10 +74,10 @@ Author URL: http://w3layouts.com
                             <i class="fas fa-donate"></i>
                         </div>
                         <h4 class="number">01</h4>
-                        <h4><a href="#url">Financial planing</a></h4>
-                        <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
-                            doloret quas saepe autem, dolor set.</p>
-                        <a href="services.html" class="read">Read more</a>
+                        <h4><a href="#url">Digital Learning Tools</a></h4>
+                        <p>Developing innovative digital platforms and applications to enhance 
+                            language learning experiences through technology integration.</p>
+                        <a href="member.php" class="read">Read more</a>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mt-md-0 mt-4">
@@ -90,10 +86,10 @@ Author URL: http://w3layouts.com
                             <i class="fas fa-marker"></i>
                         </div>
                         <h4 class="number">02</h4>
-                        <h4><a href="#url">Training services</a></h4>
-                        <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
-                            doloret quas saepe autem, dolor set.</p>
-                        <a href="services.html" class="read">Read more</a>
+                        <h4><a href="#url">AI in Education</a></h4>
+                        <p>Leveraging artificial intelligence and machine learning to create 
+                            adaptive and personalized language learning solutions.</p>
+                        <a href="member.php" class="read">Read more</a>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mt-lg-0 mt-4">
@@ -102,10 +98,10 @@ Author URL: http://w3layouts.com
                             <i class="fas fa-user-tie"></i>
                         </div>
                         <h4 class="number">03</h4>
-                        <h4><a href="#url">Marketing services</a></h4>
-                        <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
-                            doloret quas saepe autem, dolor set.</p>
-                        <a href="services.html" class="read">Read more</a>
+                        <h4><a href="#url">Instructional Design</a></h4>
+                        <p>Designing effective learning methodologies and curricula that integrate 
+                            technology for optimal educational outcomes.</p>
+                        <a href="member.php" class="read">Read more</a>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 mt-lg-0 mt-4">
@@ -114,10 +110,10 @@ Author URL: http://w3layouts.com
                             <i class="fas fa-calculator"></i>
                         </div>
                         <h4 class="number">04</h4>
-                        <h4><a href="#url">Taxation services</a></h4>
-                        <p>Lorem ipsum dolor sit amet sed consectetur adipisicing elit.
-                            doloret quas saepe autem, dolor set.</p>
-                        <a href="services.html" class="read">Read more</a>
+                        <h4><a href="#url">Learning Analytics</a></h4>
+                        <p>Utilizing data analytics and assessment tools to measure and improve 
+                            language learning effectiveness and student performance.</p>
+                        <a href="member.php" class="read">Read more</a>
                     </div>
                 </div>
             </div>
@@ -131,24 +127,24 @@ Author URL: http://w3layouts.com
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <h5 class="small-title mb-2">Why choose us</h5>
-                    <h3 class="title-style">We Provided Some Of The Good Quality To You</h3>
-                    <p class="mt-3">Lorem ipsum viverra feugiat. Pellen tesque libero ut justo,
-                        ultrices in ligula. Semper at tempufddfel. Lorem ipsum dolor sit amet consectetur adipisicing
-                        elit. Non quae, fugiat.</p>
+                    <h3 class="title-style">Leading Innovation in Language & Educational Technology</h3>
+                    <p class="mt-3">InLET combines cutting-edge research with practical applications in language 
+                        education. We bridge the gap between linguistic theory and technological innovation, 
+                        creating solutions that transform how languages are taught and learned in the digital age.</p>
                     <div class="row two-grids mt-5 pt-lg-4">
                         <div class="col-sm-6 grids_info d-flex">
                             <i class="fas fa-hand-holding-usd"></i>
                             <div class="detail ms-3">
-                                <h4>Finance Consultant</h4>
-                                <p>Sed ut perspiciatis unde omnis iste natus error sit.
+                                <h4>Research Excellence</h4>
+                                <p>Pioneering research in language learning technologies and educational innovation.
                                 </p>
                             </div>
                         </div>
                         <div class="col-sm-6 grids_info d-flex mt-sm-0 mt-4">
                             <i class="far fa-chart-bar"></i>
                             <div class="detail ms-3">
-                                <h4>Business Consultant</h4>
-                                <p>Sed ut perspiciatis unde omnis iste natus error sit.
+                                <h4>Innovative Solutions</h4>
+                                <p>Developing smart, data-driven tools for effective language education.
                                 </p>
                             </div>
                         </div>
@@ -157,8 +153,8 @@ Author URL: http://w3layouts.com
                 <div class="col-lg-5 offset-lg-1 text-end mt-lg-0 mt-5 position-relative">
                     <img src="assets/images/img1.jpg" alt="" class="img-fluid radius-image">
                     <div class="imginfo__box">
-                        <h6 class="imginfo__title">36+</h6>
-                        <p>Years of experience</p>
+                        <h6 class="imginfo__title">10+</h6>
+                        <p>Years of Innovation</p>
                     </div>
                 </div>
             </div>
