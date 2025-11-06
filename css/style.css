@@ -498,3 +498,12 @@ footer {
     font-weight: 600;
     margin-bottom: 15px;
 }
+
+ .transition-hover:hover {
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15) !important; 
+            transition: all 0.3s ease;
+        }
+        .card-body h3 {
+            color: var(--dark); 
+        }
