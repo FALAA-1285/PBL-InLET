@@ -507,3 +507,80 @@ footer {
         .card-body h3 {
             color: var(--dark); 
         }
+
+//newsGallery
+.gallery-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.gallery-card {
+    background: white;
+    padding: 10px; 
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
+    overflow: hidden;
+    position: relative;
+    transition: all 0.4s ease;
+    height: 100%;
+    
+    border-left: 5px solid transparent; 
+}
+
+.gallery-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); 
+}
+
+.gallery-card img {
+    width: 100%;
+    height: 250px; 
+    object-fit: cover;
+    border-radius: 8px; 
+}
+
+.gallery-card {
+    height: 100%;
+    border-left: 5px solid transparent; 
+    border-right: 5px solid transparent; 
+}
+
+.gallery-card.color-blue {
+    border-left-color: blue; 
+    border-right-color: transparent; 
+}
+
+.gallery-card.color-green {
+    border-left-color: green; 
+    border-right-color: transparent;
+}
+
+.gallery-card.color-red {
+    border-left-color: red;
+    border-right-color: transparent;
+}
+
+.gallery-card.color-purple {
+    border-left-color: purple;
+    border-right-color: transparent;
+}
+
+.gallery-card.color-cyan {
+    border-right-color: #06b6d4; 
+    border-left-color: transparent;
+}
+
+.gallery-card.color-yellow {
+    border-right-color: #f59e0b; 
+    border-left-color: transparent;
+}
+
+.gallery-card.color-pink {
+    border-right-color: #ec4899;
+    border-left-color: transparent;
+}
+
+.gallery-card.color-teal {
+    border-right-color: #14b8a6; 
+    border-left-color: transparent;
+}
