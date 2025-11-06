@@ -40,9 +40,9 @@ nav {
 }
 
 .logo img {
-    height: 100px;     
-    width: auto;      
-    display: flex;     
+    height: 100px;
+    width: auto;
+    display: flex;
 }
 
 .nav-links {
@@ -429,4 +429,72 @@ footer {
     .section-title h2 {
         font-size: 2rem;
     }
+}
+
+
+.dashboard-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+}
+
+.welcome-hero {
+    background-color: var(--primary);
+    color: white;
+    padding: 3rem;
+    border-radius: 20px;
+    margin-bottom: 3rem;
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4);
+}
+
+.welcome-hero h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Menggunakan style stat-item dari CSS Anda */
+.dashboard-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+/* Card Konten Eksklusif - Mirip Feature Card */
+.exclusive-content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.content-card {
+    padding: 2.5rem;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    border-top: 5px solid var(--secondary);
+    /* Border Hijau */
+    transition: all 0.3s;
+}
+
+.content-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.content-card h3 {
+    color: var(--dark);
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+}
+
+.content-card .tag {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.8em;
+    font-weight: 600;
+    margin-bottom: 15px;
 }
