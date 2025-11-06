@@ -2,7 +2,7 @@
     <div class="footer-content">
         <div class="footer-section">
             <h3>InLET</h3>
-            <p>Innovation in Language and Educational Technology</p>
+            <p>Information and Learning Engineering Technology</p>
             <p>Advancing language education through research and innovation.</p>
         </div>
         <div class="footer-section">
@@ -26,13 +26,13 @@
         <div class="footer-section">
             <h3>Contact</h3>
             <ul>
-                <li>Email: info@inlet.edu</li>
-                <li>Phone: +62 XXX XXX XXX</li>
+                <li>Email: ando@polinema.ac.id</li>
+                <li>Phone: +62 813 598 891 81</li>
                 <li>Address: Malang, East Java</li>
             </ul>
         </div>
     </div>
     <div class="footer-bottom">
-        <p>&copy; 2024 InLET - Innovation in Language & Educational Technology. All rights reserved.</p>
+        <p>&copy; 2025 InLET - Information and Learning Engineering Technology. All rights reserved.</p>
     </div>
 </footer>
