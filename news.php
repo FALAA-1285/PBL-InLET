@@ -118,6 +118,7 @@
             <img src="assets/Teknik-Polinema.jpg" alt="Group Photo" class="img-fluid">
         </div>
     </div>
+    
     </section>
 </div>
     <?php include 'includes/footer.php'; ?>
