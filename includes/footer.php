@@ -1,9 +1,12 @@
 <footer>
     <div class="footer-content">
         <div class="footer-section">
-            <h3>InLET</h3>
+            <a href="#" class="logo">
+                <img src="assets/logoPutihSalinan.png" alt="Logo" width="100px">
+            </a>
             <p>Information and Learning Engineering Technology.</p>
-            <p>Find amazing Learning application tailored for you. Handy connects you with amazing Learning Engineering professionals.</p>
+            <p>Find amazing Learning application tailored for you. Handy connects you with amazing Learning Engineering
+                professionals.</p>
         </div>
         <div class="footer-section">
             <h3>Quick Links</h3>
@@ -11,7 +14,7 @@
                 <li><a href="index.php">Home</a></li>
                 <li><a href="research.php">Research</a></li>
                 <li><a href="member.php">Member</a></li>
-                <li><a href="#team">News</a></li>
+                <li><a href="news.php">News</a></li>
             </ul>
         </div>
         <div class="footer-section">
