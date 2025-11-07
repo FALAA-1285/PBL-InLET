@@ -76,7 +76,7 @@
     </div>
 
     <div class="col-lg-3 col-md-4 col-sm-6">
-        <div class="gallery-card color-green">
+        <div class="gallery-card color-blue">
             <img src="assets/Logo-polinema.png" alt="International Seminar" class="img-fluid">
             <div class="caption">
             </div>
@@ -84,37 +84,37 @@
     </div>
 
     <div class="col-lg-3 col-md-4 col-sm-6">
-        <div class="gallery-card color-red">
+        <div class="gallery-card color-blue">
             <img src="assets/Logo-polinema.png" alt="Team Building Day" class="img-fluid">
         </div>
     </div>
     
     <div class="col-lg-3 col-md-4 col-sm-6">
-        <div class="gallery-card color-purple">
+        <div class="gallery-card color-blue">
             <img src="assets/Logo-polinema.png" alt="Student Mentoring" class="img-fluid">
         </div>
     </div>
     
     <div class="col-lg-3 col-md-4 col-sm-6">
-        <div class="gallery-card color-cyan">
+        <div class="gallery-card color-blue">
             <img src="assets/Teknik-Polinema.jpg" alt="Research Presentation" class="img-fluid">
         </div>
     </div>
 
     <div class="col-lg-3 col-md-4 col-sm-6">
-        <div class="gallery-card color-yellow">
+        <div class="gallery-card color-blue">
             <img src="assets/Teknik-Polinema.jpg" alt="Student Workshop" class="img-fluid">
         </div>
     </div>
 
     <div class="col-lg-3 col-md-4 col-sm-6">
-        <div class="gallery-card color-pink">
+        <div class="gallery-card color-blue">
             <img src="assets/Teknik-Polinema.jpg" alt="Guest Lecture" class="img-fluid">
         </div>
     </div>
     
     <div class="col-lg-3 col-md-4 col-sm-6">
-        <div class="gallery-card color-teal">
+        <div class="gallery-card color-blue">
             <img src="assets/Teknik-Polinema.jpg" alt="Group Photo" class="img-fluid">
         </div>
     </div>
