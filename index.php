@@ -1,3 +1,54 @@
+<?php
+require_once 'config/database.php';
+
+$conn = getDBConnection();
+
+// Get statistics
+$stats = [];
+
+// Total Articles
+$stmt = $conn->query("SELECT COUNT(*) as count FROM artikel");
+$stats['articles'] = $stmt->fetch()['count'];
+
+// Total Members
+$stmt = $conn->query("SELECT COUNT(*) as count FROM member");
+$stats['members'] = $stmt->fetch()['count'];
+
+// Total Progress
+$stmt = $conn->query("SELECT COUNT(*) as count FROM progress");
+$stats['progress'] = $stmt->fetch()['count'];
+
+// Total Visitors
+$stmt = $conn->query("SELECT SUM(visit_count) as total FROM visitor");
+$stats['visitors'] = $stmt->fetch()['total'] ?? 0;
+
+// Get recent articles (for research section)
+$stmt = $conn->query("SELECT * FROM artikel ORDER BY tahun DESC, judul LIMIT 6");
+$artikels = $stmt->fetchAll();
+
+// Get members (for team section)
+$stmt = $conn->query("SELECT m.*, pm.deskripsi 
+                      FROM member m 
+                      LEFT JOIN profil_member pm ON m.id_member = pm.id_member 
+                      ORDER BY m.nama LIMIT 4");
+$members = $stmt->fetchAll();
+
+// Get recent news (for news section)
+$stmt = $conn->query("SELECT * FROM berita ORDER BY created_at DESC LIMIT 3");
+$recent_news = $stmt->fetchAll();
+
+// Function to get initials from name
+function getInitials($name) {
+    $words = explode(' ', $name);
+    $initials = '';
+    foreach ($words as $word) {
+        if (!empty($word)) {
+            $initials .= strtoupper(substr($word, 0, 1));
+        }
+    }
+    return substr($initials, 0, 2); // Max 2 characters
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -26,19 +77,19 @@
     <section class="stats">
         <div class="stats-grid">
             <div class="stat-item">
-                <div class="stat-number">50+</div>
+                <div class="stat-number"><?php echo $stats['articles'] > 0 ? $stats['articles'] . '+' : '50+'; ?></div>
                 <div class="stat-label">Proyek Rekayasa Sistem</div>
             </div>
             <div class="stat-item">
-                <div class="stat-number">15+</div>
+                <div class="stat-number"><?php echo $stats['members'] > 0 ? $stats['members'] . '+' : '15+'; ?></div>
                 <div class="stat-label">Ahli Rekayasa Pembelajaran</div>
             </div>
             <div class="stat-item">
-                <div class="stat-number">100+</div>
+                <div class="stat-number"><?php echo $stats['progress'] > 0 ? $stats['progress'] . '+' : '100+'; ?></div>
                 <div class="stat-label">Publikasi Terindeks</div>
             </div>
             <div class="stat-item">
-                <div class="stat-number">100+</div>
+                <div class="stat-number"><?php echo $stats['visitors'] > 0 ? $stats['visitors'] : '100+'; ?></div>
                 <div class="stat-label">Kemitraan Industri & Akademik</div>
             </div>
         </div>
@@ -90,30 +141,22 @@
                 <p>Memelopori riset mendalam di bidang Information and Learning Engineering Technology (InLET) untuk pendidikan bahasa.</p>
             </div>
             <div class="research-grid">
-                <div class="research-item">
-                    <h4>Rekayasa Lingkungan Pembelajaran Terkomputerisasi (CALL)</h4>
-                    <p>Menjelajahi integrasi teknologi dan **rekayasa sistem pembelajaran** dalam instruksi bahasa serta perancangan lingkungan belajar yang efektif.</p>
-                </div>
-                <div class="research-item">
-                    <h4>NLP untuk Rekayasa Sistem Bahasa</h4>
-                    <p>Menerapkan teknik **Natural Language Processing (NLP)** untuk meningkatkan alat pembelajaran bahasa dan **merekayasa ulang** sistem asesmen yang cerdas.</p>
-                </div>
-                <div class="research-item">
-                    <h4>Rekayasa Lingkungan Imersif (VR/AR)</h4>
-                    <p>Menciptakan lingkungan Realitas Virtual/Augmented (VR/AR) yang imersif dan terstruktur untuk pengalaman belajar bahasa yang **autentik dan terekayasa** dengan baik.</p>
-                </div>
-                <div class="research-item">
-                    <h4>Rekayasa Sistem Pembelajaran Adaptif</h4>
-                    <p>Mengembangkan **sistem cerdas** yang dirancang untuk secara dinamis **beradaptasi** dengan kebutuhan belajar dan tingkat kemajuan setiap peserta didik secara individual.</p>
-                </div>
-                <div class="research-item">
-                    <h4>Penambangan Data untuk Optimasi Pembelajaran</h4>
-                    <p>Menganalisis pola dan **informasi data pembelajaran** (*Educational Data Mining*) untuk mengoptimalkan strategi pendidikan dan mengevaluasi hasil pembelajaran secara presisi.</p>
-                </div>
-                <div class="research-item">
-                    <h4>Rekayasa Aplikasi Pembelajaran Mobile</h4>
-                    <p>Meriset pendekatan pembelajaran mobile yang efektif dan **merekayasa desain aplikasi** yang berorientasi pada fungsionalitas dan pengalaman (*UX/UI*) pengguna untuk pendidikan bahasa.</p>
-                </div>
+                <?php if (empty($artikels)): ?>
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; color: var(--gray);">
+                        <p style="font-size: 1.2rem; margin-bottom: 1rem;">Belum ada artikel penelitian yang dipublikasikan.</p>
+                        <p style="font-size: 0.9rem;">Silakan login sebagai admin untuk menambahkan artikel melalui CMS.</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($artikels as $artikel): ?>
+                        <div class="research-item">
+                            <h4><?php echo htmlspecialchars($artikel['judul']); ?></h4>
+                            <?php if ($artikel['tahun']): ?>
+                                <p style="color: var(--primary); font-weight: 600; margin-bottom: 0.5rem;">Tahun: <?php echo $artikel['tahun']; ?></p>
+                            <?php endif; ?>
+                            <p><?php echo htmlspecialchars($artikel['konten']); ?></p>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </section>
@@ -124,32 +167,55 @@
             <p>Temui para ahli yang mendorong inovasi Information and Learning Engineering Technology.</p>
         </div>
         <div class="team-grid">
-            <div class="team-card">
-                <div class="team-avatar">DR</div>
-                <h4>Dr. Research Lead</h4>
-                <p>Kepala Peneliti & Arsitek Sistem InLET</p>
-                <p>Spesialisasi: AI dan Rekayasa Pembelajaran Bahasa</p>
+            <?php if (empty($members)): ?>
+                <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; color: var(--gray);">
+                    <p style="font-size: 1.2rem; margin-bottom: 1rem;">Belum ada member yang terdaftar.</p>
+                    <p style="font-size: 0.9rem;">Silakan login sebagai admin untuk menambahkan member melalui CMS.</p>
+                </div>
+            <?php else: ?>
+                <?php foreach ($members as $member): ?>
+                    <div class="team-card">
+                        <div class="team-avatar"><?php echo getInitials($member['nama']); ?></div>
+                        <h4><?php echo htmlspecialchars($member['nama']); ?></h4>
+                        <?php if ($member['jabatan']): ?>
+                            <p style="font-weight: 600; color: var(--primary-dark); margin-bottom: 0.5rem;"><?php echo htmlspecialchars($member['jabatan']); ?></p>
+                        <?php endif; ?>
+                        <?php if ($member['deskripsi']): ?>
+                            <p><?php echo htmlspecialchars(substr($member['deskripsi'], 0, 100)) . '...'; ?></p>
+                        <?php elseif ($member['email']): ?>
+                            <p><?php echo htmlspecialchars($member['email']); ?></p>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <?php if (!empty($recent_news)): ?>
+    <section class="research" style="background: white; padding: 6rem 2rem;">
+        <div class="research-container">
+            <div class="section-title">
+                <h2>BERITA TERBARU</h2>
+                <p>Update terbaru dari InLET</p>
             </div>
-            <div class="team-card">
-                <div class="team-avatar">PM</div>
-                <h4>Prof. Mobile Expert</h4>
-                <p>Peneliti Senior & Spesialis Implementasi</p>
-                <p>Fokus: Rekayasa Teknologi Pembelajaran Mobile</p>
-            </div>
-            <div class="team-card">
-                <div class="team-avatar">DA</div>
-                <h4>Dr. Analytics Pro</h4>
-                <p>Data Scientist & Ahli Analitika</p>
-                <p>Fokus: Analitika Pembelajaran & Penambangan Data</p>
-            </div>
-            <div class="team-card">
-                <div class="team-avatar">VR</div>
-                <h4>Dr. VR Specialist</h4>
-                <p>Inovator Teknologi & Perancang Lingkungan</p>
-                <p>Fokus: Rekayasa Lingkungan Pembelajaran Imersif</p>
+            <div class="research-grid">
+                <?php foreach ($recent_news as $news): ?>
+                    <div class="research-item">
+                        <?php if ($news['gambar_thumbnail']): ?>
+                            <img src="<?php echo htmlspecialchars($news['gambar_thumbnail']); ?>" alt="<?php echo htmlspecialchars($news['judul']); ?>" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 1rem;">
+                        <?php endif; ?>
+                        <h4><?php echo htmlspecialchars($news['judul']); ?></h4>
+                        <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                            <?php echo date('d M Y', strtotime($news['created_at'])); ?>
+                        </p>
+                        <p><?php echo htmlspecialchars(substr($news['konten'], 0, 200)) . '...'; ?></p>
+                        <a href="news.php" style="color: var(--primary); text-decoration: none; font-weight: 600;">Baca selengkapnya →</a>
+                    </div>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
     <?php include 'includes/footer.php'; ?>
 

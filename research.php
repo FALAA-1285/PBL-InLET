@@ -1,6 +1,23 @@
+<?php
+require_once 'config/database.php';
+
+$conn = getDBConnection();
+
+// Get all articles
+$stmt = $conn->query("SELECT * FROM artikel ORDER BY tahun DESC, judul");
+$artikels = $stmt->fetchAll();
+
+// Get all progress
+$stmt = $conn->query("SELECT p.*, a.judul as artikel_judul, m.nama as mahasiswa_nama, mem.nama as member_nama 
+                      FROM progress p 
+                      LEFT JOIN artikel a ON p.id_artikel = a.id_artikel 
+                      LEFT JOIN mahasiswa m ON p.id_mhs = m.id_mhs 
+                      LEFT JOIN member mem ON p.id_member = mem.id_member 
+                      ORDER BY p.created_at DESC");
+$progress_list = $stmt->fetchAll();
+?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,9 +25,7 @@
     <link rel="stylesheet" href="css/style.css"> 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
-
     <?php include 'includes/header.php'; ?>
     
     <section class="hero research-hero-page" id="research-top">
@@ -31,39 +46,62 @@
             </div>
             
             <div class="research-grid">
-                
-                <div class="research-item">
-                    <h4>Computer-Assisted Language Learning (CALL)</h4>
-                    <p>Kami fokus pada integrasi teknologi secara efektif ke dalam lingkungan belajar mengajar bahasa. Riset ini mencakup studi tentang efektivitas *software* pembelajaran dan *platform* digital.</p>
-                </div>
-
-                <div class="research-item">
-                    <h4>Natural Language Processing (NLP)</h4>
-                    <p>Pemanfaatan kecerdasan buatan untuk analisis dan pemrosesan bahasa manusia. Kami mengembangkan sistem untuk penilaian esai otomatis dan umpan balik tata bahasa cerdas.</p>
-                </div>
-
-                <div class="research-item">
-                    <h4>Virtual Reality in Education</h4>
-                    <p>Menciptakan lingkungan belajar yang imersif dan otentik melalui VR/AR. Tujuannya adalah memberikan kesempatan praktik bahasa dalam skenario dunia nyata.</p>
-                </div>
-
-                <div class="research-item">
-                    <h4>Adaptive Learning Systems</h4>
-                    <p>Merancang sistem pembelajaran cerdas yang dapat menyesuaikan kurikulum dan kecepatan belajar secara dinamis berdasarkan performa individu pelajar.</p>
-                </div>
-
-                <div class="research-item">
-                    <h4>Educational Data Mining</h4>
-                    <p>Menganalisis data besar dari aktivitas belajar untuk mengidentifikasi pola, mengoptimalkan strategi pengajaran, dan memprediksi keberhasilan siswa.</p>
-                </div>
-
-                <div class="research-item">
-                    <h4>Mobile-Assisted Language Learning</h4>
-                    <p>Eksplorasi metodologi dan desain aplikasi yang paling efektif untuk belajar bahasa melalui perangkat seluler, memanfaatkan fitur-fitur unik ponsel.</p>
-                </div>
+                <?php if (empty($artikels)): ?>
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; color: var(--gray);">
+                        <p style="font-size: 1.2rem; margin-bottom: 1rem;">Belum ada artikel penelitian yang dipublikasikan.</p>
+                        <p style="font-size: 0.9rem;">Silakan login sebagai admin untuk menambahkan artikel melalui CMS.</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($artikels as $artikel): ?>
+                        <div class="research-item">
+                            <h4><?php echo htmlspecialchars($artikel['judul']); ?></h4>
+                            <?php if ($artikel['tahun']): ?>
+                                <p style="color: var(--primary); font-weight: 600; margin-bottom: 0.5rem;">Tahun: <?php echo $artikel['tahun']; ?></p>
+                            <?php endif; ?>
+                            <p><?php echo htmlspecialchars($artikel['konten']); ?></p>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </section>
+
+    <?php if (!empty($progress_list)): ?>
+    <section class="research" style="background: white; padding: 6rem 2rem;">
+        <div class="research-container">
+            <div class="section-title">
+                <h2>Research Progress</h2>
+                <p>Latest updates on our research projects.</p>
+            </div>
+            <div class="research-grid">
+                <?php foreach ($progress_list as $progress): ?>
+                    <div class="research-item">
+                        <h4><?php echo htmlspecialchars($progress['judul']); ?></h4>
+                        <?php if ($progress['tahun']): ?>
+                            <p style="color: var(--primary); font-weight: 600; margin-bottom: 0.5rem;">Tahun: <?php echo $progress['tahun']; ?></p>
+                        <?php endif; ?>
+                        <?php if ($progress['deskripsi']): ?>
+                            <p><?php echo htmlspecialchars($progress['deskripsi']); ?></p>
+                        <?php endif; ?>
+                        <?php if ($progress['artikel_judul'] || $progress['mahasiswa_nama'] || $progress['member_nama']): ?>
+                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.9rem; color: var(--gray);">
+                                <?php if ($progress['artikel_judul']): ?>
+                                    <p><strong>Artikel:</strong> <?php echo htmlspecialchars($progress['artikel_judul']); ?></p>
+                                <?php endif; ?>
+                                <?php if ($progress['mahasiswa_nama']): ?>
+                                    <p><strong>Mahasiswa:</strong> <?php echo htmlspecialchars($progress['mahasiswa_nama']); ?></p>
+                                <?php endif; ?>
+                                <?php if ($progress['member_nama']): ?>
+                                    <p><strong>Member:</strong> <?php echo htmlspecialchars($progress['member_nama']); ?></p>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
 
     <section class="research-cta" style="padding: 4rem 2rem; text-align: center; background: var(--light);">
         <div class="research-container">
@@ -76,7 +114,5 @@
     </section>
 
     <?php include 'includes/footer.php'; ?>
-
 </body>
-
 </html>
