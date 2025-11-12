@@ -48,6 +48,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
         }
+    } elseif ($action === 'update_artikel') {
+        $id = $_POST['id'] ?? 0;
+        $judul = $_POST['judul'] ?? '';
+        $tahun = $_POST['tahun'] ?? null;
+        $konten = $_POST['konten'] ?? '';
+        
+        try {
+            $stmt = $conn->prepare("UPDATE artikel SET judul = :judul, tahun = :tahun, konten = :konten WHERE id_artikel = :id");
+            $stmt->execute([
+                'id' => $id,
+                'judul' => $judul,
+                'tahun' => $tahun ?: null,
+                'konten' => $konten
+            ]);
+            $message = 'Artikel berhasil diupdate!';
+            $message_type = 'success';
+        } catch(PDOException $e) {
+            $message = 'Error: ' . $e->getMessage();
+            $message_type = 'error';
+        }
+    } elseif ($action === 'update_progress') {
+        $id = $_POST['id'] ?? 0;
+        $judul = $_POST['judul'] ?? '';
+        $tahun = $_POST['tahun'] ?? null;
+        $deskripsi = $_POST['deskripsi'] ?? '';
+        $id_artikel = $_POST['id_artikel'] ?? null;
+        $id_mhs = $_POST['id_mhs'] ?? null;
+        $id_member = $_POST['id_member'] ?? null;
+        
+        try {
+            $stmt = $conn->prepare("UPDATE progress SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, id_artikel = :id_artikel, id_mhs = :id_mhs, id_member = :id_member WHERE id_progress = :id");
+            $stmt->execute([
+                'id' => $id,
+                'judul' => $judul,
+                'tahun' => $tahun ?: null,
+                'deskripsi' => $deskripsi,
+                'id_artikel' => $id_artikel ?: null,
+                'id_mhs' => $id_mhs ?: null,
+                'id_member' => $id_member ?: null
+            ]);
+            $message = 'Progress berhasil diupdate!';
+            $message_type = 'success';
+        } catch(PDOException $e) {
+            $message = 'Error: ' . $e->getMessage();
+            $message_type = 'error';
+        }
     } elseif ($action === 'delete_artikel') {
         $id = $_POST['id'] ?? 0;
         try {
@@ -73,17 +119,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Get all articles
-$stmt = $conn->query("SELECT * FROM artikel ORDER BY tahun DESC, judul");
+// Pagination setup for articles
+$items_per_page = 10;
+$current_tab = isset($_GET['tab']) ? $_GET['tab'] : 'artikel';
+
+// Get page numbers - check if we're on the correct tab
+$current_page_artikel = 1;
+$current_page_progress = 1;
+
+if ($current_tab === 'artikel' && isset($_GET['page'])) {
+    $current_page_artikel = max(1, intval($_GET['page']));
+} elseif (isset($_GET['page_artikel'])) {
+    $current_page_artikel = max(1, intval($_GET['page_artikel']));
+}
+
+if ($current_tab === 'progress' && isset($_GET['page'])) {
+    $current_page_progress = max(1, intval($_GET['page']));
+} elseif (isset($_GET['page_progress'])) {
+    $current_page_progress = max(1, intval($_GET['page_progress']));
+}
+
+// Get total count for articles
+$stmt = $conn->query("SELECT COUNT(*) FROM artikel");
+$total_items_artikel = $stmt->fetchColumn();
+$total_pages_artikel = ceil($total_items_artikel / $items_per_page);
+$offset_artikel = ($current_page_artikel - 1) * $items_per_page;
+
+// Get articles with pagination (for display)
+$stmt = $conn->prepare("SELECT * FROM artikel ORDER BY tahun DESC, judul LIMIT :limit OFFSET :offset");
+$stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset_artikel, PDO::PARAM_INT);
+$stmt->execute();
 $artikels = $stmt->fetchAll();
 
-// Get all progress
-$stmt = $conn->query("SELECT p.*, a.judul as artikel_judul, m.nama as mahasiswa_nama, mem.nama as member_nama 
+// Get all articles for dropdown (no pagination)
+$stmt = $conn->query("SELECT id_artikel, judul FROM artikel ORDER BY judul");
+$artikels_dropdown = $stmt->fetchAll();
+
+// Get total count for progress
+$stmt = $conn->query("SELECT COUNT(*) FROM progress");
+$total_items_progress = $stmt->fetchColumn();
+$total_pages_progress = ceil($total_items_progress / $items_per_page);
+$offset_progress = ($current_page_progress - 1) * $items_per_page;
+
+// Get progress with pagination
+$stmt = $conn->prepare("SELECT p.*, a.judul as artikel_judul, m.nama as mahasiswa_nama, mem.nama as member_nama 
                       FROM progress p 
                       LEFT JOIN artikel a ON p.id_artikel = a.id_artikel 
                       LEFT JOIN mahasiswa m ON p.id_mhs = m.id_mhs 
                       LEFT JOIN member mem ON p.id_member = mem.id_member 
-                      ORDER BY p.created_at DESC");
+                      ORDER BY p.created_at DESC
+                      LIMIT :limit OFFSET :offset");
+$stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset_progress, PDO::PARAM_INT);
+$stmt->execute();
 $progress_list = $stmt->fetchAll();
 
 // Get dropdown options
@@ -263,6 +352,78 @@ $member_list = $stmt->fetchAll();
         .btn-delete:hover {
             background: #dc2626;
         }
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            margin-right: 0.5rem;
+        }
+        .btn-edit:hover {
+            background: #2563eb;
+        }
+        .edit-form-section {
+            display: none;
+        }
+        .edit-form-section.active {
+            display: block;
+        }
+        .btn-cancel {
+            background: #6b7280;
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 1rem;
+        }
+        .btn-cancel:hover {
+            background: #4b5563;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 1rem;
+        }
+        .pagination a,
+        .pagination span {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--dark);
+            transition: all 0.3s;
+        }
+        .pagination a:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .pagination .active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .pagination .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .pagination-info {
+            text-align: center;
+            color: var(--gray);
+            margin-top: 1rem;
+        }
         .tabs {
             display: flex;
             gap: 1rem;
@@ -279,6 +440,8 @@ $member_list = $stmt->fetchAll();
             color: var(--gray);
             border-bottom: 3px solid transparent;
             transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
         }
         .tab.active {
             color: var(--primary);
@@ -315,12 +478,35 @@ $member_list = $stmt->fetchAll();
         <?php endif; ?>
 
         <div class="tabs">
-            <button class="tab active" onclick="showTab('artikel')">Artikel</button>
-            <button class="tab" onclick="showTab('progress')">Progress</button>
+            <a href="?tab=artikel&page=1" class="tab <?php echo ($current_tab === 'artikel') ? 'active' : ''; ?>">Artikel</a>
+            <a href="?tab=progress&page=1" class="tab <?php echo ($current_tab === 'progress') ? 'active' : ''; ?>">Progress</a>
         </div>
 
         <!-- Artikel Tab -->
-        <div id="artikel-tab" class="tab-content active">
+        <div id="artikel-tab" class="tab-content <?php echo ($current_tab === 'artikel') ? 'active' : ''; ?>">
+            <!-- Edit Artikel Form (Hidden by default) -->
+            <div id="edit-artikel-section" class="form-section edit-form-section">
+                <h2>Edit Artikel</h2>
+                <form method="POST" action="" id="edit-artikel-form">
+                    <input type="hidden" name="action" value="update_artikel">
+                    <input type="hidden" name="id" id="edit_artikel_id">
+                    <div class="form-group">
+                        <label>Judul Artikel</label>
+                        <input type="text" name="judul" id="edit_artikel_judul" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tahun</label>
+                        <input type="number" name="tahun" id="edit_artikel_tahun" min="2000" max="2099">
+                    </div>
+                    <div class="form-group">
+                        <label>Konten</label>
+                        <textarea name="konten" id="edit_artikel_konten" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit">Update Artikel</button>
+                    <button type="button" class="btn-cancel" onclick="cancelEditArtikel()">Batal</button>
+                </form>
+            </div>
+
             <div class="form-section">
                 <h2>Tambah Artikel Baru</h2>
                 <form method="POST" action="">
@@ -366,6 +552,7 @@ $member_list = $stmt->fetchAll();
                                     <td><?php echo $artikel['tahun'] ?? '-'; ?></td>
                                     <td><?php echo htmlspecialchars(substr($artikel['konten'], 0, 50)) . '...'; ?></td>
                                     <td>
+                                        <button type="button" class="btn-edit" onclick="editArtikel(<?php echo htmlspecialchars(json_encode($artikel)); ?>)">Edit</button>
                                         <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus artikel ini?');">
                                             <input type="hidden" name="action" value="delete_artikel">
                                             <input type="hidden" name="id" value="<?php echo $artikel['id_artikel']; ?>">
@@ -377,11 +564,113 @@ $member_list = $stmt->fetchAll();
                         <?php endif; ?>
                     </tbody>
                 </table>
+                
+                <!-- Pagination for Artikel -->
+                <?php if ($total_pages_artikel > 1): ?>
+                    <div class="pagination">
+                        <?php if ($current_page_artikel > 1): ?>
+                            <a href="?tab=artikel&page=<?php echo $current_page_artikel - 1; ?>">&laquo; Previous</a>
+                        <?php else: ?>
+                            <span class="disabled">&laquo; Previous</span>
+                        <?php endif; ?>
+                        
+                        <?php
+                        $start_page = max(1, $current_page_artikel - 2);
+                        $end_page = min($total_pages_artikel, $current_page_artikel + 2);
+                        
+                        if ($start_page > 1): ?>
+                            <a href="?tab=artikel&page=1">1</a>
+                            <?php if ($start_page > 2): ?>
+                                <span>...</span>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                        
+                        <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                            <?php if ($i == $current_page_artikel): ?>
+                                <span class="active"><?php echo $i; ?></span>
+                            <?php else: ?>
+                                <a href="?tab=artikel&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            <?php endif; ?>
+                        <?php endfor; ?>
+                        
+                        <?php if ($end_page < $total_pages_artikel): ?>
+                            <?php if ($end_page < $total_pages_artikel - 1): ?>
+                                <span>...</span>
+                            <?php endif; ?>
+                            <a href="?tab=artikel&page=<?php echo $total_pages_artikel; ?>"><?php echo $total_pages_artikel; ?></a>
+                        <?php endif; ?>
+                        
+                        <?php if ($current_page_artikel < $total_pages_artikel): ?>
+                            <a href="?tab=artikel&page=<?php echo $current_page_artikel + 1; ?>">Next &raquo;</a>
+                        <?php else: ?>
+                            <span class="disabled">Next &raquo;</span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="pagination-info">
+                        Menampilkan <?php echo ($offset_artikel + 1); ?> - <?php echo min($offset_artikel + $items_per_page, $total_items_artikel); ?> dari <?php echo $total_items_artikel; ?> artikel
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 
         <!-- Progress Tab -->
-        <div id="progress-tab" class="tab-content">
+        <div id="progress-tab" class="tab-content <?php echo ($current_tab === 'progress') ? 'active' : ''; ?>">
+            <!-- Edit Progress Form (Hidden by default) -->
+            <div id="edit-progress-section" class="form-section edit-form-section">
+                <h2>Edit Progress</h2>
+                <form method="POST" action="" id="edit-progress-form">
+                    <input type="hidden" name="action" value="update_progress">
+                    <input type="hidden" name="id" id="edit_progress_id">
+                    <div class="form-group">
+                        <label>Judul Progress</label>
+                        <input type="text" name="judul" id="edit_progress_judul" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tahun</label>
+                        <input type="number" name="tahun" id="edit_progress_tahun" min="2000" max="2099">
+                    </div>
+                    <div class="form-group">
+                        <label>Deskripsi</label>
+                        <textarea name="deskripsi" id="edit_progress_deskripsi"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Artikel (Opsional)</label>
+                        <select name="id_artikel" id="edit_progress_id_artikel">
+                            <option value="">-- Pilih Artikel --</option>
+                            <?php foreach ($artikels_dropdown as $artikel): ?>
+                                <option value="<?php echo $artikel['id_artikel']; ?>">
+                                    <?php echo htmlspecialchars($artikel['judul']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Mahasiswa (Opsional)</label>
+                        <select name="id_mhs" id="edit_progress_id_mhs">
+                            <option value="">-- Pilih Mahasiswa --</option>
+                            <?php foreach ($mahasiswa_list as $mhs): ?>
+                                <option value="<?php echo $mhs['id_mhs']; ?>">
+                                    <?php echo htmlspecialchars($mhs['nama']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Member (Opsional)</label>
+                        <select name="id_member" id="edit_progress_id_member">
+                            <option value="">-- Pilih Member --</option>
+                            <?php foreach ($member_list as $mem): ?>
+                                <option value="<?php echo $mem['id_member']; ?>">
+                                    <?php echo htmlspecialchars($mem['nama']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-submit">Update Progress</button>
+                    <button type="button" class="btn-cancel" onclick="cancelEditProgress()">Batal</button>
+                </form>
+            </div>
+
             <div class="form-section">
                 <h2>Tambah Progress Baru</h2>
                 <form method="POST" action="">
@@ -402,7 +691,7 @@ $member_list = $stmt->fetchAll();
                         <label>Artikel (Opsional)</label>
                         <select name="id_artikel">
                             <option value="">-- Pilih Artikel --</option>
-                            <?php foreach ($artikels as $artikel): ?>
+                            <?php foreach ($artikels_dropdown as $artikel): ?>
                                 <option value="<?php echo $artikel['id_artikel']; ?>">
                                     <?php echo htmlspecialchars($artikel['judul']); ?>
                                 </option>
@@ -464,6 +753,7 @@ $member_list = $stmt->fetchAll();
                                     <td><?php echo htmlspecialchars($progress['mahasiswa_nama'] ?? '-'); ?></td>
                                     <td><?php echo htmlspecialchars($progress['member_nama'] ?? '-'); ?></td>
                                     <td>
+                                        <button type="button" class="btn-edit" onclick="editProgress(<?php echo htmlspecialchars(json_encode($progress)); ?>)">Edit</button>
                                         <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus progress ini?');">
                                             <input type="hidden" name="action" value="delete_progress">
                                             <input type="hidden" name="id" value="<?php echo $progress['id_progress']; ?>">
@@ -475,6 +765,52 @@ $member_list = $stmt->fetchAll();
                         <?php endif; ?>
                     </tbody>
                 </table>
+                
+                <!-- Pagination for Progress -->
+                <?php if ($total_pages_progress > 1): ?>
+                    <div class="pagination">
+                        <?php if ($current_page_progress > 1): ?>
+                            <a href="?tab=progress&page=<?php echo $current_page_progress - 1; ?>">&laquo; Previous</a>
+                        <?php else: ?>
+                            <span class="disabled">&laquo; Previous</span>
+                        <?php endif; ?>
+                        
+                        <?php
+                        $start_page = max(1, $current_page_progress - 2);
+                        $end_page = min($total_pages_progress, $current_page_progress + 2);
+                        
+                        if ($start_page > 1): ?>
+                            <a href="?tab=progress&page=1">1</a>
+                            <?php if ($start_page > 2): ?>
+                                <span>...</span>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                        
+                        <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                            <?php if ($i == $current_page_progress): ?>
+                                <span class="active"><?php echo $i; ?></span>
+                            <?php else: ?>
+                                <a href="?tab=progress&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            <?php endif; ?>
+                        <?php endfor; ?>
+                        
+                        <?php if ($end_page < $total_pages_progress): ?>
+                            <?php if ($end_page < $total_pages_progress - 1): ?>
+                                <span>...</span>
+                            <?php endif; ?>
+                            <a href="?tab=progress&page=<?php echo $total_pages_progress; ?>"><?php echo $total_pages_progress; ?></a>
+                        <?php endif; ?>
+                        
+                        <?php if ($current_page_progress < $total_pages_progress): ?>
+                            <a href="?tab=progress&page=<?php echo $current_page_progress + 1; ?>">Next &raquo;</a>
+                        <?php else: ?>
+                            <span class="disabled">Next &raquo;</span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="pagination-info">
+                        Menampilkan <?php echo ($offset_progress + 1); ?> - <?php echo min($offset_progress + $items_per_page, $total_items_progress); ?> dari <?php echo $total_items_progress; ?> progress
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -492,6 +828,67 @@ $member_list = $stmt->fetchAll();
             // Show selected tab
             document.getElementById(tabName + '-tab').classList.add('active');
             event.target.classList.add('active');
+            
+            // Redirect to first page of selected tab
+            window.location.href = '?tab=' + tabName + '&page=1';
+        }
+        
+        // Set active tab based on URL parameter
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab') || 'artikel';
+            
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tab + '-tab').classList.add('active');
+            const tabButtons = document.querySelectorAll('.tab');
+            tabButtons.forEach(btn => {
+                if (btn.textContent.toLowerCase().includes(tab)) {
+                    btn.classList.add('active');
+                }
+            });
+        });
+        
+        function editArtikel(artikel) {
+            document.getElementById('edit_artikel_id').value = artikel.id_artikel;
+            document.getElementById('edit_artikel_judul').value = artikel.judul || '';
+            document.getElementById('edit_artikel_tahun').value = artikel.tahun || '';
+            document.getElementById('edit_artikel_konten').value = artikel.konten || '';
+            
+            document.getElementById('edit-artikel-section').classList.add('active');
+            document.querySelector('#artikel-tab .form-section:not(.edit-form-section)').style.display = 'none';
+            
+            document.getElementById('edit-artikel-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function cancelEditArtikel() {
+            document.getElementById('edit-artikel-section').classList.remove('active');
+            document.querySelector('#artikel-tab .form-section:not(.edit-form-section)').style.display = 'block';
+            document.getElementById('edit-artikel-form').reset();
+        }
+        
+        function editProgress(progress) {
+            document.getElementById('edit_progress_id').value = progress.id_progress;
+            document.getElementById('edit_progress_judul').value = progress.judul || '';
+            document.getElementById('edit_progress_tahun').value = progress.tahun || '';
+            document.getElementById('edit_progress_deskripsi').value = progress.deskripsi || '';
+            document.getElementById('edit_progress_id_artikel').value = progress.id_artikel || '';
+            document.getElementById('edit_progress_id_mhs').value = progress.id_mhs || '';
+            document.getElementById('edit_progress_id_member').value = progress.id_member || '';
+            
+            document.getElementById('edit-progress-section').classList.add('active');
+            document.querySelector('#progress-tab .form-section:not(.edit-form-section)').style.display = 'none';
+            
+            document.getElementById('edit-progress-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function cancelEditProgress() {
+            document.getElementById('edit-progress-section').classList.remove('active');
+            document.querySelector('#progress-tab .form-section:not(.edit-form-section)').style.display = 'block';
+            document.getElementById('edit-progress-form').reset();
         }
     </script>
 </body>

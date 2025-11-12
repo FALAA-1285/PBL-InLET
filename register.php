@@ -47,15 +47,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $password_hash = password_hash($password, PASSWORD_DEFAULT);
                 
                 // Create user
-                $stmt = $conn->prepare("INSERT INTO users (username, password_hash, role) VALUES (:username, :password_hash, 'pengunjung')");
+                $stmt = $conn->prepare("INSERT INTO users (username, password_hash, role) VALUES (:username, :password_hash, 'pengunjung') RETURNING id_user");
                 $stmt->execute([
                     'username' => $username,
                     'password_hash' => $password_hash
                 ]);
-                $user_id = $conn->lastInsertId();
+                $user_id = $stmt->fetchColumn();
                 
                 // Create pengunjung profile
-                $stmt = $conn->prepare("INSERT INTO pengunjung (id_user, nama, email, asal_institusi) VALUES (:id_user, :nama, :email, :asal_institusi)");
+                $stmt = $conn->prepare("INSERT INTO pengunjung (id_user, nama, email, asal_institusi) VALUES (:id_user, :nama, :email, :asal_institusi) RETURNING id_pengunjung");
                 $stmt->execute([
                     'id_user' => $user_id,
                     'nama' => $nama,
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'asal_institusi' => $asal_institusi ?: null
                 ]);
                 
-                $pengunjung_id = $conn->lastInsertId();
+                $pengunjung_id = $stmt->fetchColumn();
                 
                 // Create visitor record
                 $stmt = $conn->prepare("INSERT INTO visitor (id_pengunjung, visit_count, first_visit) VALUES (:id_pengunjung, 0, NOW())");

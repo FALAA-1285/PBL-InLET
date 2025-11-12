@@ -32,12 +32,12 @@ try {
     $password_hash = password_hash($admin_password, PASSWORD_DEFAULT);
     
     // Create user
-    $stmt = $conn->prepare("INSERT INTO users (username, password_hash, role) VALUES (:username, :password_hash, 'admin')");
+    $stmt = $conn->prepare("INSERT INTO users (username, password_hash, role) VALUES (:username, :password_hash, 'admin') RETURNING id_user");
     $stmt->execute([
         'username' => $admin_username,
         'password_hash' => $password_hash
     ]);
-    $user_id = $conn->lastInsertId();
+    $user_id = $stmt->fetchColumn();
     
     // Create admin profile
     $stmt = $conn->prepare("INSERT INTO admin (id_user, nama, email) VALUES (:id_user, :nama, :email)");

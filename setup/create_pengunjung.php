@@ -34,15 +34,15 @@ try {
     $password_hash = password_hash($pengunjung_password, PASSWORD_DEFAULT);
     
     // Create user
-    $stmt = $conn->prepare("INSERT INTO users (username, password_hash, role) VALUES (:username, :password_hash, 'pengunjung')");
+    $stmt = $conn->prepare("INSERT INTO users (username, password_hash, role) VALUES (:username, :password_hash, 'pengunjung') RETURNING id_user");
     $stmt->execute([
         'username' => $pengunjung_username,
         'password_hash' => $password_hash
     ]);
-    $user_id = $conn->lastInsertId();
+    $user_id = $stmt->fetchColumn();
     
     // Create pengunjung profile
-    $stmt = $conn->prepare("INSERT INTO pengunjung (id_user, nama, email, asal_institusi) VALUES (:id_user, :nama, :email, :asal_institusi)");
+    $stmt = $conn->prepare("INSERT INTO pengunjung (id_user, nama, email, asal_institusi) VALUES (:id_user, :nama, :email, :asal_institusi) RETURNING id_pengunjung");
     $stmt->execute([
         'id_user' => $user_id,
         'nama' => $pengunjung_nama,
@@ -50,7 +50,7 @@ try {
         'asal_institusi' => $pengunjung_asal_institusi
     ]);
     
-    $pengunjung_id = $conn->lastInsertId();
+    $pengunjung_id = $stmt->fetchColumn();
     
     // Create visitor record
     $stmt = $conn->prepare("INSERT INTO visitor (id_pengunjung, visit_count, first_visit) VALUES (:id_pengunjung, 0, NOW())");

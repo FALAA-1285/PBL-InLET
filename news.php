@@ -3,8 +3,21 @@ require_once 'config/database.php';
 
 $conn = getDBConnection();
 
-// Get all news
-$stmt = $conn->query("SELECT * FROM berita ORDER BY created_at DESC");
+// Pagination setup
+$items_per_page = 9; // 9 items per page for 3 columns grid
+$current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$offset = ($current_page - 1) * $items_per_page;
+
+// Get total count
+$stmt = $conn->query("SELECT COUNT(*) FROM berita");
+$total_items = $stmt->fetchColumn();
+$total_pages = ceil($total_items / $items_per_page);
+
+// Get news with pagination
+$stmt = $conn->prepare("SELECT * FROM berita ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
+$stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
 $news_list = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -59,6 +72,72 @@ $news_list = $stmt->fetchAll();
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
+            
+            <!-- Pagination -->
+            <?php if ($total_pages > 1): ?>
+                <nav aria-label="News pagination" style="margin-top: 3rem;">
+                    <ul class="pagination justify-content-center" style="gap: 0.5rem;">
+                        <?php if ($current_page > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<?php echo $current_page - 1; ?>" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo; Previous</span>
+                                </a>
+                            </li>
+                        <?php else: ?>
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-hidden="true">&laquo; Previous</span>
+                            </li>
+                        <?php endif; ?>
+                        
+                        <?php
+                        $start_page = max(1, $current_page - 2);
+                        $end_page = min($total_pages, $current_page + 2);
+                        
+                        if ($start_page > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">1</a>
+                            </li>
+                            <?php if ($start_page > 2): ?>
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                        
+                        <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                            <li class="page-item <?php echo ($i == $current_page) ? 'active' : ''; ?>">
+                                <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            </li>
+                        <?php endfor; ?>
+                        
+                        <?php if ($end_page < $total_pages): ?>
+                            <?php if ($end_page < $total_pages - 1): ?>
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            <?php endif; ?>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<?php echo $total_pages; ?>"><?php echo $total_pages; ?></a>
+                            </li>
+                        <?php endif; ?>
+                        
+                        <?php if ($current_page < $total_pages): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<?php echo $current_page + 1; ?>" aria-label="Next">
+                                    <span aria-hidden="true">Next &raquo;</span>
+                                </a>
+                            </li>
+                        <?php else: ?>
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-hidden="true">Next &raquo;</span>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
+                    <div class="text-center mt-3" style="color: var(--gray);">
+                        Menampilkan <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> dari <?php echo $total_items; ?> berita
+                    </div>
+                </nav>
+            <?php endif; ?>
         </div>
     </section>
 
