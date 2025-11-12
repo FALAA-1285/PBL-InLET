@@ -30,14 +30,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if (empty($message)) {
             try {
-                $stmt = $conn->prepare("INSERT INTO member (nama, email, jabatan, foto) VALUES (:nama, :email, :jabatan, :foto)");
+                $stmt = $conn->prepare("INSERT INTO member (nama, email, jabatan, foto) VALUES (:nama, :email, :jabatan, :foto) RETURNING id_member");
                 $stmt->execute([
                     'nama' => $nama,
                     'email' => $email ?: null,
                     'jabatan' => $jabatan ?: null,
                     'foto' => $foto ?: null
                 ]);
-                $member_id = $conn->lastInsertId();
+                $member_id = $stmt->fetchColumn();
                 
                 // Add profile if provided
                 $alamat = $_POST['alamat'] ?? '';
@@ -61,6 +61,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message_type = 'error';
             }
         }
+    } elseif ($action === 'update_member') {
+        $id = $_POST['id'] ?? 0;
+        $nama = $_POST['nama'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $jabatan = $_POST['jabatan'] ?? '';
+        $foto = $_POST['foto'] ?? '';
+        
+        // Handle file upload
+        if (isset($_FILES['foto_file']) && $_FILES['foto_file']['error'] === UPLOAD_ERR_OK) {
+            $uploadResult = uploadImage($_FILES['foto_file'], 'members/');
+            if ($uploadResult['success']) {
+                $foto = $uploadResult['path'];
+            } else {
+                $message = $uploadResult['message'];
+                $message_type = 'error';
+            }
+        }
+        
+        if (empty($message)) {
+            try {
+                $stmt = $conn->prepare("UPDATE member SET nama = :nama, email = :email, jabatan = :jabatan, foto = :foto WHERE id_member = :id");
+                $stmt->execute([
+                    'id' => $id,
+                    'nama' => $nama,
+                    'email' => $email ?: null,
+                    'jabatan' => $jabatan ?: null,
+                    'foto' => $foto ?: null
+                ]);
+                
+                // Update or insert profile
+                $alamat = $_POST['alamat'] ?? '';
+                $no_tlp = $_POST['no_tlp'] ?? '';
+                $deskripsi = $_POST['deskripsi'] ?? '';
+                
+                // Check if profile exists
+                $stmt = $conn->prepare("SELECT id_profile FROM profil_member WHERE id_member = :id_member");
+                $stmt->execute(['id_member' => $id]);
+                $profile = $stmt->fetch();
+                
+                if ($profile) {
+                    // Update existing profile
+                    $stmt = $conn->prepare("UPDATE profil_member SET alamat = :alamat, no_tlp = :no_tlp, deskripsi = :deskripsi WHERE id_member = :id_member");
+                    $stmt->execute([
+                        'id_member' => $id,
+                        'alamat' => $alamat ?: null,
+                        'no_tlp' => $no_tlp ?: null,
+                        'deskripsi' => $deskripsi ?: null
+                    ]);
+                } else {
+                    // Insert new profile if any data provided
+                    if ($alamat || $no_tlp || $deskripsi) {
+                        $stmt = $conn->prepare("INSERT INTO profil_member (id_member, alamat, no_tlp, deskripsi) VALUES (:id_member, :alamat, :no_tlp, :deskripsi)");
+                        $stmt->execute([
+                            'id_member' => $id,
+                            'alamat' => $alamat ?: null,
+                            'no_tlp' => $no_tlp ?: null,
+                            'deskripsi' => $deskripsi ?: null
+                        ]);
+                    }
+                }
+                
+                $message = 'Member berhasil diupdate!';
+                $message_type = 'success';
+            } catch(PDOException $e) {
+                $message = 'Error: ' . $e->getMessage();
+                $message_type = 'error';
+            }
+        }
     } elseif ($action === 'delete_member') {
         $id = $_POST['id'] ?? 0;
         try {
@@ -75,11 +143,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Get all members with profiles
-$stmt = $conn->query("SELECT m.*, pm.alamat, pm.no_tlp, pm.deskripsi 
+// Pagination setup
+$items_per_page = 10;
+$current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$offset = ($current_page - 1) * $items_per_page;
+
+// Get total count
+$stmt = $conn->query("SELECT COUNT(*) FROM member");
+$total_items = $stmt->fetchColumn();
+$total_pages = ceil($total_items / $items_per_page);
+
+// Get members with profiles and pagination
+$stmt = $conn->prepare("SELECT m.*, pm.alamat, pm.no_tlp, pm.deskripsi 
                       FROM member m 
                       LEFT JOIN profil_member pm ON m.id_member = pm.id_member 
-                      ORDER BY m.nama");
+                      ORDER BY m.nama
+                      LIMIT :limit OFFSET :offset");
+$stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
 $members = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -262,6 +344,78 @@ $members = $stmt->fetchAll();
         .btn-delete:hover {
             background: #dc2626;
         }
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            margin-right: 0.5rem;
+        }
+        .btn-edit:hover {
+            background: #2563eb;
+        }
+        .edit-form-section {
+            display: none;
+        }
+        .edit-form-section.active {
+            display: block;
+        }
+        .btn-cancel {
+            background: #6b7280;
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 1rem;
+        }
+        .btn-cancel:hover {
+            background: #4b5563;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 1rem;
+        }
+        .pagination a,
+        .pagination span {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--dark);
+            transition: all 0.3s;
+        }
+        .pagination a:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .pagination .active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .pagination .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .pagination-info {
+            text-align: center;
+            color: var(--gray);
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -285,6 +439,52 @@ $members = $stmt->fetchAll();
                 <?php echo htmlspecialchars($message); ?>
             </div>
         <?php endif; ?>
+
+        <!-- Edit Form Section (Hidden by default) -->
+        <div id="edit-form-section" class="form-section edit-form-section">
+            <h2>Edit Member</h2>
+            <form method="POST" action="" enctype="multipart/form-data" id="edit-member-form">
+                <input type="hidden" name="action" value="update_member">
+                <input type="hidden" name="id" id="edit_id">
+                <div class="form-group">
+                    <label>Nama *</label>
+                    <input type="text" name="nama" id="edit_nama" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" id="edit_email">
+                </div>
+                <div class="form-group">
+                    <label>Jabatan</label>
+                    <input type="text" name="jabatan" id="edit_jabatan">
+                </div>
+                <div class="form-group">
+                    <label>Upload Foto (File)</label>
+                    <input type="file" name="foto_file" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
+                    <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Maksimal 5MB. Format: JPG, PNG, GIF, WEBP</small>
+                </div>
+                <div class="form-group">
+                    <label>Atau Masukkan URL Foto</label>
+                    <input type="text" name="foto" id="edit_foto" placeholder="https://example.com/foto.jpg">
+                    <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Jika upload file, URL akan diabaikan</small>
+                </div>
+                <h3 style="color: var(--primary); margin-top: 2rem; margin-bottom: 1rem;">Profil Detail (Opsional)</h3>
+                <div class="form-group">
+                    <label>Alamat</label>
+                    <textarea name="alamat" id="edit_alamat"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>No. Telepon</label>
+                    <input type="text" name="no_tlp" id="edit_no_tlp">
+                </div>
+                <div class="form-group">
+                    <label>Deskripsi</label>
+                    <textarea name="deskripsi" id="edit_deskripsi"></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Update Member</button>
+                <button type="button" class="btn-cancel" onclick="cancelEdit()">Batal</button>
+            </form>
+        </div>
 
         <div class="form-section">
             <h2>Tambah Member Baru</h2>
@@ -354,6 +554,7 @@ $members = $stmt->fetchAll();
                                 <p><strong>Deskripsi:</strong> <?php echo htmlspecialchars(substr($member['deskripsi'], 0, 100)) . '...'; ?></p>
                             <?php endif; ?>
                             <div class="actions">
+                                <button type="button" class="btn-edit" onclick="editMember(<?php echo htmlspecialchars(json_encode($member)); ?>)">Edit</button>
                                 <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus member ini?');">
                                     <input type="hidden" name="action" value="delete_member">
                                     <input type="hidden" name="id" value="<?php echo $member['id_member']; ?>">
@@ -364,8 +565,84 @@ $members = $stmt->fetchAll();
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
+            
+            <!-- Pagination -->
+            <?php if ($total_pages > 1): ?>
+                <div class="pagination">
+                    <?php if ($current_page > 1): ?>
+                        <a href="?page=<?php echo $current_page - 1; ?>">&laquo; Previous</a>
+                    <?php else: ?>
+                        <span class="disabled">&laquo; Previous</span>
+                    <?php endif; ?>
+                    
+                    <?php
+                    $start_page = max(1, $current_page - 2);
+                    $end_page = min($total_pages, $current_page + 2);
+                    
+                    if ($start_page > 1): ?>
+                        <a href="?page=1">1</a>
+                        <?php if ($start_page > 2): ?>
+                            <span>...</span>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                    
+                    <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                        <?php if ($i == $current_page): ?>
+                            <span class="active"><?php echo $i; ?></span>
+                        <?php else: ?>
+                            <a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+                    
+                    <?php if ($end_page < $total_pages): ?>
+                        <?php if ($end_page < $total_pages - 1): ?>
+                            <span>...</span>
+                        <?php endif; ?>
+                        <a href="?page=<?php echo $total_pages; ?>"><?php echo $total_pages; ?></a>
+                    <?php endif; ?>
+                    
+                    <?php if ($current_page < $total_pages): ?>
+                        <a href="?page=<?php echo $current_page + 1; ?>">Next &raquo;</a>
+                    <?php else: ?>
+                        <span class="disabled">Next &raquo;</span>
+                    <?php endif; ?>
+                </div>
+                <div class="pagination-info">
+                    Menampilkan <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> dari <?php echo $total_items; ?> member
+                </div>
+            <?php endif; ?>
         </div>
     </div>
+
+    <script>
+        function editMember(member) {
+            // Populate edit form
+            document.getElementById('edit_id').value = member.id_member;
+            document.getElementById('edit_nama').value = member.nama || '';
+            document.getElementById('edit_email').value = member.email || '';
+            document.getElementById('edit_jabatan').value = member.jabatan || '';
+            document.getElementById('edit_foto').value = member.foto || '';
+            document.getElementById('edit_alamat').value = member.alamat || '';
+            document.getElementById('edit_no_tlp').value = member.no_tlp || '';
+            document.getElementById('edit_deskripsi').value = member.deskripsi || '';
+            
+            // Show edit form, hide add form
+            document.getElementById('edit-form-section').classList.add('active');
+            document.querySelector('.form-section:not(.edit-form-section)').style.display = 'none';
+            
+            // Scroll to edit form
+            document.getElementById('edit-form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function cancelEdit() {
+            // Hide edit form, show add form
+            document.getElementById('edit-form-section').classList.remove('active');
+            document.querySelector('.form-section:not(.edit-form-section)').style.display = 'block';
+            
+            // Reset edit form
+            document.getElementById('edit-member-form').reset();
+        }
+    </script>
 </body>
 </html>
 

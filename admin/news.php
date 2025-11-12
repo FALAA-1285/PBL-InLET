@@ -42,6 +42,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message_type = 'error';
             }
         }
+    } elseif ($action === 'update_news') {
+        $id = $_POST['id'] ?? 0;
+        $judul = $_POST['judul'] ?? '';
+        $konten = $_POST['konten'] ?? '';
+        $gambar_thumbnail = $_POST['gambar_thumbnail'] ?? '';
+        
+        // Handle file upload
+        if (isset($_FILES['gambar_file']) && $_FILES['gambar_file']['error'] === UPLOAD_ERR_OK) {
+            $uploadResult = uploadImage($_FILES['gambar_file'], 'news/');
+            if ($uploadResult['success']) {
+                $gambar_thumbnail = $uploadResult['path'];
+            } else {
+                $message = $uploadResult['message'];
+                $message_type = 'error';
+            }
+        }
+        
+        if (empty($message)) {
+            try {
+                $stmt = $conn->prepare("UPDATE berita SET judul = :judul, konten = :konten, gambar_thumbnail = :gambar_thumbnail WHERE id_berita = :id");
+                $stmt->execute([
+                    'id' => $id,
+                    'judul' => $judul,
+                    'konten' => $konten,
+                    'gambar_thumbnail' => $gambar_thumbnail ?: null
+                ]);
+                $message = 'Berita berhasil diupdate!';
+                $message_type = 'success';
+            } catch(PDOException $e) {
+                $message = 'Error: ' . $e->getMessage();
+                $message_type = 'error';
+            }
+        }
     } elseif ($action === 'delete_news') {
         $id = $_POST['id'] ?? 0;
         try {
@@ -56,8 +89,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Get all news
-$stmt = $conn->query("SELECT * FROM berita ORDER BY created_at DESC");
+// Pagination setup
+$items_per_page = 10;
+$current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$offset = ($current_page - 1) * $items_per_page;
+
+// Get total count
+$stmt = $conn->query("SELECT COUNT(*) FROM berita");
+$total_items = $stmt->fetchColumn();
+$total_pages = ceil($total_items / $items_per_page);
+
+// Get news with pagination
+$stmt = $conn->prepare("SELECT * FROM berita ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
+$stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
 $news_list = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -252,6 +298,78 @@ $news_list = $stmt->fetchAll();
         .btn-delete:hover {
             background: #dc2626;
         }
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            margin-right: 0.5rem;
+        }
+        .btn-edit:hover {
+            background: #2563eb;
+        }
+        .edit-form-section {
+            display: none;
+        }
+        .edit-form-section.active {
+            display: block;
+        }
+        .btn-cancel {
+            background: #6b7280;
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 1rem;
+        }
+        .btn-cancel:hover {
+            background: #4b5563;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 1rem;
+        }
+        .pagination a,
+        .pagination span {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--dark);
+            transition: all 0.3s;
+        }
+        .pagination a:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .pagination .active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .pagination .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .pagination-info {
+            text-align: center;
+            color: var(--gray);
+            margin-top: 1rem;
+        }
         .data-table {
             width: 100%;
             border-collapse: collapse;
@@ -293,6 +411,35 @@ $news_list = $stmt->fetchAll();
                 <?php echo htmlspecialchars($message); ?>
             </div>
         <?php endif; ?>
+
+        <!-- Edit Form Section (Hidden by default) -->
+        <div id="edit-form-section" class="form-section edit-form-section">
+            <h2>Edit Berita</h2>
+            <form method="POST" action="" enctype="multipart/form-data" id="edit-news-form">
+                <input type="hidden" name="action" value="update_news">
+                <input type="hidden" name="id" id="edit_id">
+                <div class="form-group">
+                    <label>Judul Berita *</label>
+                    <input type="text" name="judul" id="edit_judul" required>
+                </div>
+                <div class="form-group">
+                    <label>Konten *</label>
+                    <textarea name="konten" id="edit_konten" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Upload Gambar Thumbnail (File)</label>
+                    <input type="file" name="gambar_file" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
+                    <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Maksimal 5MB. Format: JPG, PNG, GIF, WEBP</small>
+                </div>
+                <div class="form-group">
+                    <label>Atau Masukkan URL Gambar</label>
+                    <input type="text" name="gambar_thumbnail" id="edit_gambar_thumbnail" placeholder="https://example.com/image.jpg">
+                    <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Jika upload file, URL akan diabaikan</small>
+                </div>
+                <button type="submit" class="btn-submit">Update Berita</button>
+                <button type="button" class="btn-cancel" onclick="cancelEdit()">Batal</button>
+            </form>
+        </div>
 
         <div class="form-section">
             <h2>Tambah Berita Baru</h2>
@@ -340,6 +487,7 @@ $news_list = $stmt->fetchAll();
                                 <p><?php echo htmlspecialchars(substr($news['konten'], 0, 150)) . '...'; ?></p>
                                 <small>Published: <?php echo date('d M Y', strtotime($news['created_at'])); ?></small>
                                 <div class="actions">
+                                    <button type="button" class="btn-edit" onclick="editNews(<?php echo htmlspecialchars(json_encode($news)); ?>)">Edit</button>
                                     <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus berita ini?');">
                                         <input type="hidden" name="action" value="delete_news">
                                         <input type="hidden" name="id" value="<?php echo $news['id_berita']; ?>">
@@ -351,8 +499,80 @@ $news_list = $stmt->fetchAll();
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
+            
+            <!-- Pagination -->
+            <?php if ($total_pages > 1): ?>
+                <div class="pagination">
+                    <?php if ($current_page > 1): ?>
+                        <a href="?page=<?php echo $current_page - 1; ?>">&laquo; Previous</a>
+                    <?php else: ?>
+                        <span class="disabled">&laquo; Previous</span>
+                    <?php endif; ?>
+                    
+                    <?php
+                    $start_page = max(1, $current_page - 2);
+                    $end_page = min($total_pages, $current_page + 2);
+                    
+                    if ($start_page > 1): ?>
+                        <a href="?page=1">1</a>
+                        <?php if ($start_page > 2): ?>
+                            <span>...</span>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                    
+                    <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                        <?php if ($i == $current_page): ?>
+                            <span class="active"><?php echo $i; ?></span>
+                        <?php else: ?>
+                            <a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+                    
+                    <?php if ($end_page < $total_pages): ?>
+                        <?php if ($end_page < $total_pages - 1): ?>
+                            <span>...</span>
+                        <?php endif; ?>
+                        <a href="?page=<?php echo $total_pages; ?>"><?php echo $total_pages; ?></a>
+                    <?php endif; ?>
+                    
+                    <?php if ($current_page < $total_pages): ?>
+                        <a href="?page=<?php echo $current_page + 1; ?>">Next &raquo;</a>
+                    <?php else: ?>
+                        <span class="disabled">Next &raquo;</span>
+                    <?php endif; ?>
+                </div>
+                <div class="pagination-info">
+                    Menampilkan <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> dari <?php echo $total_items; ?> berita
+                </div>
+            <?php endif; ?>
         </div>
     </div>
+
+    <script>
+        function editNews(news) {
+            // Populate edit form
+            document.getElementById('edit_id').value = news.id_berita;
+            document.getElementById('edit_judul').value = news.judul || '';
+            document.getElementById('edit_konten').value = news.konten || '';
+            document.getElementById('edit_gambar_thumbnail').value = news.gambar_thumbnail || '';
+            
+            // Show edit form, hide add form
+            document.getElementById('edit-form-section').classList.add('active');
+            document.querySelector('.form-section:not(.edit-form-section)').style.display = 'none';
+            
+            // Scroll to edit form
+            document.getElementById('edit-form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function cancelEdit() {
+            // Hide edit form, show add form
+            document.getElementById('edit-form-section').classList.remove('active');
+            document.querySelector('.form-section:not(.edit-form-section)').style.display = 'block';
+            
+            // Reset edit form
+            document.getElementById('edit-news-form').reset();
+        }
+    </script>
 </body>
 </html>
 
