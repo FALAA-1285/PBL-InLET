@@ -3,6 +3,71 @@ require_once 'config/database.php';
 
 $conn = getDBConnection();
 
+function getYoutubeEmbedUrl($url) {
+    if (empty($url)) {
+        return null;
+    }
+
+    $url = trim($url);
+    if ($url === '') {
+        return null;
+    }
+
+    $videoId = null;
+    $startSeconds = null;
+
+    // Extract video ID from different YouTube URL formats
+    if (preg_match('/youtu\.be\/([^\?\&]+)/', $url, $matches)) {
+        $videoId = $matches[1];
+    } elseif (preg_match('/youtube\.com\/shorts\/([^\?\&]+)/', $url, $matches)) {
+        $videoId = $matches[1];
+    } elseif (preg_match('/youtube\.com\/embed\/([^\?\&]+)/', $url, $matches)) {
+        $videoId = $matches[1];
+    } elseif (preg_match('/youtube\.com\/watch/', $url)) {
+        $query = [];
+        parse_str(parse_url($url, PHP_URL_QUERY) ?? '', $query);
+        if (!empty($query['v'])) {
+            $videoId = $query['v'];
+        }
+        if (!empty($query['t'])) {
+            $startSeconds = parseYoutubeTimecode($query['t']);
+        } elseif (!empty($query['start'])) {
+            $startSeconds = (int)$query['start'];
+        }
+    }
+
+    if (!$videoId) {
+        return null;
+    }
+
+    $videoId = preg_replace('/[^A-Za-z0-9_\-]/', '', $videoId);
+    if ($videoId === '') {
+        return null;
+    }
+
+    $embedUrl = 'https://www.youtube.com/embed/' . $videoId;
+    if ($startSeconds !== null && $startSeconds > 0) {
+        $embedUrl .= '?start=' . $startSeconds;
+    }
+
+    return $embedUrl;
+}
+
+function parseYoutubeTimecode($value) {
+    if (preg_match('/^\d+$/', $value)) {
+        return (int)$value;
+    }
+
+    if (preg_match('/((\d+)h)?((\d+)m)?((\d+)s)?/', $value, $matches)) {
+        $hours = isset($matches[2]) ? (int)$matches[2] : 0;
+        $minutes = isset($matches[4]) ? (int)$matches[4] : 0;
+        $seconds = isset($matches[6]) ? (int)$matches[6] : 0;
+        return ($hours * 3600) + ($minutes * 60) + $seconds;
+    }
+
+    return null;
+}
+
 // Pagination setup for articles
 $items_per_page = 9; // 9 items per page for grid layout
 $current_page_artikel = isset($_GET['page_artikel']) ? max(1, intval($_GET['page_artikel'])) : 1;
@@ -175,6 +240,14 @@ $progress_list = $stmt->fetchAll();
                         <?php endif; ?>
                         <?php if ($progress['deskripsi']): ?>
                             <p><?php echo htmlspecialchars($progress['deskripsi']); ?></p>
+                        <?php endif; ?>
+                        <?php $embedUrl = getYoutubeEmbedUrl($progress['video_url'] ?? ''); ?>
+                        <?php if ($embedUrl): ?>
+                            <div class="research-video" style="margin-top: 1.5rem;">
+                                <div class="video-wrapper">
+                                    <iframe src="<?php echo htmlspecialchars($embedUrl); ?>" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                                </div>
+                            </div>
                         <?php endif; ?>
                         <?php if ($progress['artikel_judul'] || $progress['mahasiswa_nama'] || $progress['member_nama']): ?>
                             <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.9rem; color: var(--gray);">

@@ -90,6 +90,7 @@ CREATE TABLE progress (
     tahun       INTEGER,
     id_member   INTEGER REFERENCES member(id_member) ON DELETE SET NULL,
     deskripsi   VARCHAR(2000),
+    video_url   VARCHAR(255),
     created_at  TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
