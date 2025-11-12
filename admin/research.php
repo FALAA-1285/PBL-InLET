@@ -31,16 +31,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id_artikel = $_POST['id_artikel'] ?? null;
         $id_mhs = $_POST['id_mhs'] ?? null;
         $id_member = $_POST['id_member'] ?? null;
+        $video_url = trim($_POST['video_url'] ?? '');
         
         try {
-            $stmt = $conn->prepare("INSERT INTO progress (judul, tahun, deskripsi, id_artikel, id_mhs, id_member) VALUES (:judul, :tahun, :deskripsi, :id_artikel, :id_mhs, :id_member)");
+            $stmt = $conn->prepare("INSERT INTO progress (judul, tahun, deskripsi, id_artikel, id_mhs, id_member, video_url) VALUES (:judul, :tahun, :deskripsi, :id_artikel, :id_mhs, :id_member, :video_url)");
             $stmt->execute([
                 'judul' => $judul,
                 'tahun' => $tahun ?: null,
                 'deskripsi' => $deskripsi,
                 'id_artikel' => $id_artikel ?: null,
                 'id_mhs' => $id_mhs ?: null,
-                'id_member' => $id_member ?: null
+                'id_member' => $id_member ?: null,
+                'video_url' => $video_url ?: null
             ]);
             $message = 'Progress berhasil ditambahkan!';
             $message_type = 'success';
@@ -76,9 +78,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id_artikel = $_POST['id_artikel'] ?? null;
         $id_mhs = $_POST['id_mhs'] ?? null;
         $id_member = $_POST['id_member'] ?? null;
+        $video_url = trim($_POST['video_url'] ?? '');
         
         try {
-            $stmt = $conn->prepare("UPDATE progress SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, id_artikel = :id_artikel, id_mhs = :id_mhs, id_member = :id_member WHERE id_progress = :id");
+            $stmt = $conn->prepare("UPDATE progress SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, id_artikel = :id_artikel, id_mhs = :id_mhs, id_member = :id_member, video_url = :video_url WHERE id_progress = :id");
             $stmt->execute([
                 'id' => $id,
                 'judul' => $judul,
@@ -86,7 +89,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'deskripsi' => $deskripsi,
                 'id_artikel' => $id_artikel ?: null,
                 'id_mhs' => $id_mhs ?: null,
-                'id_member' => $id_member ?: null
+                'id_member' => $id_member ?: null,
+                'video_url' => $video_url ?: null
             ]);
             $message = 'Progress berhasil diupdate!';
             $message_type = 'success';
@@ -666,6 +670,11 @@ $member_list = $stmt->fetchAll();
                             <?php endforeach; ?>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label>Link YouTube (Opsional)</label>
+                        <input type="url" name="video_url" id="edit_progress_video_url" placeholder="https://www.youtube.com/watch?v=...">
+                        <small style="color: var(--gray);">Masukkan URL video YouTube. Video akan ditampilkan langsung di halaman publik.</small>
+                    </div>
                     <button type="submit" class="btn-submit">Update Progress</button>
                     <button type="button" class="btn-cancel" onclick="cancelEditProgress()">Batal</button>
                 </form>
@@ -720,6 +729,11 @@ $member_list = $stmt->fetchAll();
                             <?php endforeach; ?>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label>Link YouTube (Opsional)</label>
+                        <input type="url" name="video_url" placeholder="https://www.youtube.com/watch?v=...">
+                        <small style="color: var(--gray);">Masukkan URL video YouTube. Video akan ditampilkan langsung di halaman publik.</small>
+                    </div>
                     <button type="submit" class="btn-submit">Tambah Progress</button>
                 </form>
             </div>
@@ -735,6 +749,7 @@ $member_list = $stmt->fetchAll();
                             <th>Artikel</th>
                             <th>Mahasiswa</th>
                             <th>Member</th>
+                            <th>Video</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -752,6 +767,13 @@ $member_list = $stmt->fetchAll();
                                     <td><?php echo htmlspecialchars($progress['artikel_judul'] ?? '-'); ?></td>
                                     <td><?php echo htmlspecialchars($progress['mahasiswa_nama'] ?? '-'); ?></td>
                                     <td><?php echo htmlspecialchars($progress['member_nama'] ?? '-'); ?></td>
+                                    <td>
+                                        <?php if (!empty($progress['video_url'])): ?>
+                                            <a href="<?php echo htmlspecialchars($progress['video_url']); ?>" target="_blank" rel="noopener noreferrer">Lihat</a>
+                                        <?php else: ?>
+                                            -
+                                        <?php endif; ?>
+                                    </td>
                                     <td>
                                         <button type="button" class="btn-edit" onclick="editProgress(<?php echo htmlspecialchars(json_encode($progress)); ?>)">Edit</button>
                                         <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus progress ini?');">
@@ -878,6 +900,7 @@ $member_list = $stmt->fetchAll();
             document.getElementById('edit_progress_id_artikel').value = progress.id_artikel || '';
             document.getElementById('edit_progress_id_mhs').value = progress.id_mhs || '';
             document.getElementById('edit_progress_id_member').value = progress.id_member || '';
+            document.getElementById('edit_progress_video_url').value = progress.video_url || '';
             
             document.getElementById('edit-progress-section').classList.add('active');
             document.querySelector('#progress-tab .form-section:not(.edit-form-section)').style.display = 'none';
