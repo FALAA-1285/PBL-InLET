@@ -1,0 +1,38 @@
+.footer {
+    width: 100%;
+    font-family: 'Poppins', sans-serif;
+}
+
+.footer a {
+    color: #dcdcdc;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer a:hover {
+    color: #0d6efd;
+}
+
+.footer .social-icons a {
+    color: #dcdcdc;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+}
+
+.footer .social-icons a:hover {
+    color: #0d6efd;
+}
+
+.footer .footer-links a {
+    font-size: 0.9rem;
+}
+
+.footer .footer-links a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .footer {
+        text-align: center;
+    }
+}

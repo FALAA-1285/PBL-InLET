@@ -2,25 +2,61 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+$current_page = basename($_SERVER['PHP_SELF']);
 ?>
-<header>
-    <nav>
-        <a href="index.php" class="logo">
-            <img src="assets/logo.png" alt="Logo">
-        </a>
-        <ul class="nav-links">
-            <li><a href="index.php">Home</a></li>
-            <li><a href="research.php">Research</a></li>
-            <li><a href="member.php">Member</a></li>
-            <li><a href="news.php">News</a></li>
-            <?php if (isset($_SESSION['user_id'])): ?>
-                <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
-                    <li><a href="admin/dashboard.php">Dashboard</a></li>
-                <?php endif; ?>
-                <li><a href="admin/logout.php">Logout</a></li>
-            <?php else: ?>
-                <li><a href="login.php">Login</a></li>
-            <?php endif; ?>
-        </ul>
-    </nav>
-</header>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="style-header.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
+            <div class="container">
+
+                <!-- Logo -->
+                <a href="index.php" class="navbar-brand">
+                    <img src="assets/logo.png" alt="Logo" style="height: 40px;">
+                </a>
+
+                <!-- Tombol toggle untuk tampilan mobile -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Menu -->
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo ($current_page == 'index.php') ? 'active text-primary fw-bold' : ''; ?>"
+                                href="index.php">Home</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo ($current_page == 'research.php') ? 'active text-primary fw-bold' : ''; ?>"
+                                href="research.php">Research
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo ($current_page == 'member.php') ? 'active text-primary fw-bold' : ''; ?>"
+                                href="member.php">Member</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link <?php echo ($current_page == 'news.php') ? 'active text-primary fw-bold' : ''; ?>"
+                                href="news.php">News</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>

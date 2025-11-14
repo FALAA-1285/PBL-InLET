@@ -603,3 +603,75 @@ footer {
     border-right-color: #14b8a6; 
     border-left-color: transparent;
 }
+
+/* Menggunakan variabel warna Anda untuk Bootstrap */
+.navbar-brand .logo-img-custom {
+    /* Mengatasi permintaan: ukuran logo tidak terlalu besar */
+    height: 45px; /* Tinggi logo, sesuaikan sesuai keinginan */
+    width: auto;
+}
+
+/* Mengubah warna utama Bootstrap agar sesuai dengan var(--primary) Anda */
+.btn-primary {
+    --bs-btn-bg: var(--primary);
+    --bs-btn-border-color: var(--primary);
+    --bs-btn-hover-bg: var(--primary-dark);
+    --bs-btn-hover-border-color: var(--primary-dark);
+}
+
+/* Mengubah warna link navbar agar sesuai dengan var(--dark) Anda */
+.navbar-light .navbar-nav .nav-link {
+    color: var(--dark); 
+    font-weight: 500;
+}
+
+/* Efek hover untuk link Navigasi */
+.navbar-light .navbar-nav .nav-link:hover,
+.navbar-light .navbar-nav .nav-link.active {
+    color: var(--primary); /* Warna hover dari variabel Anda */
+}
+
+/* Mengatasi masalah fixed header yang menutupi konten (Bootstrap) */
+body {
+    padding-top: 70px; /* Tambahkan padding di body agar konten tidak tertutup header fixed. Sesuaikan nilai jika tinggi header Anda berbeda */
+}
+
+/* Mengimplementasikan efek hover unik Anda (underliner) jika diinginkan: */
+.navbar-nav .nav-link {
+    position: relative;
+    transition: color 0.3s;
+}
+
+.navbar-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary);
+    transition: width 0.3s;
+}
+
+.navbar-nav .nav-link:hover::after,
+.navbar-nav .nav-link.active::after {
+    width: 100%;
+}
+
+.logo-img-custom {
+    /* Atur tinggi logo secara eksplisit ke nilai yang kecil */
+    height: 40px; /* Nilai ideal untuk header yang ramping */
+    width: auto;
+}
+
+/* Penyesuaian Body untuk mengatasi Header Fixed */
+body {
+    /* Sesuaikan padding-top dengan tinggi header (40px logo + 8px p-2 atas + 8px p-2 bawah) */
+    padding-top: 65px; 
+}
+
+.navbar-nav .nav-link {
+    /* Mengurangi padding default Bootstrap pada link di desktop */
+    padding-top: 0.5rem !important; 
+    padding-bottom: 0.5rem !important;
+}
