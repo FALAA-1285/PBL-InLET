@@ -131,11 +131,11 @@ $progress_list = $stmt->fetchAll();
         </div>
     </section>
 
-    <section class="research" id="focus-areas">
+    <section class="research" id="focus-areas" style="padding: 6rem 0;">
         <div class="research-container">
             <div class="section-title">
-                <h2>Core Research Focus Areas</h2>
-                <p>A deep dive into the six pillars of our innovation.</p>
+                <h2 style="font-size: 2.5rem;">Core Research Focus Areas</h2>
+                <p style="font-size: 1.1rem;">A deep dive into the six pillars of our innovation.</p>
             </div>
             
             <div class="research-grid">
