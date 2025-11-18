@@ -24,11 +24,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <img src="assets/logo.png" alt="Logo" style="height: 40px;">
             </a>
 
-            <!-- Tombol toggle mobile -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
             <!-- Menu -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
