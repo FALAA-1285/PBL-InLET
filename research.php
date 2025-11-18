@@ -109,24 +109,25 @@ $progress_list = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Research - Innovation in Language & Educational Technology</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css"> 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
     <?php include 'includes/header.php'; ?>
     
-    <section class="hero research-hero-page" id="research-top">
-        <div class="hero-content">
-            <h1>Our Global Research Initiatives</h1>
-            <p>Pioneering advancements in Language and Educational Technology to shape the future of learning.</p>
-            <div class="cta-buttons">
-                <a href="#focus-areas" class="btn btn-primary">View Focus Areas</a>
-            </div>
+<head>
+    <meta charset="UTF-8">
+    <title>Research - Information & Learning Engineering Technology</title>
+
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style-home.css">
+    <link rel="stylesheet" href="css/style-header.css">
+    <link rel="stylesheet" href="css/style-footer.css">
+</head>
+<body>
+
+    <section class="hero d-flex align-items-center" id="home">
+        <div class="container text-center text-white">
+            <h1 class="display-4 fw-bold">Research - Information And Learning Engineering Technology</h1>
+            <p class="lead mt-3">ioneering advancements in Language and Educational Technology to shape the future of learning</p>
         </div>
     </section>
 

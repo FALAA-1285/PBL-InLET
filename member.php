@@ -38,71 +38,24 @@ function getInitials($name) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InLET - Our Research Members & Profiles</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css"> 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        .team-avatar-photo {
-            position: relative;
-        }
-        /* Fallback jika foto gagal dimuat */
-        .team-avatar-photo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-        .team-avatar-photo .avatar-fallback {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: white;
-            font-weight: 700;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-        }
-        .team-avatar-photo.failed .avatar-fallback {
-            display: flex;
-        }
-        .team-avatar-photo.failed {
-            background-image: none !important;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-        }
-    </style>
-    <script>
-        // Check if images failed to load
-        document.addEventListener('DOMContentLoaded', function() {
-            const avatars = document.querySelectorAll('.team-avatar-photo');
-            avatars.forEach(function(avatar) {
-                const fotoUrl = avatar.getAttribute('data-foto');
-                if (fotoUrl) {
-                    const img = new Image();
-                    img.onerror = function() {
-                        avatar.classList.add('failed');
-                    };
-                    img.src = fotoUrl;
-                }
-            });
-        });
-    </script>
-</head>
-<body>
     <?php include 'includes/header.php'; ?>
+
+    <head>
+    <meta charset="UTF-8">
+    <title>Research - Information & Learning Engineering Technology</title>
+
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style-home.css">
+    <link rel="stylesheet" href="css/style-header.css">
+    <link rel="stylesheet" href="css/style-footer.css">
+</head>
     
-    <section class="hero" style="margin-top: 80px; padding: 6rem 2rem;">
-        <div class="hero-content">
-            <h1>Our Research Members</h1>
-            <p>Meet the <b>Expert Researchers</b> and innovators driving.</p>
+    <section class="hero d-flex align-items-center" id="home">
+        <div class="container text-center text-white">
+            <h1 class="display-4 fw-bold">Member - Information And Learning Engineering Technology</h1>
+            <p class="lead mt-3">Meet the Expert Researchers and innovators driving.</p>
         </div>
     </section>
 
