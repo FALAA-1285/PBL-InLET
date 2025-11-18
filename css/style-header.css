@@ -1,4 +1,7 @@
-/* ===== Navbar Modern Style ===== */
+body {
+    padding-top: 80px; /*fixed-top*/
+}
+
 .navbar {
     transition: all 0.3s ease-in-out;
     font-family: "Poppins", sans-serif;
