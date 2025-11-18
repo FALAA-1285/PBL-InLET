@@ -65,11 +65,11 @@ $current_gallery = array_slice($gallery, $gallery_start, $gallery_limit);
     <!-- HERO -->
     <section class="hero d-flex align-items-center" id="home">
         <div class="container text-center text-white">
-            <h1>News - Information And Learning Engineering Technology</h1>
+            <h1 class="display-4 fw-bold">News - Information And Learning Engineering Technology</h1>
             <p>Stay updated with our newest publications, activities, and breakthroughs.</p>
         </div>
     </section>
-
+    
     <section id="news" class="research" style="padding: 6rem 0;">
         <div class="container text-center">
             <div class="section-title">

@@ -72,7 +72,7 @@ $current_gallery = array_slice($gallery, $gallery_start, $gallery_limit);
     <!-- HERO -->
     <section class="hero d-flex align-items-center" id="home">
         <div class="container text-center text-white">
-            <h1 class="display-4 fw-bold">InLET - Information & Learning Engineering Technology</h1>
+            <h1 class="display-4 fw-bold">InLET - Information And Learning Engineering Technology</h1>
             <p class="lead mt-3">Transforming the future of language learning through advanced engineering.</p>
         </div>
     </section>
