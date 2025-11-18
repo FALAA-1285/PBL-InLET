@@ -4,15 +4,6 @@ require_once 'config/database.php';
 $conn = getDBConnection();
 
 
-// Sample gallery data (replace with actual data source as needed)
-$gallery = [];
-for ($i = 1; $i <= 20; $i++) {
-    $w = rand(300, 450);
-    $h = rand(250, 500);
-    $gallery[] = [
-        "img" => "https://picsum.photos/$w/$h?random=$i"
-    ];
-}
 
 // Pagination setup
 $items_per_page = 9; // 9 items per page for 3 columns grid
@@ -30,6 +21,16 @@ $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $news_list = $stmt->fetchAll();
+
+// Sample gallery data (replace with actual data source as needed)
+$gallery = [];
+for ($i = 1; $i <= 20; $i++) {
+    $w = rand(300, 450);
+    $h = rand(250, 500);
+    $gallery[] = [
+        "img" => "https://picsum.photos/$w/$h?random=$i"
+    ];
+}
 
 // Pagination GALERI
 $gallery_limit = 12;
