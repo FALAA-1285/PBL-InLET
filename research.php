@@ -348,7 +348,7 @@ $progress_list = $stmt->fetchAll();
         <div class="research-container">
             <div class="section-title" style="margin-bottom: 2rem;">
                 <h2 style="color: var(--primary-dark);">Join Our Mission in Innovation</h2>
-                <p>Tertarik untuk berkolaborasi, menjadi mahasiswa riset, atau mendapatkan informasi lebih lanjut?</p>
+                <p>Interested in collaborating, becoming a research student, or getting more information?</p>
             </div>
             <a href="index.php#contact" class="btn btn-secondary" style="background: var(--primary); border: 2px solid var(--primary); color: white;">Contact Our Team</a>
         </div>

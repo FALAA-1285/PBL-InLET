@@ -41,6 +41,7 @@ function getInitials($name) {
 <?php include 'includes/header.php'; ?>
 
 <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Research - Information & Learning Engineering Technology</title>
@@ -191,6 +192,6 @@ function getInitials($name) {
         </div>
     </section>
 
-    <?php include 'includes/footer.php'; ?>
+<?php include 'includes/footer.php'; ?>
 </body>
 </html>
