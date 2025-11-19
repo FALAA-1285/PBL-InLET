@@ -1,4 +1,23 @@
-body { font-family: 'Poppins', sans-serif; }
+/* Menyembunyikan scrollbar vertikal */
+html {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+html::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    overflow-y: scroll; /* Memastikan scroll tetap berfungsi */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
 
 .hero {
     height: 50vh; /* ukuran ideal */
