@@ -1,3 +1,23 @@
+/* Menyembunyikan scrollbar vertikal */
+html {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+html::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+body {
+    overflow-y: scroll; /* Tetap bisa scroll */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
 .footer {
     width: 100%;
     font-family: 'Poppins', sans-serif;
