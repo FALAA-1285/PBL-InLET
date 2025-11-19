@@ -146,3 +146,57 @@ section#gallery .section-title { margin-bottom: 1.5rem; }
 .teamSwiper .swiper-slide {
     width: 300px;
 }
+
+.card-surface {
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 15px 45px rgba(15, 23, 42, 0.08);
+}
+
+.research {
+    background: var(--light, #f8fafc);
+    padding: 6rem 2rem;
+}
+
+.research-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.research-card {
+    padding: 2rem;
+    border-left: 5px solid var(--primary, #2563eb);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: 100%;
+}
+
+.research-card h4 {
+    font-size: 1.35rem;
+    color: var(--primary, #2563eb);
+    margin-bottom: 0.25rem;
+}
+
+.research-card p {
+    color: var(--gray, #64748b);
+    margin-bottom: 0;
+}
+
+.research-card .research-meta {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary-dark, #1e40af);
+}
+
+.research-card .research-video {
+    margin-top: 0.5rem;
+}
+
+.research-empty {
+    border: 2px dashed rgba(37, 99, 235, 0.25);
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    color: var(--gray, #64748b);
+}

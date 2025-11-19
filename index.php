@@ -13,9 +13,21 @@ for ($i = 1; $i <= 25; $i++) {
 }
 
 $team = [
-    ["nama" => "Dr. Andika Putra", "jabatan" => "Lead Research Engineer"],
-    ["nama" => "Siti Rahma", "jabatan" => "AI Specialist"],
-    ["nama" => "Bima Pratama", "jabatan" => "Software Architect"],
+    [
+        "nama" => "Dr. Andika Putra",
+        "jabatan" => "Lead Research Engineer",
+        "deskripsi" => "Memimpin roadmap riset strategis dan kolaborasi lintas disiplin."
+    ],
+    [
+        "nama" => "Siti Rahma",
+        "jabatan" => "AI Specialist",
+        "deskripsi" => "Mengembangkan model AI untuk solusi pembelajaran adaptif."
+    ],
+    [
+        "nama" => "Bima Pratama",
+        "jabatan" => "Software Architect",
+        "deskripsi" => "Merancang arsitektur platform pembelajaran berperforma tinggi."
+    ],
 ];
 
 $partners = [
@@ -67,10 +79,31 @@ $total_pages = ceil($total_items / $research_limit);
 
 $current_riset = array_slice($riset, $rstart, $research_limit);
 
-// For initial server-side gallery render, display first page (page=1)
-$gallery_init_limit = 12;
-$gallery_init_page = 1;
-$gallery_init = array_slice($all_gallery, 0, $gallery_init_limit);
+// Pagination GALERI
+$gallery_limit = 12;
+$gallery_page = isset($_GET["gpage"]) ? (int) $_GET["gpage"] : 1;
+$gallery_start = ($gallery_page - 1) * $gallery_limit;
+
+$gallery_total_items = count($gallery);
+$gallery_total_pages = ceil($gallery_total_items / $gallery_limit);
+
+$current_gallery = array_slice($gallery, $gallery_start, $gallery_limit);
+
+function getInitials($name) {
+    $words = preg_split('/\s+/', trim($name));
+    $initials = '';
+    foreach ($words as $word) {
+        if ($word === '') {
+            continue;
+        }
+        $initials .= mb_substr($word, 0, 1);
+        if (mb_strlen($initials) >= 2) {
+            break;
+        }
+    }
+    return strtoupper($initials);
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -81,11 +114,10 @@ $gallery_init = array_slice($all_gallery, 0, $gallery_init_limit);
     <!-- CSS libs -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style-home.css"> <!-- optional -->
-    <link rel="stylesheet" href="css/style-header.css"> <!-- optional -->
-    <link rel="stylesheet" href="css/style-footer.css"> <!-- optional -->
-
-    <!-- Inline CSS needed for masonry + loader + animations -->
+    <link rel="stylesheet" href="css/style-home.css">
+    <link rel="stylesheet" href="css/style-header.css">
+    <link rel="stylesheet" href="css/style-footer.css">
+    <link rel="stylesheet" href="css/style-member.css">
 </head>
 <body>
     <!-- HEADER -->
@@ -167,13 +199,19 @@ $gallery_init = array_slice($all_gallery, 0, $gallery_init_limit);
                 <div class="swiper-wrapper">
                     <?php foreach ($team as $t): ?>
                         <div class="swiper-slide">
-                            <div class="p-4 bg-white shadow-sm rounded text-center">
-                                <div class="rounded-circle bg-primary text-white d-inline-flex justify-content-center align-items-center mb-3"
-                                    style="width:80px;height:80px;font-size:28px;">
-                                    <?= htmlspecialchars(substr($t["nama"], 0, 1)) ?>
+                            <div class="member-card card-surface h-100 text-center">
+                                <div class="member-img-wrapper">
+                                    <div class="member-initials">
+                                        <?= htmlspecialchars(getInitials($t["nama"])) ?>
+                                    </div>
                                 </div>
-                                <h5 class="fw-bold"><?= htmlspecialchars($t["nama"]) ?></h5>
-                                <p class="text-primary"><?= htmlspecialchars($t["jabatan"]) ?></p>
+                                <div class="member-info">
+                                    <h3 class="member-name"><?= htmlspecialchars($t["nama"]) ?></h3>
+                                    <div class="member-role"><?= htmlspecialchars($t["jabatan"]) ?></div>
+                                    <?php if (!empty($t["deskripsi"])): ?>
+                                        <p class="member-desc"><?= htmlspecialchars($t["deskripsi"]) ?></p>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
