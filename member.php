@@ -40,7 +40,7 @@ function getInitials($name) {
 <html lang="en">
     <?php include 'includes/header.php'; ?>
 
-    <head>
+<head>
     <meta charset="UTF-8">
     <title>Research - Information & Learning Engineering Technology</title>
 
@@ -52,130 +52,192 @@ function getInitials($name) {
     <link rel="stylesheet" href="css/style-footer.css">
 </head>
     
-    <section class="hero d-flex align-items-center" id="home">
-        <div class="container text-center text-white">
-            <h1 class="display-4 fw-bold">Member - Information And Learning Engineering Technology</h1>
-            <p class="lead mt-3">Meet the Expert Researchers and innovators driving.</p>
-        </div>
-    </section>
+<section class="hero d-flex align-items-center" id="home">
+    <div class="container text-center text-white">
+        <h1 class="display-4 fw-bold">Member - Information And Learning Engineering Technology</h1>
+        <p class="lead mt-3">Meet the expert researchers and innovators driving our progress.</p>
+    </div>
+</section>
 
-    <section class="team" id="profiles" style="padding: 6rem 2rem; background: var(--light);">
-        <div class="section-title">
-            <h2>Meet the Experts</h2>
-            <p>A complete list of our core team and collaborators.</p>
-        </div>
-        
-        <div class="team-grid">
-            <?php if (empty($members)): ?>
-                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--gray);">
-                    <p>Belum ada member yang terdaftar.</p>
-                </div>
-            <?php else: ?>
-                <?php foreach ($members as $member): ?>
-                    <div class="team-card">
-                        <?php if (!empty($member['foto'])): ?>
-                            <?php 
-                            // Check if foto is a URL (starts with http) or a local path
-                            $foto_url = $member['foto'];
-                            if (!preg_match('/^https?:\/\//', $foto_url)) {
-                                // Local path - ensure it starts with uploads/
-                                if (strpos($foto_url, 'uploads/') !== 0) {
-                                    $foto_url = 'uploads/' . ltrim($foto_url, '/');
-                                }
+<section class="team" id="profiles" style="padding: 6rem 2rem; background: var(--light);">
+    <div class="section-title">
+        <h2>Meet the Experts</h2>
+        <p>A complete list of our core team and collaborators.</p>
+    </div>
+    
+    <div class="team-grid">
+        <?php if (empty($members)): ?>
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--gray);">
+                <p>No members have been registered.</p>
+            </div>
+        <?php else: ?>
+            <?php foreach ($members as $member): ?>
+                <div class="team-card">
+                    <?php if (!empty($member['foto'])): ?>
+                        <?php 
+                        $foto_url = $member['foto'];
+
+                        if (!preg_match('/^https?:\/\//', $foto_url)) {
+                            if (strpos($foto_url, 'uploads/') !== 0) {
+                                $foto_url = 'uploads/' . ltrim($foto_url, '/');
                             }
-                            ?>
-                            <div class="team-avatar team-avatar-photo" data-foto="<?php echo htmlspecialchars($foto_url); ?>" data-initials="<?php echo htmlspecialchars(getInitials($member['nama'])); ?>" style="background-image: url('<?php echo htmlspecialchars($foto_url); ?>'); background-size: cover; background-position: center; border: 3px solid var(--primary); position: relative;">
-                                <span class="avatar-fallback" style="display: none;"><?php echo getInitials($member['nama']); ?></span>
-                            </div>
-                        <?php else: ?>
-                            <div class="team-avatar"><?php echo getInitials($member['nama']); ?></div>
-                        <?php endif; ?>
-                        <h4><?php echo htmlspecialchars($member['nama']); ?></h4>
-                        <?php if ($member['jabatan']): ?>
-                            <p class="role-title" style="font-weight: 600; color: var(--primary-dark); margin-bottom: 0.5rem;"><?php echo htmlspecialchars($member['jabatan']); ?></p>
-                        <?php endif; ?>
-                        <?php if ($member['deskripsi']): ?>
-                            <p style="color: var(--gray); font-size: 0.95em;"><?php echo htmlspecialchars(substr($member['deskripsi'], 0, 100)) . '...'; ?></p>
-                        <?php endif; ?>
-                        <?php if ($member['email']): ?>
-                            <p style="color: var(--gray); font-size: 0.9em; margin-top: 0.5rem;"><?php echo htmlspecialchars($member['email']); ?></p>
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-        
-        <!-- Pagination -->
-        <?php if ($total_pages > 1): ?>
-            <nav aria-label="Members pagination" style="margin-top: 3rem;">
-                <ul class="pagination justify-content-center" style="gap: 0.5rem; list-style: none; display: flex; flex-wrap: wrap;">
-                    <?php if ($current_page > 1): ?>
-                        <li class="page-item">
-                            <a class="page-link" href="?page=<?php echo $current_page - 1; ?>" aria-label="Previous" style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; text-decoration: none; color: var(--dark); transition: all 0.3s;">
-                                <span aria-hidden="true">&laquo; Previous</span>
-                            </a>
-                        </li>
+                        }
+                        ?>
+                        <div class="team-avatar team-avatar-photo" 
+                            data-foto="<?php echo htmlspecialchars($foto_url); ?>" 
+                            data-initials="<?php echo htmlspecialchars(getInitials($member['nama'])); ?>" 
+                            style="background-image: url('<?php echo htmlspecialchars($foto_url); ?>'); 
+                                   background-size: cover; 
+                                   background-position: center; 
+                                   border: 3px solid var(--primary); 
+                                   position: relative;">
+                            <span class="avatar-fallback" style="display: none;">
+                                <?php echo getInitials($member['nama']); ?>
+                            </span>
+                        </div>
                     <?php else: ?>
-                        <li class="page-item disabled">
-                            <span class="page-link" aria-hidden="true" style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; color: #999; opacity: 0.5; cursor: not-allowed;">&laquo; Previous</span>
-                        </li>
+                        <div class="team-avatar"><?php echo getInitials($member['nama']); ?></div>
                     <?php endif; ?>
-                    
-                    <?php
-                    $start_page = max(1, $current_page - 2);
-                    $end_page = min($total_pages, $current_page + 2);
-                    
-                    if ($start_page > 1): ?>
-                        <li class="page-item">
-                            <a class="page-link" href="?page=1" style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; text-decoration: none; color: var(--dark); transition: all 0.3s;">1</a>
-                        </li>
-                        <?php if ($start_page > 2): ?>
-                            <li class="page-item disabled">
-                                <span class="page-link" style="padding: 0.5rem 1rem; border: none; color: var(--gray);">...</span>
-                            </li>
-                        <?php endif; ?>
-                    <?php endif; ?>
-                    
-                    <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
-                        <li class="page-item <?php echo ($i == $current_page) ? 'active' : ''; ?>">
-                            <?php if ($i == $current_page): ?>
-                                <span class="page-link" style="padding: 0.5rem 1rem; border: 1px solid var(--primary); border-radius: 8px; background: var(--primary); color: white; font-weight: 600;"><?php echo $i; ?></span>
-                            <?php else: ?>
-                                <a class="page-link" href="?page=<?php echo $i; ?>" style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; text-decoration: none; color: var(--dark); transition: all 0.3s;"><?php echo $i; ?></a>
-                            <?php endif; ?>
-                        </li>
-                    <?php endfor; ?>
-                    
-                    <?php if ($end_page < $total_pages): ?>
-                        <?php if ($end_page < $total_pages - 1): ?>
-                            <li class="page-item disabled">
-                                <span class="page-link" style="padding: 0.5rem 1rem; border: none; color: var(--gray);">...</span>
-                            </li>
-                        <?php endif; ?>
-                        <li class="page-item">
-                            <a class="page-link" href="?page=<?php echo $total_pages; ?>" style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; text-decoration: none; color: var(--dark); transition: all 0.3s;"><?php echo $total_pages; ?></a>
-                        </li>
-                    <?php endif; ?>
-                    
-                    <?php if ($current_page < $total_pages): ?>
-                        <li class="page-item">
-                            <a class="page-link" href="?page=<?php echo $current_page + 1; ?>" aria-label="Next" style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; text-decoration: none; color: var(--dark); transition: all 0.3s;">
-                                <span aria-hidden="true">Next &raquo;</span>
-                            </a>
-                        </li>
-                    <?php else: ?>
-                        <li class="page-item disabled">
-                            <span class="page-link" aria-hidden="true" style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; color: #999; opacity: 0.5; cursor: not-allowed;">Next &raquo;</span>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-                <div class="text-center mt-3" style="color: var(--gray);">
-                    Menampilkan <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> dari <?php echo $total_items; ?> member
-                </div>
-            </nav>
-        <?php endif; ?>
-    </section>
 
-    <?php include 'includes/footer.php'; ?>
+                    <h4><?php echo htmlspecialchars($member['nama']); ?></h4>
+
+                    <?php if ($member['jabatan']): ?>
+                        <p class="role-title" 
+                           style="font-weight: 600; color: var(--primary-dark); margin-bottom: 0.5rem;">
+                           <?php echo htmlspecialchars($member['jabatan']); ?>
+                        </p>
+                    <?php endif; ?>
+
+                    <?php if ($member['deskripsi']): ?>
+                        <p style="color: var(--gray); font-size: 0.95em;">
+                            <?php echo htmlspecialchars(substr($member['deskripsi'], 0, 100)) . '...'; ?>
+                        </p>
+                    <?php endif; ?>
+
+                    <?php if ($member['email']): ?>
+                        <p style="color: var(--gray); font-size: 0.9em; margin-top: 0.5rem;">
+                            <?php echo htmlspecialchars($member['email']); ?>
+                        </p>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+    
+    <!-- Pagination -->
+    <?php if ($total_pages > 1): ?>
+        <nav aria-label="Members pagination" style="margin-top: 3rem;">
+            <ul class="pagination justify-content-center" 
+                style="gap: 0.5rem; list-style: none; display: flex; flex-wrap: wrap;">
+
+                <!-- Previous button -->
+                <?php if ($current_page > 1): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<?php echo $current_page - 1; ?>" aria-label="Previous"
+                           style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; 
+                                  border-radius: 8px; text-decoration: none; 
+                                  color: var(--dark); transition: all 0.3s;">
+                            <span aria-hidden="true">&laquo; Previous</span>
+                        </a>
+                    </li>
+                <?php else: ?>
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-hidden="true"
+                              style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; 
+                                     border-radius: 8px; color: #999; opacity: 0.5;">
+                            &laquo; Previous
+                        </span>
+                    </li>
+                <?php endif; ?>
+                
+                <?php
+                $start_page = max(1, $current_page - 2);
+                $end_page = min($total_pages, $current_page + 2);
+                
+                if ($start_page > 1): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1"
+                           style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; 
+                                  border-radius: 8px; text-decoration: none; color: var(--dark);">
+                            1
+                        </a>
+                    </li>
+                    <?php if ($start_page > 2): ?>
+                        <li class="page-item disabled">
+                            <span class="page-link" style="padding: 0.5rem 1rem; border: none; color: var(--gray);">
+                                ...
+                            </span>
+                        </li>
+                    <?php endif; ?>
+                <?php endif; ?>
+                
+                <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                    <li class="page-item <?php echo ($i == $current_page) ? 'active' : ''; ?>">
+                        <?php if ($i == $current_page): ?>
+                            <span class="page-link"
+                                style="padding: 0.5rem 1rem; border: 1px solid var(--primary); 
+                                       border-radius: 8px; background: var(--primary); 
+                                       color: white; font-weight: 600;">
+                                <?php echo $i; ?>
+                            </span>
+                        <?php else: ?>
+                            <a class="page-link" href="?page=<?php echo $i; ?>"
+                               style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; 
+                                      border-radius: 8px; text-decoration: none; 
+                                      color: var(--dark);">
+                                <?php echo $i; ?>
+                            </a>
+                        <?php endif; ?>
+                    </li>
+                <?php endfor; ?>
+                
+                <?php if ($end_page < $total_pages): ?>
+                    <?php if ($end_page < $total_pages - 1): ?>
+                        <li class="page-item disabled">
+                            <span class="page-link" style="padding: 0.5rem 1rem; border: none; color: var(--gray);">
+                                ...
+                            </span>
+                        </li>
+                    <?php endif; ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<?php echo $total_pages; ?>"
+                           style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; 
+                                  border-radius: 8px; text-decoration: none; 
+                                  color: var(--dark);">
+                            <?php echo $total_pages; ?>
+                        </a>
+                    </li>
+                <?php endif; ?>
+                
+                <!-- Next button -->
+                <?php if ($current_page < $total_pages): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<?php echo $current_page + 1; ?>" aria-label="Next"
+                           style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; 
+                                  border-radius: 8px; text-decoration: none; 
+                                  color: var(--dark);">
+                            <span aria-hidden="true">Next &raquo;</span>
+                        </a>
+                    </li>
+                <?php else: ?>
+                    <li class="page-item disabled">
+                        <span class="page-link"
+                              style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; 
+                                     border-radius: 8px; color: #999; opacity: 0.5;">
+                            Next &raquo;
+                        </span>
+                    </li>
+                <?php endif; ?>
+            </ul>
+
+            <div class="text-center mt-3" style="color: var(--gray);">
+                Showing <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> 
+                of <?php echo $total_items; ?> members
+            </div>
+        </nav>
+    <?php endif; ?>
+</section>
+
+<?php include 'includes/footer.php'; ?>
 </body>
 </html>
