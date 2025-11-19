@@ -138,24 +138,28 @@ $progress_list = $stmt->fetchAll();
                 <p style="font-size: 1.1rem;">A deep dive into the six pillars of our innovation.</p>
             </div>
             
-            <div class="research-grid">
-                <?php if (empty($artikels)): ?>
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; color: var(--gray);">
-                        <p style="font-size: 1.2rem; margin-bottom: 1rem;">No research articles have been published yet.</p>
-                        <p style="font-size: 0.9rem;">Please log in as an admin to add articles through the CMS.</p>
-                    </div>
-                <?php else: ?>
+            <?php if (empty($artikels)): ?>
+                <div class="research-empty text-center">
+                    <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">Belum ada artikel penelitian yang dipublikasikan.</p>
+                    <p style="font-size: 0.95rem;">Silakan login sebagai admin untuk menambahkan artikel melalui CMS.</p>
+                </div>
+            <?php else: ?>
+                <div class="row g-4 justify-content-center">
                     <?php foreach ($artikels as $artikel): ?>
-                        <div class="research-item">
-                            <h4><?php echo htmlspecialchars($artikel['judul']); ?></h4>
-                            <?php if ($artikel['tahun']): ?>
-                                <p style="color: var(--primary); font-weight: 600; margin-bottom: 0.5rem;">Tahun: <?php echo $artikel['tahun']; ?></p>
-                            <?php endif; ?>
-                            <p><?php echo htmlspecialchars($artikel['konten']); ?></p>
+                        <div class="col-xl-4 col-md-6">
+                            <div class="card-surface research-card h-100">
+                                <div>
+                                    <h4><?php echo htmlspecialchars($artikel['judul']); ?></h4>
+                                    <?php if ($artikel['tahun']): ?>
+                                        <div class="research-meta">Tahun: <?php echo $artikel['tahun']; ?></div>
+                                    <?php endif; ?>
+                                </div>
+                                <p><?php echo htmlspecialchars($artikel['konten']); ?></p>
+                            </div>
                         </div>
                     <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
+                </div>
+            <?php endif; ?>
             
             <!-- Pagination for Articles -->
             <?php if ($total_pages_artikel > 1): ?>
@@ -232,37 +236,41 @@ $progress_list = $stmt->fetchAll();
                 <h2>Research Progress</h2>
                 <p>Latest updates on our research projects.</p>
             </div>
-            <div class="research-grid">
+            <div class="row g-4 justify-content-center">
                 <?php foreach ($progress_list as $progress): ?>
-                    <div class="research-item">
-                        <h4><?php echo htmlspecialchars($progress['judul']); ?></h4>
-                        <?php if ($progress['tahun']): ?>
-                            <p style="color: var(--primary); font-weight: 600; margin-bottom: 0.5rem;">Tahun: <?php echo $progress['tahun']; ?></p>
-                        <?php endif; ?>
-                        <?php if ($progress['deskripsi']): ?>
-                            <p><?php echo htmlspecialchars($progress['deskripsi']); ?></p>
-                        <?php endif; ?>
-                        <?php $embedUrl = getYoutubeEmbedUrl($progress['video_url'] ?? ''); ?>
-                        <?php if ($embedUrl): ?>
-                            <div class="research-video" style="margin-top: 1.5rem;">
-                                <div class="video-wrapper">
-                                    <iframe src="<?php echo htmlspecialchars($embedUrl); ?>" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                    <div class="col-xl-4 col-md-6">
+                        <div class="card-surface research-card h-100">
+                            <div>
+                                <h4><?php echo htmlspecialchars($progress['judul']); ?></h4>
+                                <?php if ($progress['tahun']): ?>
+                                    <div class="research-meta">Tahun: <?php echo $progress['tahun']; ?></div>
+                                <?php endif; ?>
+                            </div>
+                            <?php if ($progress['deskripsi']): ?>
+                                <p><?php echo htmlspecialchars($progress['deskripsi']); ?></p>
+                            <?php endif; ?>
+                            <?php $embedUrl = getYoutubeEmbedUrl($progress['video_url'] ?? ''); ?>
+                            <?php if ($embedUrl): ?>
+                                <div class="research-video">
+                                    <div class="video-wrapper">
+                                        <iframe src="<?php echo htmlspecialchars($embedUrl); ?>" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+                                    </div>
                                 </div>
-                            </div>
-                        <?php endif; ?>
-                        <?php if ($progress['artikel_judul'] || $progress['mahasiswa_nama'] || $progress['member_nama']): ?>
-                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.9rem; color: var(--gray);">
-                                <?php if ($progress['artikel_judul']): ?>
-                                    <p><strong>Artikel:</strong> <?php echo htmlspecialchars($progress['artikel_judul']); ?></p>
-                                <?php endif; ?>
-                                <?php if ($progress['mahasiswa_nama']): ?>
-                                    <p><strong>Mahasiswa:</strong> <?php echo htmlspecialchars($progress['mahasiswa_nama']); ?></p>
-                                <?php endif; ?>
-                                <?php if ($progress['member_nama']): ?>
-                                    <p><strong>Member:</strong> <?php echo htmlspecialchars($progress['member_nama']); ?></p>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
+                            <?php endif; ?>
+                            <?php if ($progress['artikel_judul'] || $progress['mahasiswa_nama'] || $progress['member_nama']): ?>
+                                <div style="margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.9rem; color: var(--gray);">
+                                    <?php if ($progress['artikel_judul']): ?>
+                                        <p><strong>Artikel:</strong> <?php echo htmlspecialchars($progress['artikel_judul']); ?></p>
+                                    <?php endif; ?>
+                                    <?php if ($progress['mahasiswa_nama']): ?>
+                                        <p><strong>Mahasiswa:</strong> <?php echo htmlspecialchars($progress['mahasiswa_nama']); ?></p>
+                                    <?php endif; ?>
+                                    <?php if ($progress['member_nama']): ?>
+                                        <p><strong>Member:</strong> <?php echo htmlspecialchars($progress['member_nama']); ?></p>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             </div>
