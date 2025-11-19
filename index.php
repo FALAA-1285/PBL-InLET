@@ -84,10 +84,14 @@ $gallery_limit = 12;
 $gallery_page = isset($_GET["gpage"]) ? (int) $_GET["gpage"] : 1;
 $gallery_start = ($gallery_page - 1) * $gallery_limit;
 
-$gallery_total_items = count($gallery);
+// use $all_gallery (the real dataset)
+$gallery_total_items = count($all_gallery);
 $gallery_total_pages = ceil($gallery_total_items / $gallery_limit);
 
-$current_gallery = array_slice($gallery, $gallery_start, $gallery_limit);
+$current_gallery = array_slice($all_gallery, $gallery_start, $gallery_limit);
+
+// initial server-side items for page 1 (used in the HTML render)
+$gallery_init = array_slice($all_gallery, 0, $gallery_limit);
 
 function getInitials($name) {
     $words = preg_split('/\s+/', trim($name));
