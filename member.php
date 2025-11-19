@@ -38,25 +38,21 @@ function getInitials($name) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php include 'includes/header.php'; ?>
-
-<head>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Research - Information & Learning Engineering Technology</title>
+    <title>Our Experts - Information & Learning Engineering Technology</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <link rel="stylesheet" href="css/style-home.css">
     <link rel="stylesheet" href="css/style-header.css">
     <link rel="stylesheet" href="css/style-footer.css">
-
-    <link rel="stylesheet" href="css/style-member.css"> 
+    <link rel="stylesheet" href="css/style-member.css">
 </head>
 
 <body>
+    <?php include 'includes/header.php'; ?>
 
     <section class="hero d-flex align-items-center" id="home">
         <div class="container text-center text-white">
@@ -191,7 +187,8 @@ function getInitials($name) {
             <?php endif; ?>
         </div>
     </section>
+    <?php include 'includes/footer.php'; ?>
 
-<?php include 'includes/footer.php'; ?>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

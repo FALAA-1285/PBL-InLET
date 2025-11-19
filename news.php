@@ -20,25 +20,30 @@ $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $news_list = $stmt->fetchAll();
 
-// Sample gallery data (replace with actual data source as needed)
-$gallery = [];
-for ($i = 1; $i <= 20; $i++) {
-    $w = rand(300, 450);
-    $h = rand(250, 500);
-    $gallery[] = [
-        "img" => "https://picsum.photos/$w/$h?random=$i"
+// Gallery dataset (reusable dummy images)
+$all_gallery = [];
+for ($i = 1; $i <= 80; $i++) {
+    $w = rand(320, 460);
+    $h = rand(240, 500);
+    $all_gallery[] = [
+        "img" => "https://picsum.photos/seed/news{$i}/{$w}/{$h}"
     ];
 }
 
-// Pagination GALLERY
+// AJAX endpoint to load more gallery items
+if (isset($_GET['action']) && $_GET['action'] === 'load_gallery') {
+    $limit = 12;
+    $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+    $start = ($page - 1) * $limit;
+    $slice = array_slice($all_gallery, $start, $limit);
+
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(array_values($slice));
+    exit;
+}
+
 $gallery_limit = 12;
-$gallery_page = isset($_GET["gpage"]) ? (int) $_GET["gpage"] : 1;
-$gallery_start = ($gallery_page - 1) * $gallery_limit;
-
-$gallery_total_items = count($gallery);
-$gallery_total_pages = ceil($gallery_total_items / $gallery_limit);
-
-$current_gallery = array_slice($gallery, $gallery_start, $gallery_limit);
+$gallery_init = array_slice($all_gallery, 0, $gallery_limit);
 
 ?>
 <!DOCTYPE html>
@@ -184,7 +189,7 @@ $current_gallery = array_slice($gallery, $gallery_start, $gallery_limit);
         </div>
     </section>
 
-    <!-- GALLERY MASONRY -->
+    <!-- GALLERY -->
     <section class="py-5" id="gallery">
         <div class="container">
             <div class="section-title">
@@ -192,42 +197,201 @@ $current_gallery = array_slice($gallery, $gallery_start, $gallery_limit);
                 <p>Inspiration and documentation of InLET activities</p>
             </div>
 
-            <div class="masonry">
-                <?php foreach ($current_gallery as $g): ?>
-                    <div class="masonry-item">
-                        <img src="<?= $g["img"] ?>" alt="gallery image">
+            <div id="pinterest-grid" class="pinterest-grid">
+                <?php foreach ($gallery_init as $g): ?>
+                    <div class="pin-item show">
+                        <img src="<?= htmlspecialchars($g['img']) ?>" alt="gallery image"
+                             loading="lazy"
+                             onerror="handleImageError(this, '<?= htmlspecialchars($g['img']) ?>');">
                     </div>
                 <?php endforeach; ?>
             </div>
+
+            <div id="loader" aria-hidden="true"></div>
         </div>
     </section>
 
-    <!-- PAGINATION GALLERY -->
-    <nav class="mt-4">
-        <ul class="pagination justify-content-center">
-
-            <?php if ($gallery_page > 1): ?>
-                <li class="page-item">
-                    <a class="page-link" href="?gpage=<?= $gallery_page - 1 ?>#gallery">Prev</a>
-                </li>
-            <?php endif; ?>
-
-            <?php for ($i = 1; $i <= $gallery_total_pages; $i++): ?>
-                <li class="page-item <?= ($i == $gallery_page) ? 'active' : '' ?>">
-                    <a class="page-link" href="?gpage=<?= $i ?>#gallery"><?= $i ?></a>
-                </li>
-            <?php endfor; ?>
-
-            <?php if ($gallery_page < $gallery_total_pages): ?>
-                <li class="page-item">
-                    <a class="page-link" href="?gpage=<?= $gallery_page + 1 ?>#gallery">Next</a>
-                </li>
-            <?php endif; ?>
-
-        </ul>
-    </nav>
-
     <?php include 'includes/footer.php'; ?>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    function handleImageError(img, originalSrc) {
+        let retries = parseInt(img.getAttribute('data-retries') || '0', 10);
+        if (retries < 2) {
+            img.setAttribute('data-retries', (retries + 1).toString());
+            setTimeout(() => {
+                img.src = originalSrc + (originalSrc.includes('?') ? '&' : '?') + 'retry=' + Date.now();
+            }, 500);
+        } else {
+            img.onerror = null;
+            img.src = 'https://via.placeholder.com/400x300/cccccc/666666?text=Gallery+Image';
+        }
+    }
+    </script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const container = document.getElementById("pinterest-grid");
+        const loader = document.getElementById("loader");
+        let page = 2;
+        let isLoading = false;
+        let allLoaded = false;
+        const gap = 15;
+
+        const calcColumns = () => {
+            if (window.innerWidth < 576) return 1;
+            if (window.innerWidth < 768) return 2;
+            return 3;
+        };
+
+        function masonryLayout() {
+            const items = Array.from(container.querySelectorAll(".pin-item"));
+            const columns = calcColumns();
+
+            if (columns === 1) {
+                container.style.height = 'auto';
+                items.forEach(item => {
+                    item.style.position = '';
+                    item.style.transform = '';
+                    item.style.left = '';
+                    item.style.top = '';
+                });
+                return;
+            }
+
+            items.forEach(item => item.style.position = 'absolute');
+            const colHeights = new Array(columns).fill(0);
+
+            items.forEach(item => {
+                const minCol = colHeights.indexOf(Math.min(...colHeights));
+                const itemWidth = item.offsetWidth;
+                const x = minCol * (itemWidth + gap);
+                const y = colHeights[minCol];
+
+                item.style.transform = `translate(${x}px, ${y}px)`;
+                colHeights[minCol] += item.offsetHeight + gap;
+            });
+
+            container.style.height = Math.max(...colHeights) + "px";
+        }
+
+        function appendItems(itemsData) {
+            if (!itemsData || itemsData.length === 0) return;
+
+            itemsData.forEach(data => {
+                const item = document.createElement('div');
+                item.className = 'pin-item';
+                const image = new Image();
+                const originalSrc = data.img;
+                image.src = originalSrc;
+                image.alt = 'gallery image';
+                image.loading = 'lazy';
+                item.appendChild(image);
+                container.appendChild(item);
+
+                image.onload = () => {
+                    requestAnimationFrame(() => {
+                        item.classList.add('show');
+                        masonryLayout();
+                    });
+                };
+
+                let retryCount = 0;
+                image.onerror = () => {
+                    retryCount++;
+                    if (retryCount <= 3) {
+                        setTimeout(() => {
+                            const separator = originalSrc.includes('?') ? '&' : '?';
+                            image.src = originalSrc + separator + 'retry=' + Date.now() + '&attempt=' + retryCount;
+                        }, 250 * retryCount);
+                    } else {
+                        image.onerror = null;
+                        image.src = 'https://via.placeholder.com/400x300/cccccc/666666?text=Gallery+Image';
+                        image.onload = () => {
+                            requestAnimationFrame(() => {
+                                item.classList.add('show');
+                                masonryLayout();
+                            });
+                        };
+                    }
+                };
+
+                if (image.complete && image.naturalHeight !== 0) {
+                    image.onload();
+                }
+            });
+        }
+
+        function loadMore() {
+            if (isLoading || allLoaded) return;
+            isLoading = true;
+            loader.style.display = 'block';
+
+            fetch(location.pathname + '?action=load_gallery&page=' + page)
+                .then(res => res.json())
+                .then(data => {
+                    if (!Array.isArray(data) || data.length === 0) {
+                        allLoaded = true;
+                        loader.style.display = 'none';
+                        isLoading = false;
+                        return;
+                    }
+                    appendItems(data);
+                    page++;
+                    isLoading = false;
+                    loader.style.display = 'none';
+                })
+                .catch(() => {
+                    isLoading = false;
+                    loader.style.display = 'none';
+                });
+        }
+
+        function initialLayout() {
+            const imgs = container.querySelectorAll('img');
+            let loaded = 0;
+            if (imgs.length === 0) {
+                masonryLayout();
+                return;
+            }
+            imgs.forEach(img => {
+                if (img.complete) {
+                    loaded++;
+                } else {
+                    img.addEventListener('load', () => {
+                        loaded++;
+                        if (loaded === imgs.length) masonryLayout();
+                    });
+                    img.addEventListener('error', () => {
+                        loaded++;
+                        if (loaded === imgs.length) masonryLayout();
+                    });
+                }
+            });
+            if (loaded === imgs.length) masonryLayout();
+        }
+
+        initialLayout();
+
+        let scrollTimer = null;
+        window.addEventListener('scroll', () => {
+            if (scrollTimer) clearTimeout(scrollTimer);
+            scrollTimer = setTimeout(() => {
+                if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 200)) {
+                    loadMore();
+                }
+            }, 120);
+        });
+
+        let resizeTimer = null;
+        window.addEventListener('resize', () => {
+            if (resizeTimer) clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => masonryLayout(), 120);
+        });
+
+        const observer = new MutationObserver(() => masonryLayout());
+        observer.observe(container, { childList: true });
+    });
+    </script>
 </body>
 
 </html>
