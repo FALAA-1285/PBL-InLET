@@ -31,12 +31,12 @@ $team = [
 ];
 
 $partners = [
-    ["logo" => "https://picsum.photos/200/100"],
-    ["logo" => "https://picsum.photos/201/100"],
-    ["logo" => "https://picsum.photos/202/100"],
-    ["logo" => "https://picsum.photos/203/100"],
-    ["logo" => "https://picsum.photos/204/100"],
-    ["logo" => "https://picsum.photos/205/100"],
+    ["logo" => "https://picsum.photos/200/100?random=1"],
+    ["logo" => "https://picsum.photos/201/100?random=2"],
+    ["logo" => "https://picsum.photos/202/100?random=3"],
+    ["logo" => "https://picsum.photos/203/100?random=4"],
+    ["logo" => "https://picsum.photos/204/100?random=5"],
+    ["logo" => "https://picsum.photos/205/100?random=6"],
 ];
 
 // Full gallery dataset (dummy 100 images)
@@ -84,10 +84,13 @@ $gallery_limit = 12;
 $gallery_page = isset($_GET["gpage"]) ? (int) $_GET["gpage"] : 1;
 $gallery_start = ($gallery_page - 1) * $gallery_limit;
 
-$gallery_total_items = count($gallery);
+$gallery_total_items = count($all_gallery);
 $gallery_total_pages = ceil($gallery_total_items / $gallery_limit);
 
-$current_gallery = array_slice($gallery, $gallery_start, $gallery_limit);
+$current_gallery = array_slice($all_gallery, $gallery_start, $gallery_limit);
+
+// Initial gallery items for first page (used in template)
+$gallery_init = array_slice($all_gallery, 0, $gallery_limit);
 
 function getInitials($name) {
     $words = preg_split('/\s+/', trim($name));
@@ -236,7 +239,10 @@ function getInitials($name) {
             <div class="row justify-content-center g-4">
                 <?php foreach ($partners as $p): ?>
                     <div class="col-md-2 col-4 text-center">
-                        <img src="<?= htmlspecialchars($p["logo"]) ?>" class="partner-logo img-fluid rounded shadow-sm" alt="partner">
+                        <img src="<?= htmlspecialchars($p["logo"]) ?>" 
+                             class="partner-logo img-fluid rounded shadow-sm" 
+                             alt="partner"
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/200x100/cccccc/666666?text=Partner';">
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -255,7 +261,9 @@ function getInitials($name) {
                 <!-- initial server-side items (page 1) -->
                 <?php foreach ($gallery_init as $g): ?>
                     <div class="pin-item show">
-                        <img src="<?= htmlspecialchars($g['img']) ?>" alt="gallery">
+                        <img src="<?= htmlspecialchars($g['img']) ?>" 
+                             alt="gallery" 
+                             onerror="handleImageError(this, '<?= htmlspecialchars($g['img']) ?>');">
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -287,6 +295,25 @@ function getInitials($name) {
             992: { slidesPerView: 3 }
         }
     });
+    </script>
+
+    <!-- Image Error Handler (Global) -->
+    <script>
+    // Handle image error with retry - must be global for onerror attribute
+    function handleImageError(img, originalSrc) {
+        let retries = parseInt(img.getAttribute('data-retries') || '0');
+        if (retries < 2) {
+            img.setAttribute('data-retries', (retries + 1).toString());
+            // Retry with a small delay and cache buster
+            setTimeout(() => {
+                img.src = originalSrc + (originalSrc.includes('?') ? '&' : '?') + 'retry=' + Date.now();
+            }, 500);
+        } else {
+            // Final fallback after retries
+            img.onerror = null;
+            img.src = 'https://via.placeholder.com/400x300/cccccc/666666?text=Gallery+Image';
+        }
+    }
     </script>
 
     <!-- Masonry + Infinite Scroll (combined & fixed) -->
@@ -354,13 +381,18 @@ function getInitials($name) {
                 item.className = 'pin-item';
                 // create image element
                 const image = new Image();
-                image.src = imgObj.img;
+                const originalSrc = imgObj.img;
+                image.src = originalSrc;
                 image.alt = 'gallery image';
                 image.style.display = 'block';
+                image.loading = 'lazy';
+                let retryCount = 0;
+
+                // Always add item to DOM immediately, even if image is still loading
+                item.appendChild(image);
+                container.appendChild(item);
 
                 image.onload = function () {
-                    item.appendChild(image);
-                    container.appendChild(item);
                     // allow CSS transition to run & then layout
                     requestAnimationFrame(() => {
                         item.classList.add('show');
@@ -369,14 +401,30 @@ function getInitials($name) {
                 };
 
                 image.onerror = function () {
-                    // still append to avoid blocking flow
-                    item.textContent = 'Image failed to load';
-                    container.appendChild(item);
-                    requestAnimationFrame(() => {
-                        item.classList.add('show');
-                        masonryLayout();
-                    });
+                    retryCount++;
+                    if (retryCount <= 3) {
+                        // Retry loading the image with exponential backoff
+                        setTimeout(() => {
+                            const separator = originalSrc.includes('?') ? '&' : '?';
+                            image.src = originalSrc + separator + 'retry=' + Date.now() + '&attempt=' + retryCount;
+                        }, 300 * retryCount); // 300ms, 600ms, 900ms
+                    } else {
+                        // Final fallback after retries
+                        image.onerror = null;
+                        image.src = 'https://via.placeholder.com/400x300/cccccc/666666?text=Gallery+Image';
+                        image.onload = function() {
+                            requestAnimationFrame(() => {
+                                item.classList.add('show');
+                                masonryLayout();
+                            });
+                        };
+                    }
                 };
+
+                // If image already loaded (cached), trigger onload
+                if (image.complete && image.naturalHeight !== 0) {
+                    image.onload();
+                }
             });
         }
 
