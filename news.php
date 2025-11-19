@@ -3,8 +3,6 @@ require_once 'config/database.php';
 
 $conn = getDBConnection();
 
-
-
 // Pagination setup
 $items_per_page = 9; // 9 items per page for 3 columns grid
 $current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;

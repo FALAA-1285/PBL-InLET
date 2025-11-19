@@ -81,11 +81,12 @@ $current_gallery = array_slice($gallery, $gallery_start, $gallery_limit);
     <section class="py-5" id="riset">
         <div class="container">
             <div class="section-title">
-                <h2>Riset Kami</h2>
-                <p>Fokus penelitian InLET dalam pengembangan teknologi pembelajaran.</p>
+                <h2>Our Research</h2>
+                <p>InLET's research focuses on developing learning technology.</p>
             </div>
-            <p class="text-center">Kami mengembangkan teknologi pembelajaran berbasis AI, sistem adaptif, hingga solusi
-                digital modern.</p>
+            <p class="text-center">We develop AI-based learning technology, adaptive systems, and modern digital
+                solutions.</p>
+
         </div>
     </section>
 
@@ -93,8 +94,9 @@ $current_gallery = array_slice($gallery, $gallery_start, $gallery_limit);
     <section class="py-5 bg-light" id="bidang">
         <div class="container">
             <div class="section-title">
-                <h2>Bidang Riset</h2>
-                <p>Daftar bidang riset</p>
+                <h2>Research Fields</h2>
+                <p>List of research fields</p>
+
             </div>
 
             <div class="row g-4">
@@ -140,8 +142,8 @@ $current_gallery = array_slice($gallery, $gallery_start, $gallery_limit);
     <section class="py-5" id="team">
         <div class="container">
             <div class="section-title">
-                <h2>Tim Ahli</h2>
-                <p>Para pakar yang berada di belakang inovasi kami.</p>
+                <h2>Expert Team</h2>
+                <p>The experts behind our innovations.</p>
             </div>
 
             <!-- Swiper Slider -->
