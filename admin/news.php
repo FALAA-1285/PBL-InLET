@@ -112,8 +112,9 @@ $news_list = $stmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola News - CMS InLET</title>
-    <link rel="stylesheet" href="../css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
     <style>
         body {
             background: var(--light);
@@ -121,47 +122,28 @@ $news_list = $stmt->fetchAll();
         .admin-header {
             background: white;
             padding: 1.5rem 2rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
             margin-bottom: 2rem;
+            border-radius: 18px;
         }
         .admin-header-content {
-            max-width: 1200px;
-            margin: 0 auto;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
+            gap: 1rem;
         }
         .admin-header h1 {
-            color: var(--primary);
-            font-size: 1.5rem;
-        }
-        .admin-nav {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-        .admin-nav a {
             color: var(--dark);
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: all 0.3s;
+            font-size: 1.5rem;
+            margin-bottom: 0.35rem;
         }
-        .admin-nav a:hover {
-            background: var(--light);
-            color: var(--primary);
-        }
-        .admin-nav .btn-logout {
-            background: #ef4444;
-            color: white;
-        }
-        .admin-nav .btn-logout:hover {
-            background: #dc2626;
+        .admin-header p {
+            color: var(--gray);
         }
         .cms-content {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 2rem 4rem;
+            padding-bottom: 4rem;
         }
         .message {
             padding: 1rem;
@@ -391,21 +373,19 @@ $news_list = $stmt->fetchAll();
     </style>
 </head>
 <body>
-    <div class="admin-header">
-        <div class="admin-header-content">
-            <h1>Kelola News - CMS InLET</h1>
-            <div class="admin-nav">
-                <a href="dashboard.php">Dashboard</a>
-                <a href="research.php">Research</a>
-                <a href="member.php">Member</a>
-                <a href="news.php">News</a>
-                <a href="../index.php" target="_blank">View Site</a>
-                <a href="logout.php" class="btn-logout">Logout</a>
+    <?php $active_page = 'news'; include __DIR__ . '/partials/sidebar.php'; ?>
+    <main class="content">
+        <div class="content-inner">
+            <div class="admin-header">
+                <div class="admin-header-content">
+                    <div>
+                        <p>Kelola berita dan pengumuman terbaru</p>
+                        <h1>News CMS InLET</h1>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <div class="cms-content">
+            <div class="cms-content">
         <?php if ($message): ?>
             <div class="message <?php echo $message_type; ?>">
                 <?php echo htmlspecialchars($message); ?>
@@ -546,7 +526,9 @@ $news_list = $stmt->fetchAll();
                 </div>
             <?php endif; ?>
         </div>
+        </div>
     </div>
+    </main>
 
     <script>
         function editNews(news) {
