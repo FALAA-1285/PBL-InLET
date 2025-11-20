@@ -123,7 +123,6 @@ function getInitials($name)
     <link rel="stylesheet" href="css/style-home.css">
     <link rel="stylesheet" href="css/style-header.css">
     <link rel="stylesheet" href="css/style-footer.css">
-    <link rel="stylesheet" href="css/style-member.css">
 </head>
 
 <body>
