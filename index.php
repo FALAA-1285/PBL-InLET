@@ -31,12 +31,12 @@ $team = [
 ];
 
 $partners = [
-    ["logo" => "https://picsum.photos/200/100"],
-    ["logo" => "https://picsum.photos/201/100"],
-    ["logo" => "https://picsum.photos/202/100"],
-    ["logo" => "https://picsum.photos/203/100"],
-    ["logo" => "https://picsum.photos/204/100"],
-    ["logo" => "https://picsum.photos/205/100"],
+    ["logo" => "https://picsum.photos/200/100?random=1"],
+    ["logo" => "https://picsum.photos/201/100?random=2"],
+    ["logo" => "https://picsum.photos/202/100?random=3"],
+    ["logo" => "https://picsum.photos/203/100?random=4"],
+    ["logo" => "https://picsum.photos/204/100?random=5"],
+    ["logo" => "https://picsum.photos/205/100?random=6"],
 ];
 
 // Full gallery dataset (dummy 100 images)
@@ -242,14 +242,25 @@ function getInitials($name)
                     <p>Collaboration with academic and industry institutions.</p>
                 </div>
 
-                <div class="row justify-content-center g-4">
-                    <?php foreach ($partners as $p): ?>
-                        <div class="col-md-2 col-4 text-center">
-                            <img src="<?= htmlspecialchars($p["logo"]) ?>" class="partner-logo img-fluid rounded shadow-sm"
-                                alt="partner">
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+            <div class="row justify-content-center g-4">
+                <?php foreach ($partners as $p): ?>
+                    <div class="col-md-2 col-4 text-center">
+                        <img src="<?= htmlspecialchars($p["logo"]) ?>" 
+                             class="partner-logo img-fluid rounded shadow-sm" 
+                             alt="partner"
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/200x100/cccccc/666666?text=Partner';">
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section class="py-5" id="gallery">
+        <div class="container">
+            <div class="section-title">
+                <h2>Gallery</h2>
+                <p>Documentation of InLET</p>
             </div>
         </section>
 
@@ -261,14 +272,16 @@ function getInitials($name)
                     <p>Documentation of InLET</p>
                 </div>
 
-                <div id="pinterest-grid" class="pinterest-grid">
-                    <!-- initial server-side items (page 1) -->
-                    <?php foreach ($gallery_init as $g): ?>
-                        <div class="pin-item show">
-                            <img src="<?= htmlspecialchars($g['img']) ?>" alt="gallery">
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+            <div id="pinterest-grid" class="pinterest-grid">
+                <!-- initial server-side items (page 1) -->
+                <?php foreach ($gallery_init as $g): ?>
+                    <div class="pin-item show">
+                        <img src="<?= htmlspecialchars($g['img']) ?>" 
+                             alt="gallery" 
+                             onerror="handleImageError(this, '<?= htmlspecialchars($g['img']) ?>');">
+                    </div>
+                <?php endforeach; ?>
+            </div>
 
                 <div id="loader" aria-hidden="true"></div>
             </div>
@@ -299,6 +312,27 @@ function getInitials($name)
             }
         });
     </script>
+
+    <!-- Image Error Handler (Global) -->
+    <script>
+    // Handle image error with retry - must be global for onerror attribute
+    function handleImageError(img, originalSrc) {
+        let retries = parseInt(img.getAttribute('data-retries') || '0');
+        if (retries < 2) {
+            img.setAttribute('data-retries', (retries + 1).toString());
+            // Retry with a small delay and cache buster
+            setTimeout(() => {
+                img.src = originalSrc + (originalSrc.includes('?') ? '&' : '?') + 'retry=' + Date.now();
+            }, 500);
+        } else {
+            // Final fallback after retries
+            img.onerror = null;
+            img.src = 'https://via.placeholder.com/400x300/cccccc/666666?text=Gallery+Image';
+        }
+    }
+    </script>
+
+    <!-- Masonry + Infinite Scroll (combined & fixed) -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const container = document.getElementById("pinterest-grid");
@@ -341,20 +375,97 @@ function getInitials($name)
                     item.classList.add('show'); // fade-in effect
                 });
 
-                container.style.height = Math.max(...colHeights) + "px";
-            }
+                item.style.transform = `translate(${x}px, ${y}px)`;
+                colHeights[minCol] += item.offsetHeight + gap;
+            });
 
-            function appendItems(itemsData) {
-                if (!itemsData || itemsData.length === 0) return;
-                itemsData.forEach(d => {
-                    const item = document.createElement('div');
-                    item.className = 'pin-item';
-                    const img = document.createElement('img');
-                    img.src = d.img;
-                    img.alt = 'gallery image';
-                    item.appendChild(img);
-                    container.appendChild(item);
-                    img.onload = masonryLayout;
+            container.style.height = Math.max(...colHeights) + "px";
+        }
+
+        // Append new items (array of {img: url})
+        function appendItems(itemsData) {
+            if (!itemsData || itemsData.length === 0) return;
+
+            itemsData.forEach(imgObj => {
+                const item = document.createElement('div');
+                item.className = 'pin-item';
+                // create image element
+                const image = new Image();
+                const originalSrc = imgObj.img;
+                image.src = originalSrc;
+                image.alt = 'gallery image';
+                image.style.display = 'block';
+                image.loading = 'lazy';
+                let retryCount = 0;
+
+                // Always add item to DOM immediately, even if image is still loading
+                item.appendChild(image);
+                container.appendChild(item);
+
+                image.onload = function () {
+                    // allow CSS transition to run & then layout
+                    requestAnimationFrame(() => {
+                        item.classList.add('show');
+                        masonryLayout();
+                    });
+                };
+
+                image.onerror = function () {
+                    retryCount++;
+                    if (retryCount <= 3) {
+                        // Retry loading the image with exponential backoff
+                        setTimeout(() => {
+                            const separator = originalSrc.includes('?') ? '&' : '?';
+                            image.src = originalSrc + separator + 'retry=' + Date.now() + '&attempt=' + retryCount;
+                        }, 300 * retryCount); // 300ms, 600ms, 900ms
+                    } else {
+                        // Final fallback after retries
+                        image.onerror = null;
+                        image.src = 'https://via.placeholder.com/400x300/cccccc/666666?text=Gallery+Image';
+                        image.onload = function() {
+                            requestAnimationFrame(() => {
+                                item.classList.add('show');
+                                masonryLayout();
+                            });
+                        };
+                    }
+                };
+
+                // If image already loaded (cached), trigger onload
+                if (image.complete && image.naturalHeight !== 0) {
+                    image.onload();
+                }
+            });
+        }
+
+        // Load more via AJAX from the same file (action=load_gallery)
+        function loadMore() {
+            if (isLoading || allLoaded) return;
+            isLoading = true;
+            loader.style.display = 'block';
+
+            fetch(location.pathname + '?action=load_gallery&page=' + page)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    if (!Array.isArray(data) || data.length === 0) {
+                        allLoaded = true;
+                        loader.style.display = 'none';
+                        isLoading = false;
+                        return;
+                    }
+
+                    appendItems(data);
+                    page++;
+                    isLoading = false;
+                    loader.style.display = 'none';
+                })
+                .catch(err => {
+                    console.error('Failed to load gallery:', err);
+                    isLoading = false;
+                    loader.style.display = 'none';
                 });
                 masonryLayout();
             }
