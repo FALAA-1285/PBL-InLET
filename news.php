@@ -211,7 +211,7 @@ $gallery_init = array_slice($all_gallery, 0, $gallery_limit);
         </div>
     </section>
 
-    <?php include 'includes/footer.php'; ?>
+    <?php include 'includes/footer_clean.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>

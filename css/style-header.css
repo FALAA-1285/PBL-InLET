@@ -47,27 +47,57 @@ body::-webkit-scrollbar {
     font-weight: 600;
 }
 
-/* Dropdown tanpa kotak, tetap pakai CSS navbar yang sudah ada */
 .dropdown-menu {
-    background: transparent; 
-    border: none;      
-    box-shadow: none;  
-    padding: 0;             
-    min-width: auto;          
+    /* Make dropdown readable and separated from background */
+    background: #ffffff;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+    padding: 0.3rem 0;
+    min-width: 12rem;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    z-index: 1050;
+}
+
+.dropdown-menu.custom-dropdown {
+    /* placeholder for custom dropdown overrides (keeps same look) */
+    padding-right: 0.5rem;
 }
 
 .dropdown-item {
-    border-radius: 0;     
-    color: inherit;        
-    padding: 0.25rem 1rem; 
+    border-radius: 0;
+    color: #1f2937;
+    padding: 0.45rem 1rem;
     background: transparent;
     font-size: 0.95rem;
-    transition: color 0.2s ease;
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
-.dropdown-item:hover {
-    background: transparent; 
-    color: #0d6efd;     
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background: rgba(13, 110, 253, 0.06);
+    color: #0d6efd;
+}
+
+/* Ensure dropdown aligns well on larger screens */
+.navbar .dropdown-menu {
+    top: 100%;
+    left: 0;
+}
+
+/* Fix for dropdown inside navbar collapse (mobile) */
+@media (max-width: 992px) {
+    .navbar .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        border: none;
+        background: transparent;
+        padding-left: 1rem;
+    }
+    .dropdown-item {
+        color: inherit;
+        padding-left: 1.25rem;
+    }
 }
 
 /* Buttons */

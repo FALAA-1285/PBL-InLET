@@ -109,8 +109,6 @@ $progress_list = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
-    <?php include 'includes/header.php'; ?>
-    
 <head>
     <meta charset="UTF-8">
     <title>Research - Information & Learning Engineering Technology</title>
@@ -123,6 +121,7 @@ $progress_list = $stmt->fetchAll();
     <link rel="stylesheet" href="css/style-footer.css">
 </head>
 <body>
+    <?php include 'includes/header.php'; ?>
 
     <section class="hero d-flex align-items-center" id="home">
         <div class="container text-center text-white">
@@ -355,5 +354,7 @@ $progress_list = $stmt->fetchAll();
     </section>
 
     <?php include 'includes/footer.php'; ?>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
