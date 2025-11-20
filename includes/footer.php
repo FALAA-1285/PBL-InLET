@@ -1,8 +1,3 @@
-<head>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="style-footer.css">
-</head>
-
 <footer class="footer bg-dark text-white py-4 mt-5">
     <div class="container-fluid px-5">
         <div class="row align-items-center gy-3">
@@ -40,4 +35,3 @@
             &copy; 2025 InLET - Information and Learning Engineering Technology
         </div>
     </div>
-</footer>
