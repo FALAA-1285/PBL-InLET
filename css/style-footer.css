@@ -305,3 +305,46 @@ footer {
 .flex-column {
     flex-direction: column !important;
 }
+
+/* ----------------------------------
+   Clean footer styles
+   ---------------------------------- */
+.site-footer {
+    background: #0d1720;
+    color: #cfd8e3;
+}
+.site-footer a {
+    color: #cbd5e1;
+    text-decoration: none;
+    transition: color 160ms ease-in-out, opacity 160ms ease-in-out;
+}
+.site-footer a:hover {
+    color: #ffffff;
+    text-decoration: none;
+}
+.site-footer .footer-tagline {
+    color: #9aa4b2;
+}
+.site-footer .footer-links a {
+    color: #aeb8c3;
+    font-weight: 600;
+    padding: 4px 6px;
+}
+.site-footer .footer-links .list-inline-item {
+    display: inline-block;
+}
+.site-footer .socials a {
+    font-size: 1.05rem;
+    opacity: 0.92;
+}
+.site-footer hr {
+    border-color: rgba(255,255,255,0.06);
+}
+@media (max-width: 576px) {
+    .site-footer .footer-links {
+        margin-top: 8px;
+    }
+    .site-footer .d-flex {
+        gap: 8px;
+    }
+}

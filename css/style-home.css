@@ -4,17 +4,20 @@ body {
     padding: 0;
     display: flex;
     flex-direction: column;
-    min-height: 100vh; /* pastikan footer selalu di bawah */
+    min-height: 100vh;
 }
 
 main {
-    flex: 1; /* dorong footer ke bawah jika konten sedikit */
+    flex: 1;
 }
 
 .hero {
-    height: 50vh;
-    /* ukuran ideal */
-    background: url("../assets/Teknik-Polinema.jpg") center center/cover no-repeat;
+    min-height: 50vh;
+    background-image: url("../assets/Teknik-Polinema.jpg");
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color: #0b1220;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -61,25 +64,63 @@ main {
     }
 }
 
-#pinterest-grid {
+/* Masonry gallery */
+.pinterest-grid {
     position: relative;
 }
 
 .pin-item {
     position: absolute;
-    transition: transform 0.3s ease;
+    width: 100%;
+    opacity: 0;
+    transition: opacity .5s, transform .5s;
 }
 
-.pin-item img {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
+.pin-item.show {
+    opacity: 1;
+}
+
+.pin-img-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Penanganan Mobile (Penting agar 1 kolom tampil normal) */
-@media (max-width: 575.98px) {
+.pin-img-wrapper img {
+    width: 100%;
+    display: block;
+    border-radius: 10px;
+}
+
+.pin-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 10px;
+    opacity: 0;
+    transition: opacity .3s;
+}
+
+.pin-img-wrapper:hover .pin-overlay {
+    opacity: 1;
+}
+
+.pin-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.pin-desc {
+    font-size: .875rem;
+    margin: 0;
+}
+
+@media(max-width:575.98px) {
     .pin-item {
         position: static !important;
         width: 100% !important;
@@ -152,7 +193,7 @@ main {
     height: 100%;
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .research-card h4 {
