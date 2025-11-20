@@ -35,4 +35,3 @@
             &copy; 2025 InLET - Information and Learning Engineering Technology
         </div>
     </div>
-</footer>

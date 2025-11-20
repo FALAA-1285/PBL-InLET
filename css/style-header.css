@@ -47,24 +47,27 @@ body::-webkit-scrollbar {
     font-weight: 600;
 }
 
-/* Dropdown Menu */
+/* Dropdown tanpa kotak, tetap pakai CSS navbar yang sudah ada */
 .dropdown-menu {
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    padding: 0.5rem;
+    background: transparent; 
+    border: none;      
+    box-shadow: none;  
+    padding: 0;             
+    min-width: auto;          
 }
 
 .dropdown-item {
-    border-radius: 6px;
-    color: #333;
+    border-radius: 0;     
+    color: inherit;        
+    padding: 0.25rem 1rem; 
+    background: transparent;
     font-size: 0.95rem;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: color 0.2s ease;
 }
 
 .dropdown-item:hover {
-    background-color: #0d6efd;
-    color: #fff;
+    background: transparent; 
+    color: #0d6efd;     
 }
 
 /* Buttons */
@@ -99,4 +102,3 @@ body::-webkit-scrollbar {
 .navbar-toggler:focus {
     box-shadow: none;
 }
-
