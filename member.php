@@ -3,26 +3,60 @@ require_once 'config/database.php';
 
 $conn = getDBConnection();
 
+// Search setup
+$search_query = isset($_GET['search']) ? trim($_GET['search']) : '';
+$letter_filter = isset($_GET['letter']) ? strtoupper(trim($_GET['letter'])) : '';
+
 // Pagination setup
 $items_per_page = 8;
 $current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
+// Build WHERE clause
+$where_clauses = [];
+$params = [];
+
+if (!empty($search_query)) {
+    $where_clauses[] = "m.nama ILIKE :search";
+    $params[':search'] = '%' . $search_query . '%';
+}
+
+if (!empty($letter_filter) && strlen($letter_filter) == 1 && ctype_alpha($letter_filter)) {
+    $where_clauses[] = "UPPER(SUBSTRING(m.nama FROM 1 FOR 1)) = :letter";
+    $params[':letter'] = $letter_filter;
+}
+
+$where_sql = !empty($where_clauses) ? 'WHERE ' . implode(' AND ', $where_clauses) : '';
+
 // Get total count
-$stmt = $conn->query("SELECT COUNT(*) FROM member");
+$count_sql = "SELECT COUNT(*) FROM member m $where_sql";
+$stmt = $conn->prepare($count_sql);
+foreach ($params as $key => $value) {
+    $stmt->bindValue($key, $value);
+}
+$stmt->execute();
 $total_items = $stmt->fetchColumn();
 $total_pages = ceil($total_items / $items_per_page);
 
 // Get members with profiles
-$stmt = $conn->prepare("SELECT m.*, pm.alamat, pm.no_tlp, pm.deskripsi 
-                      FROM member m 
-                      LEFT JOIN profil_member pm ON m.id_member = pm.id_member 
-                      ORDER BY m.nama
-                      LIMIT :limit OFFSET :offset");
+$sql = "SELECT m.*, pm.alamat, pm.no_tlp, pm.deskripsi 
+        FROM member m 
+        LEFT JOIN profil_member pm ON m.id_member = pm.id_member 
+        $where_sql
+        ORDER BY m.nama
+        LIMIT :limit OFFSET :offset";
+$stmt = $conn->prepare($sql);
+foreach ($params as $key => $value) {
+    $stmt->bindValue($key, $value);
+}
 $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $members = $stmt->fetchAll();
+
+// Get all first letters for index
+$stmt = $conn->query("SELECT DISTINCT UPPER(SUBSTRING(nama FROM 1 FOR 1)) as first_letter FROM member WHERE nama IS NOT NULL AND nama != '' ORDER BY first_letter");
+$available_letters = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
 // Function to get initials
 function getInitials($name) {
@@ -51,10 +85,10 @@ function getInitials($name) {
     <link rel="stylesheet" href="css/style-member.css">
 </head>
 
-<body class="d-flex flex-column min-vh-100">
+<body class="d-flex flex-column" style="min-height: 100vh; margin: 0; padding: 0; display: flex !important; flex-direction: column !important;">
     <?php include 'includes/header.php'; ?>
 
-    <main class="flex-grow-1">
+    <main class="flex-grow-1" style="flex: 1 0 auto; min-height: 0;">
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
                 <h1 class="display-4 fw-bold">Our Experts</h1>
@@ -62,13 +96,49 @@ function getInitials($name) {
             </div>
         </section>
 
-        <section class="team-section" id="profiles">
+        <section class="team-section" id="profiles" style="padding-bottom: 4rem;">
             <div class="container">
                 <div class="section-title text-center mb-5">
                     <h2 class="fw-bold">Meet the Team</h2>
                     <p class="text-muted">The brilliant minds behind our research.</p>
                     <div style="width: 60px; height: 3px; background: var(--primary-color, #0d6efd); margin: 15px auto;"></div>
                 </div>
+                
+                <!-- Search Box -->
+                <div class="row justify-content-center mb-4">
+                    <div class="col-md-6">
+                        <form method="GET" action="" class="d-flex gap-2 mb-3">
+                            <input type="text" name="search" class="form-control" 
+                                   placeholder="Cari member berdasarkan nama..." 
+                                   value="<?php echo htmlspecialchars($search_query); ?>">
+                            <button type="submit" class="btn btn-primary">Cari</button>
+                            <?php if (!empty($search_query) || !empty($letter_filter)): ?>
+                                <a href="member.php" class="btn btn-secondary">Reset</a>
+                            <?php endif; ?>
+                        </form>
+                        <?php if (!empty($search_query)): ?>
+                            <p class="text-muted text-center">
+                                Menampilkan <?php echo $total_items; ?> hasil untuk "<?php echo htmlspecialchars($search_query); ?>"
+                            </p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                
+                <!-- Alphabet Index -->
+                <?php if (!empty($available_letters) && empty($search_query)): ?>
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-md-8">
+                            <div class="d-flex flex-wrap justify-content-center gap-2">
+                                
+                            </div>
+                            <?php if (!empty($letter_filter)): ?>
+                                <p class="text-center text-muted mt-2">
+                                    Menampilkan member dengan huruf awal "<?= htmlspecialchars($letter_filter); ?>"
+                                </p>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
                 
                 <div class="row g-4">
                     <?php if (empty($members)): ?>
@@ -146,10 +216,20 @@ function getInitials($name) {
                 </div>
                 
                 <?php if ($total_pages > 1): ?>
-                    <nav aria-label="Page navigation" class="mt-5 mb-4">
+                    <nav aria-label="Page navigation" class="mt-5 mb-5">
                         <ul class="pagination pagination-modern justify-content-center">
+                            <?php 
+                            $page_url = "?";
+                            if (!empty($search_query)) {
+                                $page_url .= "search=" . urlencode($search_query) . "&";
+                            }
+                            if (!empty($letter_filter)) {
+                                $page_url .= "letter=" . urlencode($letter_filter) . "&";
+                            }
+                            ?>
+                            
                             <li class="page-item <?php echo ($current_page <= 1) ? 'disabled' : ''; ?>">
-                                <a class="page-link" href="?page=<?php echo $current_page - 1; ?>" aria-label="Previous">
+                                <a class="page-link" href="<?= $page_url ?>page=<?php echo $current_page - 1; ?>" aria-label="Previous">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
@@ -159,24 +239,24 @@ function getInitials($name) {
                             $end_page = min($total_pages, $current_page + 2);
                             
                             if ($start_page > 1) {
-                                echo '<li class="page-item"><a class="page-link" href="?page=1">1</a></li>';
+                                echo '<li class="page-item"><a class="page-link" href="' . $page_url . 'page=1">1</a></li>';
                                 if ($start_page > 2) echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
                             }
 
                             for ($i = $start_page; $i <= $end_page; $i++): ?>
                                 <li class="page-item <?php echo ($i == $current_page) ? 'active' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                    <a class="page-link" href="<?= $page_url ?>page=<?php echo $i; ?>"><?php echo $i; ?></a>
                                 </li>
                             <?php endfor; 
-
+                            
                             if ($end_page < $total_pages) {
                                 if ($end_page < $total_pages - 1) echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                                echo '<li class="page-item"><a class="page-link" href="?page='.$total_pages.'">'.$total_pages.'</a></li>';
+                                echo '<li class="page-item"><a class="page-link" href="' . $page_url . 'page='.$total_pages.'">'.$total_pages.'</a></li>';
                             }
                             ?>
                             
                             <li class="page-item <?php echo ($current_page >= $total_pages) ? 'disabled' : ''; ?>">
-                                <a class="page-link" href="?page=<?php echo ($current_page >= $total_pages) ? $total_pages : $current_page + 1; ?>" aria-label="Next">
+                                <a class="page-link" href="<?= $page_url ?>page=<?php echo ($current_page >= $total_pages) ? $total_pages : $current_page + 1; ?>" aria-label="Next">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
                             </li>
@@ -190,7 +270,9 @@ function getInitials($name) {
         </section>
     </main>
     
-    <?php include 'includes/footer.php'; ?>
+    <div style="flex-shrink: 0; margin-top: auto; width: 100%; position: relative; z-index: 1;">
+        <?php include 'includes/footer.php'; ?>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

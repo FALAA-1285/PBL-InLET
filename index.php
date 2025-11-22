@@ -1,8 +1,21 @@
 <?php
 // index.php (combined: page + AJAX endpoint for gallery)
+require_once 'config/database.php';
+
+$conn = getDBConnection();
 
 // -------------------
-// Dummy data
+// Get team members from database
+// -------------------
+$stmt = $conn->prepare("SELECT m.*, pm.deskripsi 
+                      FROM member m 
+                      LEFT JOIN profil_member pm ON m.id_member = pm.id_member 
+                      ORDER BY m.nama");
+$stmt->execute();
+$team = $stmt->fetchAll();
+
+// -------------------
+// Dummy data for research
 // -------------------
 $riset = [];
 for ($i = 1; $i <= 25; $i++) {
@@ -11,12 +24,6 @@ for ($i = 1; $i <= 25; $i++) {
         "deskripsi" => "A full description of research field number $i, explaining its focus and contributions."
     ];
 }
-
-$team = [
-    ["nama" => "Dr. Andika Putra", "jabatan" => "Lead Research Engineer", "deskripsi" => "Memimpin roadmap riset strategis dan kolaborasi lintas disiplin."],
-    ["nama" => "Siti Rahma", "jabatan" => "AI Specialist", "deskripsi" => "Mengembangkan model AI untuk solusi pembelajaran adaptif."],
-    ["nama" => "Bima Pratama", "jabatan" => "Software Architect", "deskripsi" => "Merancang arsitektur platform pembelajaran berperforma tinggi."]
-];
 
 $partners = [
     ["logo" => "https://picsum.photos/200/100?random=1"],
@@ -27,12 +34,49 @@ $partners = [
     ["logo" => "https://picsum.photos/205/100?random=6"]
 ];
 
-// Full gallery dataset (dummy 100 images)
-$all_gallery = [];
-for ($i = 1; $i <= 100; $i++) {
-    $w = rand(300, 450);
-    $h = rand(250, 500);
-    $all_gallery[] = ["img" => "https://picsum.photos/seed/$i/{$w}/{$h}"];
+// Create gallery table if not exists
+try {
+    $conn->exec("CREATE TABLE IF NOT EXISTS gallery (
+        id_gallery SERIAL PRIMARY KEY,
+        gambar VARCHAR(500) NOT NULL,
+        judul VARCHAR(255),
+        deskripsi VARCHAR(1000),
+        urutan INTEGER DEFAULT 0,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+    )");
+    $conn->exec("CREATE INDEX IF NOT EXISTS idx_gallery_urutan ON gallery(urutan)");
+    $conn->exec("CREATE INDEX IF NOT EXISTS idx_gallery_created ON gallery(created_at)");
+} catch (PDOException $e) {
+    // Table might already exist, continue
+}
+
+// Get gallery from database
+try {
+    $gallery_stmt = $conn->query("SELECT gambar, judul FROM gallery ORDER BY urutan ASC, created_at DESC");
+    $all_gallery = $gallery_stmt->fetchAll();
+    
+    // If no gallery in database, use dummy data as fallback
+    if (empty($all_gallery)) {
+        for ($i = 1; $i <= 100; $i++) {
+            $w = rand(300, 450);
+            $h = rand(250, 500);
+            $all_gallery[] = ["gambar" => "https://picsum.photos/seed/$i/{$w}/{$h}", "judul" => ""];
+        }
+    } else {
+        // Rename 'gambar' to 'img' for compatibility
+        $all_gallery = array_map(function($item) {
+            return ["img" => $item['gambar'], "judul" => $item['judul'] ?? ''];
+        }, $all_gallery);
+    }
+} catch (PDOException $e) {
+    // Fallback to dummy data if table doesn't exist
+    $all_gallery = [];
+    for ($i = 1; $i <= 100; $i++) {
+        $w = rand(300, 450);
+        $h = rand(250, 500);
+        $all_gallery[] = ["img" => "https://picsum.photos/seed/$i/{$w}/{$h}"];
+    }
 }
 
 // -------------------
@@ -59,8 +103,15 @@ $total_items = count($riset);
 $total_pages = ceil($total_items / $research_limit);
 $current_riset = array_slice($riset, $rstart, $research_limit);
 
-$gallery_limit = 12;
-$gallery_init = array_slice($all_gallery, 0, $gallery_limit);
+// -------------------
+// Pagination for gallery
+// -------------------
+$gallery_items_per_page = 12;
+$gallery_page = isset($_GET['gpage']) ? max(1, (int) $_GET['gpage']) : 1;
+$gallery_offset = ($gallery_page - 1) * $gallery_items_per_page;
+$total_gallery_items = count($all_gallery);
+$total_gallery_pages = ceil($total_gallery_items / $gallery_items_per_page);
+$gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_page);
 
 function getInitials($name)
 {
@@ -146,36 +197,6 @@ function getInitials($name)
             </div>
         </section>
 
-        <!-- TEAM -->
-        <section class="py-5" id="team">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Expert Team</h2>
-                    <p>The experts behind our innovations.</p>
-                </div>
-                <div class="swiper teamSwiper">
-                    <div class="swiper-wrapper">
-                        <?php foreach ($team as $t): ?>
-                            <div class="swiper-slide">
-                                <div class="member-card card-surface h-100 text-center">
-                                    <div class="member-img-wrapper">
-                                        <div class="member-initials"><?= htmlspecialchars(getInitials($t["nama"])) ?></div>
-                                    </div>
-                                    <div class="member-info">
-                                        <h3 class="member-name"><?= htmlspecialchars($t["nama"]) ?></h3>
-                                        <div class="member-role"><?= htmlspecialchars($t["jabatan"]) ?></div>
-                                        <?php if (!empty($t["deskripsi"])): ?>
-                                            <p class="member-desc"><?= htmlspecialchars($t["deskripsi"]) ?></p><?php endif; ?>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                    <div class="swiper-button-next"></div>
-                    <div class="swiper-button-prev"></div>
-                </div>
-        </section>
-
         <!-- PARTNERS -->
         <section class="py-5 bg-light" id="partner">
             <div class="container">
@@ -192,6 +213,75 @@ function getInitials($name)
                     <?php endforeach; ?>
                 </div>
             </div>
+        </section>
+
+        <!-- TEAM -->
+        <section class="py-5" id="team">
+            <div class="container">
+                <div class="section-title">
+                    <h2>Expert Team</h2>
+                    <p>The experts behind our innovations.</p>
+                </div>
+                <div class="swiper teamSwiper">
+                    <div class="swiper-wrapper">
+                        <?php 
+                        // Get team members from database
+                        if (!empty($team)): 
+                            foreach ($team as $t): 
+                                $has_photo = false;
+                                $foto_url = '';
+                                if (!empty($t['foto'])) {
+                                    $foto_url = $t['foto'];
+                                    if (!preg_match('/^https?:\/\//', $foto_url)) {
+                                        if (strpos($foto_url, 'uploads/') !== 0) {
+                                            $foto_url = 'uploads/' . ltrim($foto_url, '/');
+                                        }
+                                    }
+                                    $has_photo = true;
+                                }
+                        ?>
+                            <div class="swiper-slide">
+                                <div class="member-card card-surface h-100 text-center">
+                                    <div class="member-img-wrapper">
+                                        <?php if ($has_photo): ?>
+                                            <img src="<?php echo htmlspecialchars($foto_url); ?>" 
+                                                 alt="<?php echo htmlspecialchars($t['nama']); ?>" 
+                                                 class="member-img"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="member-initials" style="display: none;">
+                                                <?= htmlspecialchars(getInitials($t["nama"])) ?>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="member-initials">
+                                                <?= htmlspecialchars(getInitials($t["nama"])) ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="member-info">
+                                        <h3 class="member-name"><?= htmlspecialchars($t["nama"]) ?></h3>
+                                        <div class="member-role"><?= htmlspecialchars($t["jabatan"] ?: 'Member') ?></div>
+                                        <?php if (!empty($t["deskripsi"])): ?>
+                                            <p class="member-desc"><?= htmlspecialchars($t["deskripsi"]) ?></p>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php 
+                            endforeach; 
+                        else:
+                        ?>
+                            <div class="swiper-slide">
+                                <div class="member-card card-surface h-100 text-center">
+                                    <div class="member-info">
+                                        <p>Belum ada member yang terdaftar</p>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
         </section>
 
         <!-- GALLERY -->
@@ -214,6 +304,70 @@ function getInitials($name)
                         </div>
                     <?php endforeach; ?>
                 </div>
+                <?php if ($total_gallery_pages > 1): ?>
+                    <nav aria-label="Gallery pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <?php if ($gallery_page > 1): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="?gpage=<?= $gallery_page - 1 ?>#gallery" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo; Previous</span>
+                                    </a>
+                                </li>
+                            <?php else: ?>
+                                <li class="page-item disabled">
+                                    <span class="page-link">&laquo; Previous</span>
+                                </li>
+                            <?php endif; ?>
+                            
+                            <?php
+                            $start_page = max(1, $gallery_page - 2);
+                            $end_page = min($total_gallery_pages, $gallery_page + 2);
+                            
+                            if ($start_page > 1): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="?gpage=1#gallery">1</a>
+                                </li>
+                                <?php if ($start_page > 2): ?>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                            
+                            <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                                <li class="page-item <?= $i == $gallery_page ? 'active' : '' ?>">
+                                    <a class="page-link" href="?gpage=<?= $i ?>#gallery"><?= $i ?></a>
+                                </li>
+                            <?php endfor; ?>
+                            
+                            <?php if ($end_page < $total_gallery_pages): ?>
+                                <?php if ($end_page < $total_gallery_pages - 1): ?>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                <?php endif; ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="?gpage=<?= $total_gallery_pages ?>#gallery"><?= $total_gallery_pages ?></a>
+                                </li>
+                            <?php endif; ?>
+                            
+                            <?php if ($gallery_page < $total_gallery_pages): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="?gpage=<?= $gallery_page + 1 ?>#gallery" aria-label="Next">
+                                        <span aria-hidden="true">Next &raquo;</span>
+                                    </a>
+                                </li>
+                            <?php else: ?>
+                                <li class="page-item disabled">
+                                    <span class="page-link">Next &raquo;</span>
+                                </li>
+                            <?php endif; ?>
+                        </ul>
+                        <div class="text-center mt-3" style="color: var(--gray);">
+                            Menampilkan <?= ($gallery_offset + 1) ?> - <?= min($gallery_offset + $gallery_items_per_page, $total_gallery_items) ?> dari <?= $total_gallery_items ?> gambar
+                        </div>
+                    </nav>
+                <?php endif; ?>
                 <div id="loader" class="text-center mt-3" style="display:none;">Loading more...</div>
             </div>
         </section>
@@ -266,16 +420,17 @@ function getInitials($name)
                 });
             }
 
-            function loadMore() {
-                if (isLoading || allLoaded) return;
-                isLoading = true; document.getElementById('loader').style.display = 'block';
-                fetch(`<?= basename($_SERVER['PHP_SELF']); ?>?action=load_gallery&page=${page}`)
-                    .then(r => r.json())
-                    .then(data => { if (!data || data.length === 0) { allLoaded = true; } else { appendItems(data); page++; } })
-                    .finally(() => { isLoading = false; document.getElementById('loader').style.display = 'none'; });
-            }
+            // Disabled infinite scroll, using pagination instead
+            // function loadMore() {
+            //     if (isLoading || allLoaded) return;
+            //     isLoading = true; document.getElementById('loader').style.display = 'block';
+            //     fetch(`<?= basename($_SERVER['PHP_SELF']); ?>?action=load_gallery&page=${page}`)
+            //         .then(r => r.json())
+            //         .then(data => { if (!data || data.length === 0) { allLoaded = true; } else { appendItems(data); page++; } })
+            //         .finally(() => { isLoading = false; document.getElementById('loader').style.display = 'none'; });
+            // }
 
-            window.addEventListener('scroll', () => { if (window.innerHeight + window.scrollY > document.body.offsetHeight - 200) loadMore(); });
+            // window.addEventListener('scroll', () => { if (window.innerHeight + window.scrollY > document.body.offsetHeight - 200) loadMore(); });
             window.addEventListener('resize', masonryLayout);
 
             // initial layout

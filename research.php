@@ -68,22 +68,39 @@ function parseYoutubeTimecode($value) {
     return null;
 }
 
+// Search setup for articles by year
+$search_year = isset($_GET['year']) ? trim($_GET['year']) : '';
+
 // Pagination setup for articles
 $items_per_page = 9; // 9 items per page for grid layout
 $current_page_artikel = isset($_GET['page_artikel']) ? max(1, intval($_GET['page_artikel'])) : 1;
 $offset_artikel = ($current_page_artikel - 1) * $items_per_page;
 
-// Get total count for articles
-$stmt = $conn->query("SELECT COUNT(*) FROM artikel");
-$total_items_artikel = $stmt->fetchColumn();
-$total_pages_artikel = ceil($total_items_artikel / $items_per_page);
-
-// Get articles with pagination
-$stmt = $conn->prepare("SELECT * FROM artikel ORDER BY tahun DESC, judul LIMIT :limit OFFSET :offset");
+// Get total count for articles with search
+if (!empty($search_year) && is_numeric($search_year)) {
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM artikel WHERE tahun = :year");
+    $stmt->execute([':year' => (int)$search_year]);
+    $total_items_artikel = $stmt->fetchColumn();
+    
+    // Get articles with pagination and search
+    $stmt = $conn->prepare("SELECT * FROM artikel WHERE tahun = :year ORDER BY tahun DESC, judul LIMIT :limit OFFSET :offset");
+    $stmt->bindValue(':year', (int)$search_year, PDO::PARAM_INT);
+} else {
+    $stmt = $conn->query("SELECT COUNT(*) FROM artikel");
+    $total_items_artikel = $stmt->fetchColumn();
+    
+    // Get articles with pagination
+    $stmt = $conn->prepare("SELECT * FROM artikel ORDER BY tahun DESC, judul LIMIT :limit OFFSET :offset");
+}
 $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset_artikel, PDO::PARAM_INT);
 $stmt->execute();
 $artikels = $stmt->fetchAll();
+$total_pages_artikel = ceil($total_items_artikel / $items_per_page);
+
+// Get unique years for dropdown
+$stmt = $conn->query("SELECT DISTINCT tahun FROM artikel WHERE tahun IS NOT NULL ORDER BY tahun DESC");
+$years_list = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
 // Pagination setup for progress
 $current_page_progress = isset($_GET['page_progress']) ? max(1, intval($_GET['page_progress'])) : 1;
@@ -137,6 +154,31 @@ $progress_list = $stmt->fetchAll();
                 <p style="font-size: 1.1rem;">A deep dive into the six pillars of our innovation.</p>
             </div>
             
+            <!-- Search Box by Year -->
+            <div class="row justify-content-center mb-4">
+                <div class="col-md-6">
+                    <form method="GET" action="" class="d-flex gap-2">
+                        <select name="year" class="form-select">
+                            <option value="">Cari berdasarkan tahun...</option>
+                            <?php foreach ($years_list as $year): ?>
+                                <option value="<?= $year ?>" <?= $search_year == $year ? 'selected' : '' ?>>
+                                    <?= $year ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <button type="submit" class="btn btn-primary">Cari</button>
+                        <?php if (!empty($search_year)): ?>
+                            <a href="research.php" class="btn btn-secondary">Reset</a>
+                        <?php endif; ?>
+                    </form>
+                    <?php if (!empty($search_year)): ?>
+                        <p class="mt-2 text-muted">
+                            Menampilkan <?php echo $total_items_artikel; ?> artikel untuk tahun <?php echo htmlspecialchars($search_year); ?>
+                        </p>
+                    <?php endif; ?>
+                </div>
+            </div>
+            
             <?php if (empty($artikels)): ?>
                 <div class="research-empty text-center">
                     <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">Belum ada artikel penelitian yang dipublikasikan.</p>
@@ -164,9 +206,16 @@ $progress_list = $stmt->fetchAll();
             <?php if ($total_pages_artikel > 1): ?>
                 <nav aria-label="Articles pagination" style="margin-top: 3rem;">
                     <ul class="pagination justify-content-center" style="gap: 0.5rem;">
+                        <?php 
+                        $page_url = "?";
+                        if (!empty($search_year)) {
+                            $page_url .= "year=" . urlencode($search_year) . "&";
+                        }
+                        ?>
+                        
                         <?php if ($current_page_artikel > 1): ?>
                             <li class="page-item">
-                                <a class="page-link" href="?page_artikel=<?php echo $current_page_artikel - 1; ?>#focus-areas" aria-label="Previous">
+                                <a class="page-link" href="<?= $page_url ?>page_artikel=<?php echo $current_page_artikel - 1; ?>#focus-areas" aria-label="Previous">
                                     <span aria-hidden="true">&laquo; Previous</span>
                                 </a>
                             </li>
@@ -182,7 +231,7 @@ $progress_list = $stmt->fetchAll();
                         
                         if ($start_page > 1): ?>
                             <li class="page-item">
-                                <a class="page-link" href="?page_artikel=1#focus-areas">1</a>
+                                <a class="page-link" href="<?= $page_url ?>page_artikel=1#focus-areas">1</a>
                             </li>
                             <?php if ($start_page > 2): ?>
                                 <li class="page-item disabled">
@@ -193,7 +242,7 @@ $progress_list = $stmt->fetchAll();
                         
                         <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
                             <li class="page-item <?php echo ($i == $current_page_artikel) ? 'active' : ''; ?>">
-                                <a class="page-link" href="?page_artikel=<?php echo $i; ?>#focus-areas"><?php echo $i; ?></a>
+                                <a class="page-link" href="<?= $page_url ?>page_artikel=<?php echo $i; ?>#focus-areas"><?php echo $i; ?></a>
                             </li>
                         <?php endfor; ?>
                         
@@ -204,13 +253,13 @@ $progress_list = $stmt->fetchAll();
                                 </li>
                             <?php endif; ?>
                             <li class="page-item">
-                                <a class="page-link" href="?page_artikel=<?php echo $total_pages_artikel; ?>#focus-areas"><?php echo $total_pages_artikel; ?></a>
+                                <a class="page-link" href="<?= $page_url ?>page_artikel=<?php echo $total_pages_artikel; ?>#focus-areas"><?php echo $total_pages_artikel; ?></a>
                             </li>
                         <?php endif; ?>
                         
                         <?php if ($current_page_artikel < $total_pages_artikel): ?>
                             <li class="page-item">
-                                <a class="page-link" href="?page_artikel=<?php echo $current_page_artikel + 1; ?>#focus-areas" aria-label="Next">
+                                <a class="page-link" href="<?= $page_url ?>page_artikel=<?php echo $current_page_artikel + 1; ?>#focus-areas" aria-label="Next">
                                     <span aria-hidden="true">Next &raquo;</span>
                                 </a>
                             </li>
