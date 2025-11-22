@@ -25,6 +25,12 @@ $menu_items = [
         'icon' => 'ri-newspaper-line',
     ],
     [
+        'id' => 'gallery',
+        'label' => 'Gallery',
+        'href' => 'gallery.php',
+        'icon' => 'ri-image-line',
+    ],
+    [
         'id' => 'view-site',
         'label' => 'View Site',
         'href' => '../index.php',
