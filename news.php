@@ -359,144 +359,48 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
     <?php include 'includes/footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
-    function handleImageError(img, originalSrc) {
-        let retries = parseInt(img.getAttribute('data-retries') || '0', 10);
-        if (retries < 2) {
-            img.setAttribute('data-retries', (retries + 1).toString());
-            setTimeout(() => {
-                img.src = originalSrc + (originalSrc.includes('?') ? '&' : '?') + 'retry=' + Date.now();
-            }, 500);
-        } else {
-            img.onerror = null;
-            img.src = 'https://via.placeholder.com/400x300/cccccc/666666?text=Gallery+Image';
-        }
-    }
-    </script>
-    <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const container = document.getElementById("pinterest-grid");
-        const loader = document.getElementById("loader");
-        let page = 2;
-        let isLoading = false;
-        let allLoaded = false;
-        const gap = 15;
+        // Swiper init
+        new Swiper(".teamSwiper", { slidesPerView: 3, spaceBetween: 30, navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" }, breakpoints: { 0: { slidesPerView: 1 }, 576: { slidesPerView: 2 }, 992: { slidesPerView: 3 } } });
 
-        const calcColumns = () => {
-            if (window.innerWidth < 576) return 1;
-            if (window.innerWidth < 768) return 2;
-            return 3;
-        };
+        // Masonry + Infinite Scroll
+        document.addEventListener("DOMContentLoaded", function () {
+            const container = document.getElementById("pinterest-grid");
+            const gap = 15; let page = 2; let allLoaded = false; let isLoading = false;
 
-        function masonryLayout() {
-            const items = Array.from(container.querySelectorAll(".pin-item"));
-            const columns = calcColumns();
-
-            if (columns === 1) {
-                container.style.height = 'auto';
+            function getColumns() { if (window.innerWidth < 576) return 1; if (window.innerWidth < 768) return 2; return 3; }
+            function masonryLayout() {
+                const items = Array.from(container.querySelectorAll(".pin-item"));
+                const columns = getColumns();
+                if (columns === 1) { container.style.height = 'auto'; items.forEach(i => { i.style.position = ''; i.style.transform = ''; i.style.width = '100%'; }); return; }
+                items.forEach(i => i.style.position = 'absolute');
+                const colWidth = (container.offsetWidth - (columns - 1) * gap) / columns;
+                const colHeights = Array(columns).fill(0);
                 items.forEach(item => {
-                    item.style.position = '';
-                    item.style.transform = '';
-                    item.style.left = '';
-                    item.style.top = '';
+                    item.style.width = colWidth + 'px';
+                    const minCol = colHeights.indexOf(Math.min(...colHeights));
+                    const x = minCol * (colWidth + gap);
+                    const y = colHeights[minCol];
+                    item.style.transform = `translate(${x}px,${y}px)`;
+                    item.classList.add('show');
+                    colHeights[minCol] += item.offsetHeight + gap;
                 });
-                return;
+                container.style.height = Math.max(...colHeights) + 'px';
             }
 
-            items.forEach(item => item.style.position = 'absolute');
-            const colHeights = new Array(columns).fill(0);
-
-            items.forEach(item => {
-                const minCol = colHeights.indexOf(Math.min(...colHeights));
-                const itemWidth = item.offsetWidth;
-                const x = minCol * (itemWidth + gap);
-                const y = colHeights[minCol];
-
-                item.style.transform = `translate(${x}px, ${y}px)`;
-                colHeights[minCol] += item.offsetHeight + gap;
-            });
-
-            container.style.height = Math.max(...colHeights) + "px";
-        }
-
-        function appendItems(itemsData) {
-            if (!itemsData || itemsData.length === 0) return;
-
-            itemsData.forEach(data => {
-                const item = document.createElement('div');
-                item.className = 'pin-item';
-                const image = new Image();
-                const originalSrc = data.img;
-                image.src = originalSrc;
-                image.alt = 'gallery image';
-                image.loading = 'lazy';
-                item.appendChild(image);
-                container.appendChild(item);
-
-                image.onload = () => {
-                    requestAnimationFrame(() => {
-                        item.classList.add('show');
-                        masonryLayout();
-                    });
-                };
-
-                let retryCount = 0;
-                image.onerror = () => {
-                    retryCount++;
-                    if (retryCount <= 3) {
-                        setTimeout(() => {
-                            const separator = originalSrc.includes('?') ? '&' : '?';
-                            image.src = originalSrc + separator + 'retry=' + Date.now() + '&attempt=' + retryCount;
-                        }, 250 * retryCount);
-                    } else {
-                        image.onerror = null;
-                        image.src = 'https://via.placeholder.com/400x300/cccccc/666666?text=Gallery+Image';
-                        image.onload = () => {
-                            requestAnimationFrame(() => {
-                                item.classList.add('show');
-                                masonryLayout();
-                            });
-                        };
-                    }
-                };
-
-                if (image.complete && image.naturalHeight !== 0) {
-                    image.onload();
-                }
-            });
-        }
-
-        function loadMore() {
-            if (isLoading || allLoaded) return;
-            isLoading = true;
-            loader.style.display = 'block';
-
-            fetch(location.pathname + '?action=load_gallery&page=' + page)
-                .then(res => res.json())
-                .then(data => {
-                    if (!Array.isArray(data) || data.length === 0) {
-                        allLoaded = true;
-                        loader.style.display = 'none';
-                        isLoading = false;
-                        return;
-                    }
-                    appendItems(data);
-                    page++;
-                    isLoading = false;
-                    loader.style.display = 'none';
-                })
-                .catch(() => {
-                    isLoading = false;
-                    loader.style.display = 'none';
+            function appendItems(data) {
+                if (!data || data.length === 0) return;
+                data.forEach(g => {
+                    const item = document.createElement('div'); item.className = 'pin-item';
+                    const wrapper = document.createElement('div'); wrapper.className = 'pin-img-wrapper';
+                    const img = document.createElement('img'); img.src = g.img; img.alt = g.judul || 'Gallery Image';
+                    img.onerror = function () { this.src = 'https://via.placeholder.com/400x300/cccccc/666666?text=Gallery'; };
+                    const overlay = document.createElement('div'); overlay.className = 'pin-overlay';
+                    const title = document.createElement('h5'); title.className = 'pin-title'; title.textContent = g.judul || 'Image'; overlay.appendChild(title);
+                    wrapper.appendChild(img); wrapper.appendChild(overlay); item.appendChild(wrapper); container.appendChild(item);
+                    img.onload = masonryLayout;
                 });
-        }
-
-        function initialLayout() {
-            const imgs = container.querySelectorAll('img');
-            let loaded = 0;
-            if (imgs.length === 0) {
-                masonryLayout();
-                return;
             }
             imgs.forEach(img => {
                 if (img.complete) {
@@ -528,16 +432,25 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
         //     }, 120);
         // });
 
-        let resizeTimer = null;
-        window.addEventListener('resize', () => {
-            if (resizeTimer) clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => masonryLayout(), 120);
-        });
+            function loadMore() {
+                if (isLoading || allLoaded) return;
+                isLoading = true; document.getElementById('loader').style.display = 'block';
+                fetch(`<?= basename($_SERVER['PHP_SELF']); ?>?action=load_gallery&page=${page}`)
+                    .then(r => r.json())
+                    .then(data => { if (!data || data.length === 0) { allLoaded = true; } else { appendItems(data); page++; } })
+                    .finally(() => { isLoading = false; document.getElementById('loader').style.display = 'none'; });
+            }
 
-        const observer = new MutationObserver(() => masonryLayout());
-        observer.observe(container, { childList: true });
-    });
+            window.addEventListener('scroll', () => { if (window.innerHeight + window.scrollY > document.body.offsetHeight - 200) loadMore(); });
+            window.addEventListener('resize', masonryLayout);
+
+            // initial layout
+            const imgs = container.querySelectorAll('img'); let loadedCount = 0;
+            imgs.forEach(img => { if (img.complete) loadedCount++; else img.onload = img.onerror = () => { loadedCount++; if (loadedCount === imgs.length) masonryLayout(); } });
+            if (loadedCount === imgs.length) masonryLayout();
+        });
     </script>
+    
 </body>
 
 </html>
