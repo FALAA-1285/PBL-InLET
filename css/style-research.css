@@ -1,0 +1,214 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+}
+
+.hero {
+    min-height: 50vh;
+    background-image: url("../assets/Teknik-Polinema.jpg");
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color: #0b1220;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.hero .container {
+    position: relative;
+    z-index: 10;
+}
+
+.hero h1 {
+    font-weight: 700 !important;
+    text-align: center;
+}
+
+
+.hero p {
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+}
+
+.section-title h2,
+.section-title p {
+    text-align: center;
+}
+
+
+.research-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.2rem;
+}
+
+
+.card-surface {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 2rem;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    transition: .25s ease;
+}
+
+.card-surface:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.card-surface h4 {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 1.25rem;
+}
+
+.card-surface p {
+    margin-top: 0.7rem;
+    line-height: 1.55;
+    color: var(--dark);
+}
+
+
+.research-meta {
+    font-size: 0.9rem;
+    color: var(--gray);
+    margin-top: 0.4rem;
+}
+
+
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    margin-top: 1rem;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.video-wrapper iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+
+form select,
+form button {
+    border-radius: 12px !important;
+    padding: .75rem 1rem !important;
+}
+
+form select {
+    border: 1px solid #d3d7e0;
+}
+
+form button {
+    border: none;
+}
+
+
+.research-empty {
+    padding: 3rem 2rem;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+
+.pagination .page-link {
+    border-radius: 12px;
+    border: none;
+    padding: .55rem 1rem;
+    color: var(--primary);
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.pagination .page-item.active .page-link {
+    background: var(--primary);
+    color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+    background: #f1f1f1 !important;
+    color: #aaa !important;
+}
+
+
+.pagination+.text-center {
+    font-size: 0.95rem;
+}
+
+
+#progress .research-card h4 {
+    color: var(--primary-dark);
+}
+
+#progress .research-card p {
+    font-size: 0.95rem;
+}
+
+
+.research-card div[style*='border-top'] p {
+    margin-bottom: 0.4rem;
+}
+
+
+.research-cta {
+    text-align: center;
+}
+
+.research-cta h2 {
+    font-weight: 700;
+}
+
+.research-cta .btn {
+    padding: 0.8rem 2.2rem;
+    font-size: 1rem;
+    border-radius: 14px;
+    transition: 0.25s ease;
+}
+
+.research-cta .btn:hover {
+    background: var(--primary-dark) !important;
+}
+
+
+@media (max-width: 768px) {
+    .hero {
+        padding: 3rem 1rem;
+    }
+
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .research-container {
+        padding: 0 1rem;
+    }
+
+    .card-surface {
+        padding: 1.5rem;
+    }
+}
