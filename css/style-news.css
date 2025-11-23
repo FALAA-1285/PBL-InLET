@@ -1,0 +1,146 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+}
+
+.hero {
+    min-height: 50vh;
+    background-image: url("../assets/Teknik-Polinema.jpg");
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color: #0b1220;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.hero .container {
+    position: relative;
+    z-index: 10;
+}
+
+.hero h1 {
+    font-weight: 700 !important;
+    text-align: center;
+}
+
+
+.hero p {
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+}
+
+.section-title h2,
+.section-title p {
+    text-align: center;
+}
+
+.feature-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.8rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transition: .25s ease;
+    cursor: pointer;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.feature-card h3 {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 1.3rem;
+}
+
+.feature-card p {
+    color: var(--gray);
+    margin-top: .5rem;
+    line-height: 1.5;
+}
+
+.pin-item {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transition: .25s ease;
+}
+
+.pin-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.pin-img-wrapper img {
+    width: 100%;
+    display: block;
+    border-radius: 16px;
+}
+
+.pin-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
+    padding: 1rem;
+    color: #fff;
+}
+
+.pin-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+#news input[type="text"] {
+    border-radius: 12px;
+    padding: .75rem 1rem;
+    border: 1px solid #ddd;
+}
+
+#news button {
+    border-radius: 12px;
+    padding: .75rem 1.1rem;
+}
+
+.pagination .page-link {
+    border-radius: 10px;
+    padding: .5rem 1rem;
+    border: none;
+    color: var(--primary);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--primary);
+    color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+    background: #f1f1f1;
+    color: #aaa;
+}
