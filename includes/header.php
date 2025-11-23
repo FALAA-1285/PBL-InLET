@@ -41,7 +41,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     </li>
 
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle <?= ($current_page == 'servise.php' || $current_page == 'peminjaman.php' || $current_page == 'absen.php') ? 'active text-primary fw-bold' : ''; ?>"
+                        <a class="nav-link dropdown-toggle <?= ($current_page == 'servise.php' || $current_page == 'peminjaman.php' || $current_page == 'absen.php' || $current_page == 'buku_tamu.php') ? 'active text-primary fw-bold' : ''; ?>"
                             href="#" id="serviceDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Service
                         </a>
@@ -55,6 +55,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
                             <li>
                                 <a class="dropdown-item <?= ($current_page == 'absen.php') ? 'active text-primary fw-bold' : ''; ?>"
                                     href="absen.php">Absensi</a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item <?= ($current_page == 'buku_tamu.php') ? 'active text-primary fw-bold' : ''; ?>"
+                                    href="buku_tamu.php">Buku Tamu</a>
                             </li>
                         </ul>
                     </li>
