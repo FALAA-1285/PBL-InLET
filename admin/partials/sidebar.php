@@ -25,6 +25,12 @@ $menu_items = [
         'icon' => 'ri-newspaper-line',
     ],
     [
+        'id' => 'buku_tamu',
+        'label' => 'Buku Tamu',
+        'href' => 'buku_tamu.php',
+        'icon' => 'ri-book-open-line',
+    ],
+    [
         'id' => 'gallery',
         'label' => 'Gallery',
         'href' => 'gallery.php',
