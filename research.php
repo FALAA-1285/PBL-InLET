@@ -133,17 +133,15 @@ $progress_list = $stmt->fetchAll();
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style-home.css">
-    <link rel="stylesheet" href="css/style-header.css">
-    <link rel="stylesheet" href="css/style-footer.css">
+    <link rel="stylesheet" href="css/style-research.css">
 </head>
 <body>
     <?php include 'includes/header.php'; ?>
 
     <section class="hero d-flex align-items-center" id="home">
         <div class="container text-center text-white">
-            <h1 class="display-4 fw-bold">Research - Information And Learning Engineering Technology</h1>
-            <p class="lead mt-3">ioneering advancements in Language and Educational Technology to shape the future of learning</p>
+            <h1>Research - Information And Learning Engineering Technology</h1>
+            <p>ioneering advancements in Language and Educational Technology to shape the future of learning</p>
         </div>
     </section>
 
