@@ -1,31 +1,30 @@
 /* ==========================================
    PAGE LAYOUT - FORCE FOOTER TO BOTTOM
    ========================================== */
-html {
+html, body {
     height: 100%;
 }
 
 body {
-    min-height: 100vh;
+    margin: 0;
     display: flex;
     flex-direction: column;
-    margin: 0;
-    padding: 0;
 }
 
-/* Pastikan main mengambil semua ruang yang tersisa */
 main {
-    flex: 1 0 auto;
-    min-height: 0;
+    flex: 1;
 }
 
-/* Footer akan tetap di bawah */
+
 footer {
-    flex-shrink: 0;
-    margin-top: auto;
-    width: 100%;
-    position: relative;
+    background: #333;
+    color: white;
+    padding: 20px;
+    text-align: center;
 }
+
+
+
 
 /* ==========================================
    HERO SECTION
@@ -353,3 +352,5 @@ footer {
         gap: 8px;
     }
 }
+
+

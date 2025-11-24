@@ -347,9 +347,7 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
                                 </li>
                             <?php endif; ?>
                         </ul>
-                        <div class="text-center mt-3" style="color: var(--gray);">
-                            Menampilkan <?= ($gallery_offset + 1) ?> - <?= min($gallery_offset + $gallery_items_per_page, $total_gallery_items) ?> dari <?= $total_gallery_items ?> gambar
-                        </div>
+                        
                     </nav>
                 <?php endif; ?>
                 <div id="loader" class="text-center mt-3" style="display:none;">Loading more...</div>

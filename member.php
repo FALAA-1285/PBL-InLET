@@ -85,10 +85,10 @@ function getInitials($name) {
     <link rel="stylesheet" href="css/style-member.css">
 </head>
 
-<body class="d-flex flex-column" style="min-height: 100vh; margin: 0; padding: 0; display: flex !important; flex-direction: column !important;">
+<body class="d-flex flex-column min-vh-100">
     <?php include 'includes/header.php'; ?>
 
-    <main class="flex-grow-1" style="flex: 1 0 auto; min-height: 0;">
+    <main class="flex-fill">
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
                 <h1 class="display-4 fw-bold">Our Experts</h1>
@@ -214,65 +214,82 @@ function getInitials($name) {
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
-                
-                <?php if ($total_pages > 1): ?>
-                    <nav aria-label="Page navigation" class="mt-5 mb-5">
-                        <ul class="pagination pagination-modern justify-content-center">
-                            <?php 
-                            $page_url = "?";
-                            if (!empty($search_query)) {
-                                $page_url .= "search=" . urlencode($search_query) . "&";
-                            }
-                            if (!empty($letter_filter)) {
-                                $page_url .= "letter=" . urlencode($letter_filter) . "&";
-                            }
-                            ?>
-                            
-                            <li class="page-item <?php echo ($current_page <= 1) ? 'disabled' : ''; ?>">
-                                <a class="page-link" href="<?= $page_url ?>page=<?php echo $current_page - 1; ?>" aria-label="Previous">
-                                    <span aria-hidden="true">&laquo;</span>
-                                </a>
-                            </li>
-                            
-                            <?php
-                            $start_page = max(1, $current_page - 2);
-                            $end_page = min($total_pages, $current_page + 2);
-                            
-                            if ($start_page > 1) {
-                                echo '<li class="page-item"><a class="page-link" href="' . $page_url . 'page=1">1</a></li>';
-                                if ($start_page > 2) echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                            }
 
-                            for ($i = $start_page; $i <= $end_page; $i++): ?>
-                                <li class="page-item <?php echo ($i == $current_page) ? 'active' : ''; ?>">
-                                    <a class="page-link" href="<?= $page_url ?>page=<?php echo $i; ?>"><?php echo $i; ?></a>
-                                </li>
-                            <?php endfor; 
-                            
-                            if ($end_page < $total_pages) {
-                                if ($end_page < $total_pages - 1) echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                                echo '<li class="page-item"><a class="page-link" href="' . $page_url . 'page='.$total_pages.'">'.$total_pages.'</a></li>';
-                            }
-                            ?>
-                            
-                            <li class="page-item <?php echo ($current_page >= $total_pages) ? 'disabled' : ''; ?>">
-                                <a class="page-link" href="<?= $page_url ?>page=<?php echo ($current_page >= $total_pages) ? $total_pages : $current_page + 1; ?>" aria-label="Next">
-                                    <span aria-hidden="true">&raquo;</span>
+            <!-- Pagination for Member -->
+            <?php if ($total_pages_member > 1): ?>
+                <nav aria-label="Member pagination" style="margin-top: 3rem;">
+                    <ul class="pagination justify-content-center" style="gap: 0.5rem;">
+                        <?php 
+                        $page_url = "?";
+                        if (!empty($search_name)) {
+                            $page_url .= "name=" . urlencode($search_name) . "&";
+                        }
+                        ?>
+                        
+                        <?php if ($current_page_member > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="<?= $page_url ?>page_member=<?php echo $current_page_member - 1; ?>#focus-areas" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo; Previous</span>
                                 </a>
                             </li>
-                        </ul>
-                        <div class="text-center mt-3 text-muted small">
-                            Showing <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> of <?php echo $total_items; ?> experts
-                        </div>
-                    </nav>
-                <?php endif; ?>
-            </div>
-        </section>
+                        <?php else: ?>
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-hidden="true">&laquo; Previous</span>
+                            </li>
+                        <?php endif; ?>
+                        
+                        <?php
+                        $start_page = max(1, $current_page_member - 2);
+                        $end_page = min($total_pages_member, $current_page_member + 2);
+                        
+                        if ($start_page > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="<?= $page_url ?>page_member=1#focus-areas">1</a>
+                            </li>
+                            <?php if ($start_page > 2): ?>
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                        
+                        <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                            <li class="page-item <?php echo ($i == $current_page_member) ? 'active' : ''; ?>">
+                                <a class="page-link" href="<?= $page_url ?>page_member=<?php echo $i; ?>#focus-areas"><?php echo $i; ?></a>
+                            </li>
+                        <?php endfor; ?>
+                        
+                        <?php if ($end_page < $total_pages_member): ?>
+                            <?php if ($end_page < $total_pages_member - 1): ?>
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            <?php endif; ?>
+                            <li class="page-item">
+                                <a class="page-link" href="<?= $page_url ?>page_member=<?php echo $total_pages_member; ?>#focus-areas"><?php echo $total_pages_member; ?></a>
+                            </li>
+                        <?php endif; ?>
+                        
+                        <?php if ($current_page_member < $total_pages_member): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="<?= $page_url ?>page_member=<?php echo $current_page_member + 1; ?>#focus-areas" aria-label="Next">
+                                    <span aria-hidden="true">Next &raquo;</span>
+                                </a>
+                            </li>
+                        <?php else: ?>
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-hidden="true">Next &raquo;</span>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
+                    
+                </nav>
+            <?php endif; ?>
+        </div>
+    </section>
     </main>
-    
-    <div style="flex-shrink: 0; margin-top: auto; width: 100%; position: relative; z-index: 1;">
-        <?php include 'includes/footer.php'; ?>
-    </div>
+
+    <?php include 'includes/footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
