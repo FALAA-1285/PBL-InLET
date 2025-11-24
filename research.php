@@ -267,9 +267,7 @@ $progress_list = $stmt->fetchAll();
                             </li>
                         <?php endif; ?>
                     </ul>
-                    <div class="text-center mt-3" style="color: var(--gray);">
-                        Menampilkan <?php echo ($offset_artikel + 1); ?> - <?php echo min($offset_artikel + $items_per_page, $total_items_artikel); ?> dari <?php echo $total_items_artikel; ?> artikel
-                    </div>
+                    
                 </nav>
             <?php endif; ?>
         </div>
