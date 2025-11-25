@@ -100,7 +100,7 @@ $alat_list = $alat_stmt->fetchAll();
 // Get active peminjaman
 $peminjaman_stmt = $conn->query("SELECT p.*, a.nama_alat, a.stock 
                                   FROM peminjaman p 
-                                  JOIN alat_lab a ON p.id_alat = a.id_alat 
+                                  JOIN alat_lab a ON p.id_alat = a.id_alat_lab
                                   WHERE p.status = 'dipinjam' 
                                   ORDER BY p.tanggal_pinjam DESC");
 $peminjaman_list = $peminjaman_stmt->fetchAll();
