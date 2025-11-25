@@ -3,14 +3,17 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 $current_page = basename($_SERVER['PHP_SELF']);
+$is_service_page = str_contains($_SERVER['PHP_SELF'], '/service/');
+$root_base = $is_service_page ? '../' : '';
+$service_base = $is_service_page ? '' : 'service/';
 ?>
 
 <header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top shadow-sm">
         <div class="container">
 
-            <a href="index.php" class="navbar-brand">
-                <img src="assets/logo.png" alt="Logo" style="height: 40px;">
+            <a href="<?= $root_base ?>index.php" class="navbar-brand">
+                <img src="<?= $root_base ?>assets/logo.png" alt="Logo" style="height: 40px;">
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -22,22 +25,22 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
                     <li class="nav-item">
                         <a class="nav-link <?= ($current_page == 'index.php') ? 'active text-primary fw-bold' : ''; ?>"
-                            href="index.php">Home</a>
+                            href="<?= $root_base ?>index.php">Home</a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link <?= ($current_page == 'research.php') ? 'active text-primary fw-bold' : ''; ?>"
-                            href="research.php">Research</a>
+                            href="<?= $root_base ?>research.php">Research</a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link <?= ($current_page == 'member.php') ? 'active text-primary fw-bold' : ''; ?>"
-                            href="member.php">Member</a>
+                            href="<?= $root_base ?>member.php">Member</a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link <?= ($current_page == 'news.php') ? 'active text-primary fw-bold' : ''; ?>"
-                            href="news.php">News</a>
+                            href="<?= $root_base ?>news.php">News</a>
                     </li>
 
                     <li class="nav-item dropdown">
@@ -49,17 +52,17 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         <ul class="dropdown-menu custom-dropdown shadow-sm border-0" aria-labelledby="serviceDropdown">
                             <li>
                                 <a class="dropdown-item <?= ($current_page == 'peminjaman.php') ? 'active text-primary fw-bold' : ''; ?>"
-                                    href="peminjaman.php">Peminjaman</a>
+                                    href="<?= $service_base ?>peminjaman.php">Peminjaman</a>
                             </li>
 
                             <li>
                                 <a class="dropdown-item <?= ($current_page == 'absen.php') ? 'active text-primary fw-bold' : ''; ?>"
-                                    href="absen.php">Absensi</a>
+                                    href="<?= $service_base ?>absen.php">Absensi</a>
                             </li>
 
                             <li>
                                 <a class="dropdown-item <?= ($current_page == 'buku_tamu.php') ? 'active text-primary fw-bold' : ''; ?>"
-                                    href="buku_tamu.php">Buku Tamu</a>
+                                    href="<?= $service_base ?>buku_tamu.php">Buku Tamu</a>
                             </li>
                         </ul>
                     </li>

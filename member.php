@@ -17,19 +17,19 @@ $where_clauses = [];
 $params = [];
 
 if (!empty($search_query)) {
-    $where_clauses[] = "m.nama ILIKE :search";
+    $where_clauses[] = "nama ILIKE :search";
     $params[':search'] = '%' . $search_query . '%';
 }
 
 if (!empty($letter_filter) && strlen($letter_filter) == 1 && ctype_alpha($letter_filter)) {
-    $where_clauses[] = "UPPER(SUBSTRING(m.nama FROM 1 FOR 1)) = :letter";
+    $where_clauses[] = "UPPER(SUBSTRING(nama FROM 1 FOR 1)) = :letter";
     $params[':letter'] = $letter_filter;
 }
 
 $where_sql = !empty($where_clauses) ? 'WHERE ' . implode(' AND ', $where_clauses) : '';
 
 // Get total count
-$count_sql = "SELECT COUNT(*) FROM member m $where_sql";
+$count_sql = "SELECT COUNT(*) FROM member $where_sql";
 $stmt = $conn->prepare($count_sql);
 foreach ($params as $key => $value) {
     $stmt->bindValue($key, $value);
@@ -38,12 +38,11 @@ $stmt->execute();
 $total_items = $stmt->fetchColumn();
 $total_pages = ceil($total_items / $items_per_page);
 
-// Get members with profiles
-$sql = "SELECT m.*, pm.alamat, pm.no_tlp, pm.deskripsi 
-        FROM member m 
-        LEFT JOIN profil_member pm ON m.id_member = pm.id_member 
+// Get members (all fields are already in member table)
+$sql = "SELECT * 
+        FROM member 
         $where_sql
-        ORDER BY m.nama
+        ORDER BY nama
         LIMIT :limit OFFSET :offset";
 $stmt = $conn->prepare($sql);
 foreach ($params as $key => $value) {

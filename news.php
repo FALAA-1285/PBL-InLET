@@ -33,61 +33,46 @@ $stmt->execute();
 $news_list = $stmt->fetchAll();
 $total_pages = ceil($total_items / $items_per_page);
 
-// Create gallery table if not exists
+// Get gallery from existing database table
 try {
-    $conn->exec("CREATE TABLE IF NOT EXISTS gallery (
-        id_gallery SERIAL PRIMARY KEY,
-        gambar VARCHAR(500) NOT NULL,
-        judul VARCHAR(255),
-        deskripsi VARCHAR(1000),
-        urutan INTEGER DEFAULT 0,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-    )");
-    $conn->exec("CREATE INDEX IF NOT EXISTS idx_gallery_urutan ON gallery(urutan)");
-    $conn->exec("CREATE INDEX IF NOT EXISTS idx_gallery_created ON gallery(created_at)");
-} catch (PDOException $e) {
-    // Table might already exist, continue
-}
-
-// Get gallery from database
-try {
-    $gallery_stmt = $conn->query("SELECT gambar, judul FROM gallery ORDER BY urutan ASC, created_at DESC");
-    $all_gallery = $gallery_stmt->fetchAll();
+    $gallery_stmt = $conn->query("SELECT gambar, judul, deskripsi FROM gallery ORDER BY urutan ASC, created_at DESC");
+    $all_gallery = $gallery_stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // If no gallery in database, use dummy data as fallback
     if (empty($all_gallery)) {
         for ($i = 1; $i <= 80; $i++) {
             $w = rand(320, 460);
             $h = rand(240, 500);
-            $all_gallery[] = ["gambar" => "https://picsum.photos/seed/news{$i}/{$w}/{$h}", "judul" => ""];
+            $all_gallery[] = [
+                "img" => "https://picsum.photos/seed/news{$i}/{$w}/{$h}", 
+                "judul" => "Gallery Image {$i}",
+                "deskripsi" => ""
+            ];
         }
     } else {
-        // Rename 'gambar' to 'img' for compatibility
+        // Rename 'gambar' to 'img' for compatibility with existing JavaScript
         $all_gallery = array_map(function ($item) {
-            return ["img" => $item['gambar'], "judul" => $item['judul'] ?? ''];
+            return [
+                "img" => $item['gambar'], 
+                "judul" => $item['judul'] ?? 'Gallery Image',
+                "deskripsi" => $item['deskripsi'] ?? ''
+            ];
         }, $all_gallery);
     }
 } catch (PDOException $e) {
-    // Fallback to dummy data if table doesn't exist
+    // Fallback to dummy data if query fails
+    error_log("Gallery query error: " . $e->getMessage());
     $all_gallery = [];
     for ($i = 1; $i <= 80; $i++) {
         $w = rand(320, 460);
         $h = rand(240, 500);
-        $all_gallery[] = ["img" => "https://picsum.photos/seed/news{$i}/{$w}/{$h}"];
+        $all_gallery[] = [
+            "img" => "https://picsum.photos/seed/news{$i}/{$w}/{$h}",
+            "judul" => "Gallery Image {$i}",
+            "deskripsi" => ""
+        ];
     }
 }
-
-// AJAX endpoint to load more gallery items (disabled, using pagination)
-// if (isset($_GET['action']) && $_GET['action'] === 'load_gallery') {
-//     $limit = 12;
-//     $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-//     $start = ($page - 1) * $limit;
-//     $slice = array_slice($all_gallery, $start, $limit);
-//     header('Content-Type: application/json; charset=utf-8');
-//     echo json_encode(array_values($slice));
-//     exit;
-// }
 
 // Pagination for gallery
 $gallery_items_per_page = 12;
@@ -280,12 +265,21 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
                 </div>
                 <div id="pinterest-grid" class="pinterest-grid">
                     <?php foreach ($gallery_init as $g): ?>
+                        <?php
+                        $rawImg = $g['img'] ?? '';
+                        $imgSrc = ($rawImg !== null && trim($rawImg) !== '')
+                            ? htmlspecialchars($rawImg, ENT_QUOTES, 'UTF-8')
+                            : 'https://via.placeholder.com/400x300/cccccc/666666?text=Gallery';
+                        ?>
                         <div class="pin-item">
                             <div class="pin-img-wrapper">
-                                <img src="<?= htmlspecialchars($g['img']) ?>" alt="Gallery Image"
+                                <img src="<?= $imgSrc ?>" alt="<?= htmlspecialchars($g['judul'] ?? 'Gallery Image') ?>"
                                     onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Gallery';">
                                 <div class="pin-overlay">
-                                    <h5 class="pin-title"><?= htmlspecialchars($g['judul'] ?? 'Image') ?></h5>
+                                    <h5 class="pin-title"><?= htmlspecialchars($g['judul'] ?? 'Gallery Image') ?></h5>
+                                    <?php if (!empty($g['deskripsi'])): ?>
+                                        <p class="pin-desc"><?= htmlspecialchars($g['deskripsi']) ?></p>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -371,19 +365,35 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
         // Swiper init
         new Swiper(".teamSwiper", { slidesPerView: 3, spaceBetween: 30, navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" }, breakpoints: { 0: { slidesPerView: 1 }, 576: { slidesPerView: 2 }, 992: { slidesPerView: 3 } } });
 
-        // Masonry + Infinite Scroll
+        // Masonry Layout
         document.addEventListener("DOMContentLoaded", function () {
             const container = document.getElementById("pinterest-grid");
-            const gap = 15; let page = 2; let allLoaded = false; let isLoading = false;
+            const gap = 15;
 
-            function getColumns() { if (window.innerWidth < 576) return 1; if (window.innerWidth < 768) return 2; return 3; }
+            function getColumns() { 
+                if (window.innerWidth < 576) return 1; 
+                if (window.innerWidth < 768) return 2; 
+                return 3; 
+            }
+            
             function masonryLayout() {
                 const items = Array.from(container.querySelectorAll(".pin-item"));
                 const columns = getColumns();
-                if (columns === 1) { container.style.height = 'auto'; items.forEach(i => { i.style.position = ''; i.style.transform = ''; i.style.width = '100%'; }); return; }
+                
+                if (columns === 1) { 
+                    container.style.height = 'auto'; 
+                    items.forEach(i => { 
+                        i.style.position = ''; 
+                        i.style.transform = ''; 
+                        i.style.width = '100%'; 
+                    }); 
+                    return; 
+                }
+                
                 items.forEach(i => i.style.position = 'absolute');
                 const colWidth = (container.offsetWidth - (columns - 1) * gap) / columns;
                 const colHeights = Array(columns).fill(0);
+                
                 items.forEach(item => {
                     item.style.width = colWidth + 'px';
                     const minCol = colHeights.indexOf(Math.min(...colHeights));
@@ -393,68 +403,34 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
                     item.classList.add('show');
                     colHeights[minCol] += item.offsetHeight + gap;
                 });
+                
                 container.style.height = Math.max(...colHeights) + 'px';
             }
 
-            function appendItems(data) {
-                if (!data || data.length === 0) return;
-                data.forEach(g => {
-                    const item = document.createElement('div'); item.className = 'pin-item';
-                    const wrapper = document.createElement('div'); wrapper.className = 'pin-img-wrapper';
-                    const img = document.createElement('img'); img.src = g.img; img.alt = g.judul || 'Gallery Image';
-                    img.onerror = function () { this.src = 'https://via.placeholder.com/400x300/cccccc/666666?text=Gallery'; };
-                    const overlay = document.createElement('div'); overlay.className = 'pin-overlay';
-                    const title = document.createElement('h5'); title.className = 'pin-title'; title.textContent = g.judul || 'Image'; overlay.appendChild(title);
-                    wrapper.appendChild(img); wrapper.appendChild(overlay); item.appendChild(wrapper); container.appendChild(item);
-                    img.onload = masonryLayout;
+            function initialLayout() {
+                const imgs = container.querySelectorAll('img');
+                let loaded = 0;
+                
+                imgs.forEach(img => {
+                    if (img.complete) {
+                        loaded++;
+                    } else {
+                        img.addEventListener('load', () => {
+                            loaded++;
+                            if (loaded === imgs.length) masonryLayout();
+                        });
+                        img.addEventListener('error', () => {
+                            loaded++;
+                            if (loaded === imgs.length) masonryLayout();
+                        });
+                    }
                 });
+                
+                if (loaded === imgs.length) masonryLayout();
             }
-            imgs.forEach(img => {
-                if (img.complete) {
-                    loaded++;
-                } else {
-                    img.addEventListener('load', () => {
-                        loaded++;
-                        if (loaded === imgs.length) masonryLayout();
-                    });
-                    img.addEventListener('error', () => {
-                        loaded++;
-                        if (loaded === imgs.length) masonryLayout();
-                    });
-                }
-            });
-            if (loaded === imgs.length) masonryLayout();
-        }
 
-        initialLayout();
-
-        // Disabled infinite scroll, using pagination instead
-        // let scrollTimer = null;
-        // window.addEventListener('scroll', () => {
-        //     if (scrollTimer) clearTimeout(scrollTimer);
-        //     scrollTimer = setTimeout(() => {
-        //         if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 200)) {
-        //             loadMore();
-        //         }
-        //     }, 120);
-        // });
-
-        function loadMore() {
-            if (isLoading || allLoaded) return;
-            isLoading = true; document.getElementById('loader').style.display = 'block';
-            fetch(`<?= basename($_SERVER['PHP_SELF']); ?>?action=load_gallery&page=${page}`)
-                .then(r => r.json())
-                .then(data => { if (!data || data.length === 0) { allLoaded = true; } else { appendItems(data); page++; } })
-                .finally(() => { isLoading = false; document.getElementById('loader').style.display = 'none'; });
-        }
-
-        window.addEventListener('scroll', () => { if (window.innerHeight + window.scrollY > document.body.offsetHeight - 200) loadMore(); });
-        window.addEventListener('resize', masonryLayout);
-
-        // initial layout
-        const imgs = container.querySelectorAll('img'); let loadedCount = 0;
-        imgs.forEach(img => { if (img.complete) loadedCount++; else img.onload = img.onerror = () => { loadedCount++; if (loadedCount === imgs.length) masonryLayout(); } });
-        if (loadedCount === imgs.length) masonryLayout();
+            initialLayout();
+            window.addEventListener('resize', masonryLayout);
         });
     </script>
 

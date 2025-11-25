@@ -6,10 +6,12 @@ $conn = getDBConnection();
 
 $message = '';
 $message_type = '';
+$ajax_response = null;
 
 // Handle actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
+    $is_ajax = isset($_POST['ajax']) && $_POST['ajax'] === '1';
     
     if ($action === 'mark_read') {
         $id = $_POST['id'] ?? 0;
@@ -18,9 +20,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute(['id' => $id]);
             $message = 'Pesan ditandai sebagai sudah dibaca!';
             $message_type = 'success';
+            $ajax_response = ['success' => true, 'status' => 'read'];
         } catch(PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
+            $ajax_response = ['success' => false, 'message' => $e->getMessage()];
         }
     } elseif ($action === 'mark_unread') {
         $id = $_POST['id'] ?? 0;
@@ -29,24 +33,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute(['id' => $id]);
             $message = 'Pesan ditandai sebagai belum dibaca!';
             $message_type = 'success';
+            $ajax_response = ['success' => true, 'status' => 'unread'];
         } catch(PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
-        }
-    } elseif ($action === 'add_response') {
-        $id = $_POST['id'] ?? 0;
-        $response = trim($_POST['response'] ?? '');
-        try {
-            $stmt = $conn->prepare("UPDATE buku_tamu SET admin_response = :response WHERE id_buku_tamu = :id");
-            $stmt->execute([
-                'id' => $id,
-                'response' => $response ?: null
-            ]);
-            $message = 'Respon berhasil disimpan!';
-            $message_type = 'success';
-        } catch(PDOException $e) {
-            $message = 'Error: ' . $e->getMessage();
-            $message_type = 'error';
+            $ajax_response = ['success' => false, 'message' => $e->getMessage()];
         }
     } elseif ($action === 'delete') {
         $id = $_POST['id'] ?? 0;
@@ -55,10 +46,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute(['id' => $id]);
             $message = 'Pesan berhasil dihapus!';
             $message_type = 'success';
+            $ajax_response = ['success' => true, 'status' => 'deleted'];
         } catch(PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
+            $ajax_response = ['success' => false, 'message' => $e->getMessage()];
         }
+    }
+
+    if (!empty($is_ajax)) {
+        header('Content-Type: application/json');
+        echo json_encode($ajax_response ?? ['success' => false, 'message' => 'Unknown error']);
+        exit;
     }
 }
 
@@ -195,158 +194,156 @@ $unread_count = $stmt->fetchColumn();
             margin-left: 0.5rem;
         }
 
-        .message-card {
+        .table-wrapper {
             background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
-            transition: all 0.3s;
-            border-left: 4px solid transparent;
+            border-radius: 18px;
+            padding: 0;
+            box-shadow: 0 10px 35px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
         }
 
-        .message-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        .messages-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 900px;
         }
 
-        .message-card.unread {
-            border-left-color: var(--primary);
-            background: linear-gradient(to right, rgba(79, 70, 229, 0.05), white);
+        .messages-table thead th {
+            background: var(--light);
+            padding: 1.1rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray);
         }
 
-        .message-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-            gap: 1rem;
+        .messages-table tbody td {
+            padding: 1.1rem;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+            background: white;
         }
 
-        .message-info {
-            flex: 1;
+        .messages-table tbody tr.unread {
+            background: rgba(79, 70, 229, 0.04);
         }
 
-        .message-name {
-            font-size: 1.25rem;
-            font-weight: 700;
+        .messages-table tbody tr:hover td {
+            background: rgba(79, 70, 229, 0.03);
+        }
+
+        .messages-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .message-text {
+            background: var(--light);
+            padding: 0.75rem;
+            border-radius: 10px;
             color: var(--dark);
-            margin-bottom: 0.25rem;
+            line-height: 1.5;
+            white-space: pre-line;
         }
 
-        .message-meta {
+        .message-text.empty {
+            background: #f1f5f9;
+            color: var(--gray);
+            font-style: italic;
+        }
+
+        .guest-info {
+            font-weight: 600;
+            color: var(--dark);
             display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .guest-meta {
+            margin-top: 0.35rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
             color: var(--gray);
             font-size: 0.9rem;
         }
 
-        .message-meta i {
-            margin-right: 0.25rem;
+        .guest-meta span i {
+            margin-right: 0.35rem;
         }
 
-        .message-actions {
+        .actions-cell {
             display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 0.4rem;
+            min-width: 180px;
+        }
+
+        .actions-cell form {
+            margin: 0;
+        }
+
+        .message-panel {
+            margin-top: 0.6rem;
+            display: none;
+        }
+
+        .message-panel.active {
+            display: block;
         }
 
         .btn-action {
-            padding: 0.5rem 1rem;
+            padding: 0.45rem 0.85rem;
             border: none;
             border-radius: 8px;
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s;
-            text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-read {
-            background: #10b981;
+            gap: 0.35rem;
             color: white;
         }
 
-        .btn-read:hover {
-            background: #059669;
-        }
+        .btn-read { background: #10b981; }
+        .btn-read:hover { background: #059669; }
+        .btn-unread { background: #f59e0b; }
+        .btn-unread:hover { background: #d97706; }
+        .btn-delete { background: #ef4444; }
+        .btn-delete:hover { background: #dc2626; }
+        .btn-view { background: #3b82f6; }
+        .btn-view:hover { background: #2563eb; }
 
-        .btn-unread {
-            background: #f59e0b;
-            color: white;
-        }
-
-        .btn-unread:hover {
-            background: #d97706;
-        }
-
-        .btn-delete {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background: #dc2626;
-        }
-
-        .btn-response {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-response:hover {
-            background: var(--primary-dark);
-        }
-
-        .message-content {
-            background: var(--light);
-            padding: 1rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            color: var(--dark);
-            line-height: 1.6;
-        }
-
-        .admin-response {
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-            padding: 1rem;
-            border-radius: 12px;
-            margin-top: 1rem;
-            border-left: 4px solid var(--primary);
-        }
-
-        .admin-response h5 {
-            color: var(--primary);
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            display: flex;
+        .status-badge {
+            display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.25rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
         }
 
-        .response-form {
-            margin-top: 1rem;
+        .status-badge.unread {
+            background: rgba(79,70,229,0.15);
+            color: var(--primary);
         }
 
-        .response-form textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 100px;
-            margin-bottom: 0.5rem;
+        .status-badge.read {
+            background: rgba(16,185,129,0.15);
+            color: #047857;
         }
 
-        .response-form textarea:focus {
-            outline: none;
-            border-color: var(--primary);
+        .status-cell {
+            min-width: 200px;
+        }
+
+        .status-time {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-top: 0.4rem;
         }
 
         .empty-state {
@@ -394,7 +391,7 @@ $unread_count = $stmt->fetchColumn();
                     <a href="?filter=unread" class="filter-tab <?= $filter === 'unread' ? 'active' : ''; ?>">
                         Belum Dibaca
                         <?php if ($unread_count > 0): ?>
-                            <span class="badge-unread"><?= $unread_count; ?></span>
+                            <span class="badge-unread" id="unread-counter"><?= $unread_count; ?></span>
                         <?php endif; ?>
                     </a>
                     <a href="?filter=read" class="filter-tab <?= $filter === 'read' ? 'active' : ''; ?>">
@@ -416,91 +413,79 @@ $unread_count = $stmt->fetchColumn();
                     <p>Belum ada pesan dari pengunjung.</p>
                 </div>
             <?php else: ?>
-                <?php foreach ($messages as $msg): ?>
-                    <div class="message-card <?= !$msg['is_read'] ? 'unread' : ''; ?>">
-                        <div class="message-header">
-                            <div class="message-info">
-                                <div class="message-name">
-                                    <?= htmlspecialchars($msg['nama']); ?>
-                                    <?php if (!$msg['is_read']): ?>
-                                        <span class="badge-unread">Baru</span>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="message-meta">
-                                    <span><i class="ri-mail-line"></i> <?= htmlspecialchars($msg['email']); ?></span>
-                                    <?php if ($msg['institusi']): ?>
-                                        <span><i class="ri-building-line"></i> <?= htmlspecialchars($msg['institusi']); ?></span>
-                                    <?php endif; ?>
-                                    <?php if ($msg['no_hp']): ?>
-                                        <span><i class="ri-phone-line"></i> <?= htmlspecialchars($msg['no_hp']); ?></span>
-                                    <?php endif; ?>
-                                    <span><i class="ri-time-line"></i> <?= date('d M Y, H:i', strtotime($msg['created_at'])); ?></span>
-                                </div>
-                            </div>
-                            <div class="message-actions">
-                                <?php if (!$msg['is_read']): ?>
-                                    <form method="POST" style="display: inline;" onsubmit="return confirm('Tandai pesan ini sebagai sudah dibaca?');">
-                                        <input type="hidden" name="action" value="mark_read">
-                                        <input type="hidden" name="id" value="<?= $msg['id_buku_tamu']; ?>">
-                                        <button type="submit" class="btn-action btn-read">
-                                            <i class="ri-check-line"></i> Tandai Dibaca
-                                        </button>
-                                    </form>
-                                <?php else: ?>
-                                    <form method="POST" style="display: inline;">
-                                        <input type="hidden" name="action" value="mark_unread">
-                                        <input type="hidden" name="id" value="<?= $msg['id_buku_tamu']; ?>">
-                                        <button type="submit" class="btn-action btn-unread">
-                                            <i class="ri-close-line"></i> Tandai Belum Dibaca
-                                        </button>
-                                    </form>
-                                <?php endif; ?>
-                                <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus pesan ini?');">
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="id" value="<?= $msg['id_buku_tamu']; ?>">
-                                    <button type="submit" class="btn-action btn-delete">
-                                        <i class="ri-delete-bin-line"></i> Hapus
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                        
-                        <?php if (!empty($msg['pesan'])): ?>
-                            <div class="message-content">
-                                <?= nl2br(htmlspecialchars($msg['pesan'])); ?>
-                            </div>
-                        <?php else: ?>
-                            <div class="message-content" style="background: #f1f5f9; color: #64748b; font-style: italic;">
-                                <i class="ri-user-line"></i> Daftar hadir - Tidak ada pesan
-                            </div>
-                        <?php endif; ?>
-
-                        <?php if ($msg['admin_response']): ?>
-                            <div class="admin-response">
-                                <h5><i class="ri-admin-line"></i> Respon Admin</h5>
-                                <p><?= nl2br(htmlspecialchars($msg['admin_response'])); ?></p>
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="response-form" id="response-form-<?= $msg['id_buku_tamu']; ?>" style="display: none;">
-                            <form method="POST">
-                                <input type="hidden" name="action" value="add_response">
-                                <input type="hidden" name="id" value="<?= $msg['id_buku_tamu']; ?>">
-                                <textarea name="response" placeholder="Tulis respon untuk pengunjung..."><?= htmlspecialchars($msg['admin_response'] ?? ''); ?></textarea>
-                                <button type="submit" class="btn-action btn-response">
-                                    <i class="ri-send-plane-fill"></i> Simpan Respon
-                                </button>
-                                <button type="button" class="btn-action" onclick="document.getElementById('response-form-<?= $msg['id_buku_tamu']; ?>').style.display='none'" style="background: #6b7280; color: white;">
-                                    <i class="ri-close-line"></i> Batal
-                                </button>
-                            </form>
-                        </div>
-
-                        <button type="button" class="btn-action btn-response" onclick="toggleResponseForm(<?= $msg['id_buku_tamu']; ?>)">
-                            <i class="ri-reply-line"></i> <?= $msg['admin_response'] ? 'Edit Respon' : 'Tambah Respon'; ?>
-                        </button>
-                    </div>
-                <?php endforeach; ?>
+                <div class="table-wrapper">
+                    <table class="messages-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Data Pengunjung</th>
+                                <th>Pesan</th>
+                                <th>Status & Waktu</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($messages as $index => $msg): ?>
+                                <tr id="row-<?= $msg['id_buku_tamu']; ?>" data-is-read="<?= $msg['is_read'] ? '1' : '0'; ?>" class="<?= !$msg['is_read'] ? 'unread' : ''; ?>">
+                                    <td><?= $offset + $index + 1; ?></td>
+                                    <td>
+                                        <div class="guest-info">
+                                            <?= htmlspecialchars($msg['nama']); ?>
+                                            <?php if (!$msg['is_read']): ?>
+                                                <span class="badge-unread" id="badge-new-<?= $msg['id_buku_tamu']; ?>">Baru</span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="guest-meta">
+                                            <span><i class="ri-mail-line"></i> <?= htmlspecialchars($msg['email']); ?></span>
+                                            <?php if ($msg['institusi']): ?>
+                                                <span><i class="ri-building-line"></i> <?= htmlspecialchars($msg['institusi']); ?></span>
+                                            <?php endif; ?>
+                                            <?php if ($msg['no_hp']): ?>
+                                                <span><i class="ri-phone-line"></i> <?= htmlspecialchars($msg['no_hp']); ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <?php if (!empty($msg['pesan'])): ?>
+                                            <button type="button"
+                                                    class="btn-action btn-view"
+                                                    onclick="toggleMessage(<?= $msg['id_buku_tamu']; ?>)">
+                                                <i class="ri-eye-line"></i> Baca Pesan
+                                            </button>
+                                            <div id="message-<?= $msg['id_buku_tamu']; ?>" class="message-panel">
+                                                <div class="message-text">
+                                                    <?= nl2br(htmlspecialchars($msg['pesan'])); ?>
+                                                </div>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="message-text empty">
+                                                <i class="ri-user-line"></i> Daftar hadir - Tidak ada pesan
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="status-cell">
+                                        <span class="status-badge <?= $msg['is_read'] ? 'read' : 'unread'; ?>" id="status-badge-<?= $msg['id_buku_tamu']; ?>">
+                                            <i class="<?= $msg['is_read'] ? 'ri-check-line' : 'ri-time-line'; ?>"></i>
+                                            <span><?= $msg['is_read'] ? 'Sudah dibaca' : 'Belum dibaca'; ?></span>
+                                        </span>
+                                        <div class="status-time" id="status-time-<?= $msg['id_buku_tamu']; ?>">
+                                            <?= date('d M Y, H:i', strtotime($msg['created_at'])); ?>
+                                        </div>
+                                    </td>
+                                    <td class="actions-cell">
+                                        <form method="POST" onsubmit="return confirm('Yakin hapus pesan ini?');">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="id" value="<?= $msg['id_buku_tamu']; ?>">
+                                            <button type="submit" class="btn-action btn-delete">
+                                                <i class="ri-delete-bin-line"></i> Hapus
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
 
                 <!-- Pagination -->
                 <?php if ($total_pages > 1): ?>
@@ -552,12 +537,73 @@ $unread_count = $stmt->fetchColumn();
     </main>
 
     <script>
-        function toggleResponseForm(id) {
-            const form = document.getElementById('response-form-' + id);
-            if (form.style.display === 'none') {
-                form.style.display = 'block';
+        function toggleMessage(id) {
+            const panel = document.getElementById('message-' + id);
+            if (!panel) {
+                return;
+            }
+            panel.classList.toggle('active');
+
+            const row = document.getElementById('row-' + id);
+            if (row && row.dataset.isRead === '0') {
+                markMessageAsRead(id, row);
+            }
+        }
+
+        function markMessageAsRead(id, row) {
+            const formData = new FormData();
+            formData.append('action', 'mark_read');
+            formData.append('id', id);
+            formData.append('ajax', '1');
+
+            fetch('buku_tamu.php', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      row.dataset.isRead = '1';
+                      row.classList.remove('unread');
+                      updateStatusBadge(id);
+                      removeNewBadge(id);
+                      decrementUnreadCounter();
+                  }
+              }).catch(error => console.error(error));
+        }
+
+        function updateStatusBadge(id) {
+            const badge = document.getElementById('status-badge-' + id);
+            if (badge) {
+                badge.classList.remove('unread');
+                badge.classList.add('read');
+                const icon = badge.querySelector('i');
+                if (icon) {
+                    icon.className = 'ri-check-line';
+                }
+                const text = badge.querySelector('span');
+                if (text) {
+                    text.textContent = 'Sudah dibaca';
+                }
+            }
+        }
+
+        function removeNewBadge(id) {
+            const badge = document.getElementById('badge-new-' + id);
+            if (badge) {
+                badge.remove();
+            }
+        }
+
+        function decrementUnreadCounter() {
+            const counter = document.getElementById('unread-counter');
+            if (!counter) {
+                return;
+            }
+            const value = parseInt(counter.textContent, 10) || 0;
+            if (value <= 1) {
+                counter.remove();
             } else {
-                form.style.display = 'none';
+                counter.textContent = value - 1;
             }
         }
     </script>

@@ -106,14 +106,14 @@ $years_list = $stmt->fetchAll(PDO::FETCH_COLUMN);
 $current_page_progress = isset($_GET['page_progress']) ? max(1, intval($_GET['page_progress'])) : 1;
 $offset_progress = ($current_page_progress - 1) * $items_per_page;
 
-// Get total count for progress
-$stmt = $conn->query("SELECT COUNT(*) FROM progress");
+// Get total count for progress (stored in tabel penelitian)
+$stmt = $conn->query("SELECT COUNT(*) FROM penelitian");
 $total_items_progress = $stmt->fetchColumn();
 $total_pages_progress = ceil($total_items_progress / $items_per_page);
 
 // Get progress with pagination
 $stmt = $conn->prepare("SELECT p.*, a.judul as artikel_judul, m.nama as mahasiswa_nama, mem.nama as member_nama 
-                      FROM progress p 
+                      FROM penelitian p 
                       LEFT JOIN artikel a ON p.id_artikel = a.id_artikel 
                       LEFT JOIN mahasiswa m ON p.id_mhs = m.id_mhs 
                       LEFT JOIN member mem ON p.id_member = mem.id_member 

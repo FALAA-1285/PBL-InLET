@@ -19,9 +19,9 @@ $stats['news'] = $stmt->fetch()['count'];
 $stmt = $conn->query("SELECT COUNT(*) as count FROM member");
 $stats['members'] = $stmt->fetch()['count'];
 
-// Total Progress
-$stmt = $conn->query("SELECT COUNT(*) as count FROM progress");
-$stats['progress'] = $stmt->fetch()['count'];
+// Total Penelitian
+$stmt = $conn->query("SELECT COUNT(*) as count FROM penelitian");
+$stats['penelitian'] = $stmt->fetch()['count'];
 
 // Total Visitors
 $stmt = $conn->query("SELECT SUM(visit_count) as total FROM visitor");
@@ -147,8 +147,29 @@ $recent_news = $stmt->fetchAll();
                 <div class="stat-number"><?= $stats['members']; ?></div>
             </div>
             <div class="stat-card">
-                <h3>Total Progress</h3>
-                <div class="stat-number"><?= $stats['progress']; ?></div>
+                <h3>Total Penelitian</h3>
+                <div class="stat-number"><?= $stats['penelitian']; ?></div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Mahasiswa</h3>
+                <div class="stat-number"><?php 
+                    $stmt = $conn->query("SELECT COUNT(*) as count FROM mahasiswa");
+                    echo $stmt->fetch()['count'];
+                ?></div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Alat Lab</h3>
+                <div class="stat-number"><?php 
+                    $stmt = $conn->query("SELECT COUNT(*) as count FROM alat_lab");
+                    echo $stmt->fetch()['count'];
+                ?></div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Mitra</h3>
+                <div class="stat-number"><?php 
+                    $stmt = $conn->query("SELECT COUNT(*) as count FROM mitra");
+                    echo $stmt->fetch()['count'];
+                ?></div>
             </div>
             <div class="stat-card">
                 <h3>Total Kunjungan</h3>

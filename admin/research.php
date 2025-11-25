@@ -24,27 +24,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
         }
-    } elseif ($action === 'add_progress') {
+    } elseif ($action === 'add_penelitian') {
         $judul = $_POST['judul'] ?? '';
         $tahun = $_POST['tahun'] ?? null;
         $deskripsi = $_POST['deskripsi'] ?? '';
         $id_artikel = $_POST['id_artikel'] ?? null;
         $id_mhs = $_POST['id_mhs'] ?? null;
         $id_member = $_POST['id_member'] ?? null;
-        $video_url = trim($_POST['video_url'] ?? '');
+        $id_produk = $_POST['id_produk'] ?? null;
+        $id_mitra = $_POST['id_mitra'] ?? null;
+        $tgl_mulai = $_POST['tgl_mulai'] ?? null;
+        $tgl_selesai = $_POST['tgl_selesai'] ?? null;
         
         try {
-            $stmt = $conn->prepare("INSERT INTO progress (judul, tahun, deskripsi, id_artikel, id_mhs, id_member, video_url) VALUES (:judul, :tahun, :deskripsi, :id_artikel, :id_mhs, :id_member, :video_url)");
+            $stmt = $conn->prepare("INSERT INTO penelitian (judul, tahun, deskripsi, id_artikel, id_mhs, id_member, id_produk, id_mitra, tgl_mulai, tgl_selesai) VALUES (:judul, :tahun, :deskripsi, :id_artikel, :id_mhs, :id_member, :id_produk, :id_mitra, :tgl_mulai, :tgl_selesai)");
             $stmt->execute([
                 'judul' => $judul,
                 'tahun' => $tahun ?: null,
-                'deskripsi' => $deskripsi,
+                'deskripsi' => $deskripsi ?: null,
                 'id_artikel' => $id_artikel ?: null,
                 'id_mhs' => $id_mhs ?: null,
                 'id_member' => $id_member ?: null,
-                'video_url' => $video_url ?: null
+                'id_produk' => $id_produk ?: null,
+                'id_mitra' => $id_mitra ?: null,
+                'tgl_mulai' => $tgl_mulai ?: null,
+                'tgl_selesai' => $tgl_selesai ?: null
             ]);
-            $message = 'Progress berhasil ditambahkan!';
+            $message = 'Penelitian berhasil ditambahkan!';
             $message_type = 'success';
         } catch(PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
@@ -70,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
         }
-    } elseif ($action === 'update_progress') {
+    } elseif ($action === 'update_penelitian') {
         $id = $_POST['id'] ?? 0;
         $judul = $_POST['judul'] ?? '';
         $tahun = $_POST['tahun'] ?? null;
@@ -78,21 +84,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id_artikel = $_POST['id_artikel'] ?? null;
         $id_mhs = $_POST['id_mhs'] ?? null;
         $id_member = $_POST['id_member'] ?? null;
-        $video_url = trim($_POST['video_url'] ?? '');
+        $id_produk = $_POST['id_produk'] ?? null;
+        $id_mitra = $_POST['id_mitra'] ?? null;
+        $tgl_mulai = $_POST['tgl_mulai'] ?? null;
+        $tgl_selesai = $_POST['tgl_selesai'] ?? null;
         
         try {
-            $stmt = $conn->prepare("UPDATE progress SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, id_artikel = :id_artikel, id_mhs = :id_mhs, id_member = :id_member, video_url = :video_url WHERE id_progress = :id");
+            $stmt = $conn->prepare("UPDATE penelitian SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, id_artikel = :id_artikel, id_mhs = :id_mhs, id_member = :id_member, id_produk = :id_produk, id_mitra = :id_mitra, tgl_mulai = :tgl_mulai, tgl_selesai = :tgl_selesai WHERE id_penelitian = :id");
             $stmt->execute([
                 'id' => $id,
                 'judul' => $judul,
                 'tahun' => $tahun ?: null,
-                'deskripsi' => $deskripsi,
+                'deskripsi' => $deskripsi ?: null,
                 'id_artikel' => $id_artikel ?: null,
                 'id_mhs' => $id_mhs ?: null,
                 'id_member' => $id_member ?: null,
-                'video_url' => $video_url ?: null
+                'id_produk' => $id_produk ?: null,
+                'id_mitra' => $id_mitra ?: null,
+                'tgl_mulai' => $tgl_mulai ?: null,
+                'tgl_selesai' => $tgl_selesai ?: null
             ]);
-            $message = 'Progress berhasil diupdate!';
+            $message = 'Penelitian berhasil diupdate!';
             $message_type = 'success';
         } catch(PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
@@ -109,12 +121,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
         }
-    } elseif ($action === 'delete_progress') {
+    } elseif ($action === 'delete_penelitian') {
         $id = $_POST['id'] ?? 0;
         try {
-            $stmt = $conn->prepare("DELETE FROM progress WHERE id_progress = :id");
+            $stmt = $conn->prepare("DELETE FROM penelitian WHERE id_penelitian = :id");
             $stmt->execute(['id' => $id]);
-            $message = 'Progress berhasil dihapus!';
+            $message = 'Penelitian berhasil dihapus!';
             $message_type = 'success';
         } catch(PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
@@ -137,10 +149,10 @@ if ($current_tab === 'artikel' && isset($_GET['page'])) {
     $current_page_artikel = max(1, intval($_GET['page_artikel']));
 }
 
-if ($current_tab === 'progress' && isset($_GET['page'])) {
+if ($current_tab === 'penelitian' && isset($_GET['page'])) {
     $current_page_progress = max(1, intval($_GET['page']));
-} elseif (isset($_GET['page_progress'])) {
-    $current_page_progress = max(1, intval($_GET['page_progress']));
+} elseif (isset($_GET['page_penelitian'])) {
+    $current_page_progress = max(1, intval($_GET['page_penelitian']));
 }
 
 // Get total count for articles
@@ -160,18 +172,20 @@ $artikels = $stmt->fetchAll();
 $stmt = $conn->query("SELECT id_artikel, judul FROM artikel ORDER BY judul");
 $artikels_dropdown = $stmt->fetchAll();
 
-// Get total count for progress
-$stmt = $conn->query("SELECT COUNT(*) FROM progress");
+// Get total count for penelitian
+$stmt = $conn->query("SELECT COUNT(*) FROM penelitian");
 $total_items_progress = $stmt->fetchColumn();
 $total_pages_progress = ceil($total_items_progress / $items_per_page);
 $offset_progress = ($current_page_progress - 1) * $items_per_page;
 
-// Get progress with pagination
-$stmt = $conn->prepare("SELECT p.*, a.judul as artikel_judul, m.nama as mahasiswa_nama, mem.nama as member_nama 
-                      FROM progress p 
+// Get penelitian with pagination
+$stmt = $conn->prepare("SELECT p.*, a.judul as artikel_judul, m.nama as mahasiswa_nama, mem.nama as member_nama, pr.nama_produk, mt.nama_institusi as mitra_nama
+                      FROM penelitian p 
                       LEFT JOIN artikel a ON p.id_artikel = a.id_artikel 
                       LEFT JOIN mahasiswa m ON p.id_mhs = m.id_mhs 
                       LEFT JOIN member mem ON p.id_member = mem.id_member 
+                      LEFT JOIN produk pr ON p.id_produk = pr.id_produk
+                      LEFT JOIN mitra mt ON p.id_mitra = mt.id_mitra
                       ORDER BY p.created_at DESC
                       LIMIT :limit OFFSET :offset");
 $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
@@ -448,7 +462,7 @@ $member_list = $stmt->fetchAll();
             <div class="admin-header">
                 <div class="admin-header-content">
                     <div>
-                        <p>Kelola artikel dan progress penelitian</p>
+                        <p>Kelola artikel dan penelitian</p>
                         <h1>Research CMS InLET</h1>
                     </div>
                 </div>
@@ -463,7 +477,7 @@ $member_list = $stmt->fetchAll();
 
         <div class="tabs">
             <a href="?tab=artikel&page=1" class="tab <?php echo ($current_tab === 'artikel') ? 'active' : ''; ?>">Artikel</a>
-            <a href="?tab=progress&page=1" class="tab <?php echo ($current_tab === 'progress') ? 'active' : ''; ?>">Progress</a>
+            <a href="?tab=penelitian&page=1" class="tab <?php echo ($current_tab === 'penelitian') ? 'active' : ''; ?>">Penelitian</a>
         </div>
 
         <!-- Artikel Tab -->
@@ -512,7 +526,7 @@ $member_list = $stmt->fetchAll();
             </div>
 
             <div class="data-section">
-                <h2>Daftar Artikel</h2>
+                <h2>Daftar Artikel (<?php echo count($artikels); ?>)</h2>
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -536,11 +550,15 @@ $member_list = $stmt->fetchAll();
                                     <td><?php echo $artikel['tahun'] ?? '-'; ?></td>
                                     <td><?php echo htmlspecialchars(substr($artikel['konten'], 0, 50)) . '...'; ?></td>
                                     <td>
-                                        <button type="button" class="btn-edit" onclick="editArtikel(<?php echo htmlspecialchars(json_encode($artikel)); ?>)">Edit</button>
+                                        <button type="button" class="btn-edit" onclick="editArtikel(<?php echo htmlspecialchars(json_encode($artikel)); ?>)">
+                                            <i class="ri-edit-line"></i> Edit
+                                        </button>
                                         <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus artikel ini?');">
                                             <input type="hidden" name="action" value="delete_artikel">
                                             <input type="hidden" name="id" value="<?php echo $artikel['id_artikel']; ?>">
-                                            <button type="submit" class="btn-delete">Hapus</button>
+                                            <button type="submit" class="btn-delete">
+                                                <i class="ri-delete-bin-line"></i> Hapus
+                                            </button>
                                         </form>
                                     </td>
                                 </tr>
@@ -597,29 +615,29 @@ $member_list = $stmt->fetchAll();
             </div>
         </div>
 
-        <!-- Progress Tab -->
-        <div id="progress-tab" class="tab-content <?php echo ($current_tab === 'progress') ? 'active' : ''; ?>">
-            <!-- Edit Progress Form (Hidden by default) -->
-            <div id="edit-progress-section" class="form-section edit-form-section">
-                <h2>Edit Progress</h2>
-                <form method="POST" action="" id="edit-progress-form">
-                    <input type="hidden" name="action" value="update_progress">
-                    <input type="hidden" name="id" id="edit_progress_id">
+        <!-- Penelitian Tab -->
+        <div id="penelitian-tab" class="tab-content <?php echo ($current_tab === 'penelitian') ? 'active' : ''; ?>">
+            <!-- Edit Penelitian Form (Hidden by default) -->
+            <div id="edit-penelitian-section" class="form-section edit-form-section">
+                <h2>Edit Penelitian</h2>
+                <form method="POST" action="" id="edit-penelitian-form">
+                    <input type="hidden" name="action" value="update_penelitian">
+                    <input type="hidden" name="id" id="edit_penelitian_id">
                     <div class="form-group">
-                        <label>Judul Progress</label>
-                        <input type="text" name="judul" id="edit_progress_judul" required>
+                        <label>Judul Penelitian *</label>
+                        <input type="text" name="judul" id="edit_penelitian_judul" required>
                     </div>
                     <div class="form-group">
                         <label>Tahun</label>
-                        <input type="number" name="tahun" id="edit_progress_tahun" min="2000" max="2099">
+                        <input type="number" name="tahun" id="edit_penelitian_tahun" min="2000" max="2099">
                     </div>
                     <div class="form-group">
                         <label>Deskripsi</label>
-                        <textarea name="deskripsi" id="edit_progress_deskripsi"></textarea>
+                        <textarea name="deskripsi" id="edit_penelitian_deskripsi"></textarea>
                     </div>
                     <div class="form-group">
                         <label>Artikel (Opsional)</label>
-                        <select name="id_artikel" id="edit_progress_id_artikel">
+                        <select name="id_artikel" id="edit_penelitian_id_artikel">
                             <option value="">-- Pilih Artikel --</option>
                             <?php foreach ($artikels_dropdown as $artikel): ?>
                                 <option value="<?php echo $artikel['id_artikel']; ?>">
@@ -630,7 +648,7 @@ $member_list = $stmt->fetchAll();
                     </div>
                     <div class="form-group">
                         <label>Mahasiswa (Opsional)</label>
-                        <select name="id_mhs" id="edit_progress_id_mhs">
+                        <select name="id_mhs" id="edit_penelitian_id_mhs">
                             <option value="">-- Pilih Mahasiswa --</option>
                             <?php foreach ($mahasiswa_list as $mhs): ?>
                                 <option value="<?php echo $mhs['id_mhs']; ?>">
@@ -641,7 +659,7 @@ $member_list = $stmt->fetchAll();
                     </div>
                     <div class="form-group">
                         <label>Member (Opsional)</label>
-                        <select name="id_member" id="edit_progress_id_member">
+                        <select name="id_member" id="edit_penelitian_id_member">
                             <option value="">-- Pilih Member --</option>
                             <?php foreach ($member_list as $mem): ?>
                                 <option value="<?php echo $mem['id_member']; ?>">
@@ -651,21 +669,52 @@ $member_list = $stmt->fetchAll();
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Link YouTube (Opsional)</label>
-                        <input type="url" name="video_url" id="edit_progress_video_url" placeholder="https://www.youtube.com/watch?v=...">
-                        <small style="color: var(--gray);">Masukkan URL video YouTube. Video akan ditampilkan langsung di halaman publik.</small>
+                        <label>Produk (Opsional)</label>
+                        <select name="id_produk" id="edit_penelitian_id_produk">
+                            <option value="">-- Pilih Produk --</option>
+                            <?php 
+                            $produk_stmt = $conn->query("SELECT id_produk, nama_produk FROM produk ORDER BY nama_produk");
+                            $produk_list = $produk_stmt->fetchAll();
+                            foreach ($produk_list as $prod): ?>
+                                <option value="<?php echo $prod['id_produk']; ?>">
+                                    <?php echo htmlspecialchars($prod['nama_produk']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
-                    <button type="submit" class="btn-submit">Update Progress</button>
-                    <button type="button" class="btn-cancel" onclick="cancelEditProgress()">Batal</button>
+                    <div class="form-group">
+                        <label>Mitra (Opsional)</label>
+                        <select name="id_mitra" id="edit_penelitian_id_mitra">
+                            <option value="">-- Pilih Mitra --</option>
+                            <?php 
+                            $mitra_stmt = $conn->query("SELECT id_mitra, nama_institusi FROM mitra ORDER BY nama_institusi");
+                            $mitra_list = $mitra_stmt->fetchAll();
+                            foreach ($mitra_list as $mit): ?>
+                                <option value="<?php echo $mit['id_mitra']; ?>">
+                                    <?php echo htmlspecialchars($mit['nama_institusi']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Mulai *</label>
+                        <input type="date" name="tgl_mulai" id="edit_penelitian_tgl_mulai" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Selesai</label>
+                        <input type="date" name="tgl_selesai" id="edit_penelitian_tgl_selesai">
+                    </div>
+                    <button type="submit" class="btn-submit">Update Penelitian</button>
+                    <button type="button" class="btn-cancel" onclick="cancelEditPenelitian()">Batal</button>
                 </form>
             </div>
 
             <div class="form-section">
-                <h2>Tambah Progress Baru</h2>
+                <h2>Tambah Penelitian Baru</h2>
                 <form method="POST" action="">
-                    <input type="hidden" name="action" value="add_progress">
+                    <input type="hidden" name="action" value="add_penelitian">
                     <div class="form-group">
-                        <label>Judul Progress</label>
+                        <label>Judul Penelitian *</label>
                         <input type="text" name="judul" required>
                     </div>
                     <div class="form-group">
@@ -710,16 +759,51 @@ $member_list = $stmt->fetchAll();
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Link YouTube (Opsional)</label>
-                        <input type="url" name="video_url" placeholder="https://www.youtube.com/watch?v=...">
-                        <small style="color: var(--gray);">Masukkan URL video YouTube. Video akan ditampilkan langsung di halaman publik.</small>
+                        <label>Produk (Opsional)</label>
+                        <select name="id_produk">
+                            <option value="">-- Pilih Produk --</option>
+                            <?php 
+                            if (!isset($produk_list)) {
+                                $produk_stmt = $conn->query("SELECT id_produk, nama_produk FROM produk ORDER BY nama_produk");
+                                $produk_list = $produk_stmt->fetchAll();
+                            }
+                            foreach ($produk_list as $prod): ?>
+                                <option value="<?php echo $prod['id_produk']; ?>">
+                                    <?php echo htmlspecialchars($prod['nama_produk']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
-                    <button type="submit" class="btn-submit">Tambah Progress</button>
+                    <div class="form-group">
+                        <label>Mitra (Opsional)</label>
+                        <select name="id_mitra">
+                            <option value="">-- Pilih Mitra --</option>
+                            <?php 
+                            if (!isset($mitra_list)) {
+                                $mitra_stmt = $conn->query("SELECT id_mitra, nama_institusi FROM mitra ORDER BY nama_institusi");
+                                $mitra_list = $mitra_stmt->fetchAll();
+                            }
+                            foreach ($mitra_list as $mit): ?>
+                                <option value="<?php echo $mit['id_mitra']; ?>">
+                                    <?php echo htmlspecialchars($mit['nama_institusi']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Mulai *</label>
+                        <input type="date" name="tgl_mulai" value="<?php echo date('Y-m-d'); ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Selesai</label>
+                        <input type="date" name="tgl_selesai">
+                    </div>
+                    <button type="submit" class="btn-submit">Tambah Penelitian</button>
                 </form>
             </div>
 
             <div class="data-section">
-                <h2>Daftar Progress</h2>
+                <h2>Daftar Penelitian (<?php echo count($progress_list); ?>)</h2>
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -729,37 +813,39 @@ $member_list = $stmt->fetchAll();
                             <th>Artikel</th>
                             <th>Mahasiswa</th>
                             <th>Member</th>
-                            <th>Video</th>
+                            <th>Produk</th>
+                            <th>Mitra</th>
+                            <th>Tanggal Mulai</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($progress_list)): ?>
                             <tr>
-                                <td colspan="7" style="text-align: center; color: var(--gray);">Belum ada progress</td>
+                                <td colspan="10" style="text-align: center; color: var(--gray);">Belum ada penelitian</td>
                             </tr>
                         <?php else: ?>
-                            <?php foreach ($progress_list as $progress): ?>
+                            <?php foreach ($progress_list as $penelitian): ?>
                                 <tr>
-                                    <td><?php echo $progress['id_progress']; ?></td>
-                                    <td><?php echo htmlspecialchars($progress['judul']); ?></td>
-                                    <td><?php echo $progress['tahun'] ?? '-'; ?></td>
-                                    <td><?php echo htmlspecialchars($progress['artikel_judul'] ?? '-'); ?></td>
-                                    <td><?php echo htmlspecialchars($progress['mahasiswa_nama'] ?? '-'); ?></td>
-                                    <td><?php echo htmlspecialchars($progress['member_nama'] ?? '-'); ?></td>
+                                    <td><?php echo $penelitian['id_penelitian']; ?></td>
+                                    <td><?php echo htmlspecialchars($penelitian['judul']); ?></td>
+                                    <td><?php echo $penelitian['tahun'] ?? '-'; ?></td>
+                                    <td><?php echo htmlspecialchars($penelitian['artikel_judul'] ?? '-'); ?></td>
+                                    <td><?php echo htmlspecialchars($penelitian['mahasiswa_nama'] ?? '-'); ?></td>
+                                    <td><?php echo htmlspecialchars($penelitian['member_nama'] ?? '-'); ?></td>
+                                    <td><?php echo htmlspecialchars($penelitian['nama_produk'] ?? '-'); ?></td>
+                                    <td><?php echo htmlspecialchars($penelitian['mitra_nama'] ?? '-'); ?></td>
+                                    <td><?php echo $penelitian['tgl_mulai'] ? date('d M Y', strtotime($penelitian['tgl_mulai'])) : '-'; ?></td>
                                     <td>
-                                        <?php if (!empty($progress['video_url'])): ?>
-                                            <a href="<?php echo htmlspecialchars($progress['video_url']); ?>" target="_blank" rel="noopener noreferrer">Lihat</a>
-                                        <?php else: ?>
-                                            -
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn-edit" onclick="editProgress(<?php echo htmlspecialchars(json_encode($progress)); ?>)">Edit</button>
-                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus progress ini?');">
-                                            <input type="hidden" name="action" value="delete_progress">
-                                            <input type="hidden" name="id" value="<?php echo $progress['id_progress']; ?>">
-                                            <button type="submit" class="btn-delete">Hapus</button>
+                                        <button type="button" class="btn-edit" onclick="editPenelitian(<?php echo htmlspecialchars(json_encode($penelitian)); ?>)">
+                                            <i class="ri-edit-line"></i> Edit
+                                        </button>
+                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus penelitian ini?');">
+                                            <input type="hidden" name="action" value="delete_penelitian">
+                                            <input type="hidden" name="id" value="<?php echo $penelitian['id_penelitian']; ?>">
+                                            <button type="submit" class="btn-delete">
+                                                <i class="ri-delete-bin-line"></i> Hapus
+                                            </button>
                                         </form>
                                     </td>
                                 </tr>
@@ -768,11 +854,11 @@ $member_list = $stmt->fetchAll();
                     </tbody>
                 </table>
                 
-                <!-- Pagination for Progress -->
+                <!-- Pagination for Penelitian -->
                 <?php if ($total_pages_progress > 1): ?>
                     <div class="pagination">
                         <?php if ($current_page_progress > 1): ?>
-                            <a href="?tab=progress&page=<?php echo $current_page_progress - 1; ?>">&laquo; Previous</a>
+                            <a href="?tab=penelitian&page=<?php echo $current_page_progress - 1; ?>">&laquo; Previous</a>
                         <?php else: ?>
                             <span class="disabled">&laquo; Previous</span>
                         <?php endif; ?>
@@ -782,7 +868,7 @@ $member_list = $stmt->fetchAll();
                         $end_page = min($total_pages_progress, $current_page_progress + 2);
                         
                         if ($start_page > 1): ?>
-                            <a href="?tab=progress&page=1">1</a>
+                            <a href="?tab=penelitian&page=1">1</a>
                             <?php if ($start_page > 2): ?>
                                 <span>...</span>
                             <?php endif; ?>
@@ -792,7 +878,7 @@ $member_list = $stmt->fetchAll();
                             <?php if ($i == $current_page_progress): ?>
                                 <span class="active"><?php echo $i; ?></span>
                             <?php else: ?>
-                                <a href="?tab=progress&page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                <a href="?tab=penelitian&page=<?php echo $i; ?>"><?php echo $i; ?></a>
                             <?php endif; ?>
                         <?php endfor; ?>
                         
@@ -800,17 +886,17 @@ $member_list = $stmt->fetchAll();
                             <?php if ($end_page < $total_pages_progress - 1): ?>
                                 <span>...</span>
                             <?php endif; ?>
-                            <a href="?tab=progress&page=<?php echo $total_pages_progress; ?>"><?php echo $total_pages_progress; ?></a>
+                            <a href="?tab=penelitian&page=<?php echo $total_pages_progress; ?>"><?php echo $total_pages_progress; ?></a>
                         <?php endif; ?>
                         
                         <?php if ($current_page_progress < $total_pages_progress): ?>
-                            <a href="?tab=progress&page=<?php echo $current_page_progress + 1; ?>">Next &raquo;</a>
+                            <a href="?tab=penelitian&page=<?php echo $current_page_progress + 1; ?>">Next &raquo;</a>
                         <?php else: ?>
                             <span class="disabled">Next &raquo;</span>
                         <?php endif; ?>
                     </div>
                     <div class="pagination-info">
-                        Menampilkan <?php echo ($offset_progress + 1); ?> - <?php echo min($offset_progress + $items_per_page, $total_items_progress); ?> dari <?php echo $total_items_progress; ?> progress
+                        Menampilkan <?php echo ($offset_progress + 1); ?> - <?php echo min($offset_progress + $items_per_page, $total_items_progress); ?> dari <?php echo $total_items_progress; ?> penelitian
                     </div>
                 <?php endif; ?>
             </div>
@@ -874,26 +960,29 @@ $member_list = $stmt->fetchAll();
             document.getElementById('edit-artikel-form').reset();
         }
         
-        function editProgress(progress) {
-            document.getElementById('edit_progress_id').value = progress.id_progress;
-            document.getElementById('edit_progress_judul').value = progress.judul || '';
-            document.getElementById('edit_progress_tahun').value = progress.tahun || '';
-            document.getElementById('edit_progress_deskripsi').value = progress.deskripsi || '';
-            document.getElementById('edit_progress_id_artikel').value = progress.id_artikel || '';
-            document.getElementById('edit_progress_id_mhs').value = progress.id_mhs || '';
-            document.getElementById('edit_progress_id_member').value = progress.id_member || '';
-            document.getElementById('edit_progress_video_url').value = progress.video_url || '';
+        function editPenelitian(penelitian) {
+            document.getElementById('edit_penelitian_id').value = penelitian.id_penelitian;
+            document.getElementById('edit_penelitian_judul').value = penelitian.judul || '';
+            document.getElementById('edit_penelitian_tahun').value = penelitian.tahun || '';
+            document.getElementById('edit_penelitian_deskripsi').value = penelitian.deskripsi || '';
+            document.getElementById('edit_penelitian_id_artikel').value = penelitian.id_artikel || '';
+            document.getElementById('edit_penelitian_id_mhs').value = penelitian.id_mhs || '';
+            document.getElementById('edit_penelitian_id_member').value = penelitian.id_member || '';
+            document.getElementById('edit_penelitian_id_produk').value = penelitian.id_produk || '';
+            document.getElementById('edit_penelitian_id_mitra').value = penelitian.id_mitra || '';
+            document.getElementById('edit_penelitian_tgl_mulai').value = penelitian.tgl_mulai || '';
+            document.getElementById('edit_penelitian_tgl_selesai').value = penelitian.tgl_selesai || '';
             
-            document.getElementById('edit-progress-section').classList.add('active');
-            document.querySelector('#progress-tab .form-section:not(.edit-form-section)').style.display = 'none';
+            document.getElementById('edit-penelitian-section').classList.add('active');
+            document.querySelector('#penelitian-tab .form-section:not(.edit-form-section)').style.display = 'none';
             
-            document.getElementById('edit-progress-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('edit-penelitian-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
         
-        function cancelEditProgress() {
-            document.getElementById('edit-progress-section').classList.remove('active');
-            document.querySelector('#progress-tab .form-section:not(.edit-form-section)').style.display = 'block';
-            document.getElementById('edit-progress-form').reset();
+        function cancelEditPenelitian() {
+            document.getElementById('edit-penelitian-section').classList.remove('active');
+            document.querySelector('#penelitian-tab .form-section:not(.edit-form-section)').style.display = 'block';
+            document.getElementById('edit-penelitian-form').reset();
         }
     </script>
 </body>

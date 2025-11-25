@@ -30,29 +30,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if (empty($message)) {
             try {
-                $stmt = $conn->prepare("INSERT INTO member (nama, email, jabatan, foto) VALUES (:nama, :email, :jabatan, :foto) RETURNING id_member");
-                $stmt->execute([
-                    'nama' => $nama,
-                    'email' => $email ?: null,
-                    'jabatan' => $jabatan ?: null,
-                    'foto' => $foto ?: null
-                ]);
-                $member_id = $stmt->fetchColumn();
-                
-                // Add profile if provided
                 $alamat = $_POST['alamat'] ?? '';
                 $no_tlp = $_POST['no_tlp'] ?? '';
                 $deskripsi = $_POST['deskripsi'] ?? '';
                 
-                if ($alamat || $no_tlp || $deskripsi) {
-                    $stmt = $conn->prepare("INSERT INTO profil_member (id_member, alamat, no_tlp, deskripsi) VALUES (:id_member, :alamat, :no_tlp, :deskripsi)");
-                    $stmt->execute([
-                        'id_member' => $member_id,
-                        'alamat' => $alamat ?: null,
-                        'no_tlp' => $no_tlp ?: null,
-                        'deskripsi' => $deskripsi ?: null
-                    ]);
-                }
+                $stmt = $conn->prepare("INSERT INTO member (nama, email, jabatan, foto, alamat, notlp, deskripsi) VALUES (:nama, :email, :jabatan, :foto, :alamat, :notlp, :deskripsi) RETURNING id_member");
+                $stmt->execute([
+                    'nama' => $nama,
+                    'email' => $email ?: null,
+                    'jabatan' => $jabatan ?: null,
+                    'foto' => $foto ?: null,
+                    'alamat' => $alamat ?: null,
+                    'notlp' => $no_tlp ?: null,
+                    'deskripsi' => $deskripsi ?: null
+                ]);
                 
                 $message = 'Member berhasil ditambahkan!';
                 $message_type = 'success';
@@ -81,46 +72,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if (empty($message)) {
             try {
-                $stmt = $conn->prepare("UPDATE member SET nama = :nama, email = :email, jabatan = :jabatan, foto = :foto WHERE id_member = :id");
+                $alamat = $_POST['alamat'] ?? '';
+                $no_tlp = $_POST['no_tlp'] ?? '';
+                $deskripsi = $_POST['deskripsi'] ?? '';
+                
+                $stmt = $conn->prepare("UPDATE member SET nama = :nama, email = :email, jabatan = :jabatan, foto = :foto, alamat = :alamat, notlp = :notlp, deskripsi = :deskripsi WHERE id_member = :id");
                 $stmt->execute([
                     'id' => $id,
                     'nama' => $nama,
                     'email' => $email ?: null,
                     'jabatan' => $jabatan ?: null,
-                    'foto' => $foto ?: null
+                    'foto' => $foto ?: null,
+                    'alamat' => $alamat ?: null,
+                    'notlp' => $no_tlp ?: null,
+                    'deskripsi' => $deskripsi ?: null
                 ]);
-                
-                // Update or insert profile
-                $alamat = $_POST['alamat'] ?? '';
-                $no_tlp = $_POST['no_tlp'] ?? '';
-                $deskripsi = $_POST['deskripsi'] ?? '';
-                
-                // Check if profile exists
-                $stmt = $conn->prepare("SELECT id_profile FROM profil_member WHERE id_member = :id_member");
-                $stmt->execute(['id_member' => $id]);
-                $profile = $stmt->fetch();
-                
-                if ($profile) {
-                    // Update existing profile
-                    $stmt = $conn->prepare("UPDATE profil_member SET alamat = :alamat, no_tlp = :no_tlp, deskripsi = :deskripsi WHERE id_member = :id_member");
-                    $stmt->execute([
-                        'id_member' => $id,
-                        'alamat' => $alamat ?: null,
-                        'no_tlp' => $no_tlp ?: null,
-                        'deskripsi' => $deskripsi ?: null
-                    ]);
-                } else {
-                    // Insert new profile if any data provided
-                    if ($alamat || $no_tlp || $deskripsi) {
-                        $stmt = $conn->prepare("INSERT INTO profil_member (id_member, alamat, no_tlp, deskripsi) VALUES (:id_member, :alamat, :no_tlp, :deskripsi)");
-                        $stmt->execute([
-                            'id_member' => $id,
-                            'alamat' => $alamat ?: null,
-                            'no_tlp' => $no_tlp ?: null,
-                            'deskripsi' => $deskripsi ?: null
-                        ]);
-                    }
-                }
                 
                 $message = 'Member berhasil diupdate!';
                 $message_type = 'success';
@@ -153,11 +119,10 @@ $stmt = $conn->query("SELECT COUNT(*) FROM member");
 $total_items = $stmt->fetchColumn();
 $total_pages = ceil($total_items / $items_per_page);
 
-// Get members with profiles and pagination
-$stmt = $conn->prepare("SELECT m.*, pm.alamat, pm.no_tlp, pm.deskripsi 
-                      FROM member m 
-                      LEFT JOIN profil_member pm ON m.id_member = pm.id_member 
-                      ORDER BY m.nama
+// Get members with pagination (all fields are already in member table)
+$stmt = $conn->prepare("SELECT * 
+                      FROM member 
+                      ORDER BY nama
                       LIMIT :limit OFFSET :offset");
 $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
@@ -283,35 +248,25 @@ $members = $stmt->fetchAll();
             color: var(--primary);
             margin-bottom: 1.5rem;
         }
-        .member-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
+        .table-container {
+            overflow-x: auto;
         }
-        .member-card {
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
             background: var(--light);
-            padding: 1.5rem;
-            border-radius: 15px;
-            border-left: 4px solid var(--primary);
-            transition: all 0.3s;
-        }
-        .member-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-        .member-card h3 {
             color: var(--primary);
-            margin-bottom: 0.5rem;
+            font-weight: 600;
         }
-        .member-card p {
-            color: var(--gray);
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-        }
-        .member-card .actions {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid #e2e8f0;
+        tr:hover {
+            background: var(--light);
         }
         .btn-delete {
             background: #ef4444;
@@ -510,39 +465,46 @@ $members = $stmt->fetchAll();
         </div>
 
         <div class="data-section">
-            <h2>Daftar Member</h2>
+            <h2>Daftar Member (<?php echo count($members); ?>)</h2>
             <?php if (empty($members)): ?>
                 <p style="color: var(--gray); text-align: center; padding: 2rem;">Belum ada member</p>
             <?php else: ?>
-                <div class="member-grid">
-                    <?php foreach ($members as $member): ?>
-                        <div class="member-card">
-                            <h3><?php echo htmlspecialchars($member['nama']); ?></h3>
-                            <?php if ($member['jabatan']): ?>
-                                <p><strong>Jabatan:</strong> <?php echo htmlspecialchars($member['jabatan']); ?></p>
-                            <?php endif; ?>
-                            <?php if ($member['email']): ?>
-                                <p><strong>Email:</strong> <?php echo htmlspecialchars($member['email']); ?></p>
-                            <?php endif; ?>
-                            <?php if ($member['alamat']): ?>
-                                <p><strong>Alamat:</strong> <?php echo htmlspecialchars($member['alamat']); ?></p>
-                            <?php endif; ?>
-                            <?php if ($member['no_tlp']): ?>
-                                <p><strong>No. Telp:</strong> <?php echo htmlspecialchars($member['no_tlp']); ?></p>
-                            <?php endif; ?>
-                            <?php if ($member['deskripsi']): ?>
-                                <p><strong>Deskripsi:</strong> <?php echo htmlspecialchars(substr($member['deskripsi'], 0, 100)) . '...'; ?></p>
-                            <?php endif; ?>
-                            <div class="actions">
-                                <button type="button" class="btn-edit" onclick="editMember(<?php echo htmlspecialchars(json_encode($member)); ?>)">Edit</button>
-                                <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus member ini?');">
-                                    <input type="hidden" name="action" value="delete_member">
-                                    <input type="hidden" name="id" value="<?php echo $member['id_member']; ?>">
-                                    <button type="submit" class="btn-delete">Hapus</button>
-                                </form>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nama</th>
+                                <th>Email</th>
+                                <th>Jabatan</th>
+                                <th>No. Telp</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($members as $member): ?>
+                                <tr>
+                                    <td><?php echo $member['id_member']; ?></td>
+                                    <td><?php echo htmlspecialchars($member['nama']); ?></td>
+                                    <td><?php echo htmlspecialchars($member['email'] ?? '-'); ?></td>
+                                    <td><?php echo htmlspecialchars($member['jabatan'] ?? '-'); ?></td>
+                                    <td><?php echo htmlspecialchars($member['notlp'] ?? '-'); ?></td>
+                                    <td>
+                                        <button type="button" class="btn-edit" onclick="editMember(<?php echo htmlspecialchars(json_encode($member)); ?>)">
+                                            <i class="ri-edit-line"></i> Edit
+                                        </button>
+                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus member ini?');">
+                                            <input type="hidden" name="action" value="delete_member">
+                                            <input type="hidden" name="id" value="<?php echo $member['id_member']; ?>">
+                                            <button type="submit" class="btn-delete">
+                                                <i class="ri-delete-bin-line"></i> Hapus
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             <?php endif; ?>
             
@@ -604,7 +566,7 @@ $members = $stmt->fetchAll();
             document.getElementById('edit_jabatan').value = member.jabatan || '';
             document.getElementById('edit_foto').value = member.foto || '';
             document.getElementById('edit_alamat').value = member.alamat || '';
-            document.getElementById('edit_no_tlp').value = member.no_tlp || '';
+            document.getElementById('edit_no_tlp').value = member.notlp || '';
             document.getElementById('edit_deskripsi').value = member.deskripsi || '';
             
             // Show edit form, hide add form

@@ -25,6 +25,30 @@ $menu_items = [
         'icon' => 'ri-newspaper-line',
     ],
     [
+        'id' => 'mitra',
+        'label' => 'Mitra Lab',
+        'href' => 'mitra.php',
+        'icon' => 'ri-handshake-line',
+    ],
+    [
+        'id' => 'mahasiswa',
+        'label' => 'Mahasiswa',
+        'href' => 'mahasiswa.php',
+        'icon' => 'ri-graduation-cap-line',
+    ],
+    [
+        'id' => 'alat_lab',
+        'label' => 'Alat Lab',
+        'href' => 'alat_lab.php',
+        'icon' => 'ri-tools-line',
+    ],
+    [
+        'id' => 'absensi',
+        'label' => 'Absensi',
+        'href' => 'absensi.php',
+        'icon' => 'ri-calendar-check-line',
+    ],
+    [
         'id' => 'buku_tamu',
         'label' => 'Buku Tamu',
         'href' => 'buku_tamu.php',
@@ -57,7 +81,8 @@ $active_page = $active_page ?? pathinfo($_SERVER['PHP_SELF'], PATHINFO_FILENAME)
 
 <aside class="sidebar">
     <div class="brand">InLet Polinema</div>
-    <div class="menu">
+    <div class="menu-scroll">
+        <div class="menu">
         <?php foreach ($menu_items as $item): ?>
             <?php
                 $is_active = $active_page === $item['id'];
@@ -70,6 +95,7 @@ $active_page = $active_page ?? pathinfo($_SERVER['PHP_SELF'], PATHINFO_FILENAME)
                 <span><?= htmlspecialchars($item['label']); ?></span>
             </a>
         <?php endforeach; ?>
+        </div>
     </div>
 </aside>
 

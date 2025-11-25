@@ -1,557 +1,444 @@
 <?php
-require_once '../config/auth.php';
-require_once '../config/upload.php';
-requireAdmin();
+require_once 'config/database.php';
 
 $conn = getDBConnection();
-$message = '';
-$message_type = '';
 
-// Create gallery table if not exists
-try {
-    $conn->exec("CREATE TABLE IF NOT EXISTS gallery (
-        id_gallery SERIAL PRIMARY KEY,
-        gambar VARCHAR(500) NOT NULL,
-        judul VARCHAR(255),
-        deskripsi VARCHAR(1000),
-        urutan INTEGER DEFAULT 0,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-    )");
-    $conn->exec("CREATE INDEX IF NOT EXISTS idx_gallery_urutan ON gallery(urutan)");
-    $conn->exec("CREATE INDEX IF NOT EXISTS idx_gallery_created ON gallery(created_at)");
-} catch (PDOException $e) {
-    // Table might already exist, continue
-}
-
-// Handle form submissions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-    
-    if ($action === 'add_gallery') {
-        $judul = $_POST['judul'] ?? '';
-        $deskripsi = $_POST['deskripsi'] ?? '';
-        $urutan = isset($_POST['urutan']) ? (int)$_POST['urutan'] : 0;
-        $gambar = $_POST['gambar'] ?? ''; // URL input
-        
-        // Handle file upload
-        if (isset($_FILES['gambar_file']) && $_FILES['gambar_file']['error'] === UPLOAD_ERR_OK) {
-            $uploadResult = uploadImage($_FILES['gambar_file'], 'gallery/');
-            if ($uploadResult['success']) {
-                $gambar = $uploadResult['path'];
-            } else {
-                $message = $uploadResult['message'];
-                $message_type = 'error';
-            }
-        }
-        
-        if (empty($message)) {
-            if (empty($gambar)) {
-                $message = 'Gambar harus diisi!';
-                $message_type = 'error';
-            } else {
-                try {
-                    $stmt = $conn->prepare("INSERT INTO gallery (gambar, judul, deskripsi, urutan) VALUES (:gambar, :judul, :deskripsi, :urutan)");
-                    $stmt->execute([
-                        'gambar' => $gambar,
-                        'judul' => $judul ?: null,
-                        'deskripsi' => $deskripsi ?: null,
-                        'urutan' => $urutan
-                    ]);
-                    $message = 'Gambar gallery berhasil ditambahkan!';
-                    $message_type = 'success';
-                } catch(PDOException $e) {
-                    $message = 'Error: ' . $e->getMessage();
-                    $message_type = 'error';
-                }
-            }
-        }
-    } elseif ($action === 'update_gallery') {
-        $id = $_POST['id'] ?? 0;
-        $judul = $_POST['judul'] ?? '';
-        $deskripsi = $_POST['deskripsi'] ?? '';
-        $urutan = isset($_POST['urutan']) ? (int)$_POST['urutan'] : 0;
-        $gambar = $_POST['gambar'] ?? '';
-        
-        // Handle file upload
-        if (isset($_FILES['gambar_file']) && $_FILES['gambar_file']['error'] === UPLOAD_ERR_OK) {
-            $uploadResult = uploadImage($_FILES['gambar_file'], 'gallery/');
-            if ($uploadResult['success']) {
-                $gambar = $uploadResult['path'];
-            } else {
-                $message = $uploadResult['message'];
-                $message_type = 'error';
-            }
-        }
-        
-        if (empty($message)) {
-            try {
-                if (!empty($gambar)) {
-                    $stmt = $conn->prepare("UPDATE gallery SET gambar = :gambar, judul = :judul, deskripsi = :deskripsi, urutan = :urutan, updated_at = now() WHERE id_gallery = :id");
-                    $stmt->execute([
-                        'id' => $id,
-                        'gambar' => $gambar,
-                        'judul' => $judul ?: null,
-                        'deskripsi' => $deskripsi ?: null,
-                        'urutan' => $urutan
-                    ]);
-                } else {
-                    $stmt = $conn->prepare("UPDATE gallery SET judul = :judul, deskripsi = :deskripsi, urutan = :urutan, updated_at = now() WHERE id_gallery = :id");
-                    $stmt->execute([
-                        'id' => $id,
-                        'judul' => $judul ?: null,
-                        'deskripsi' => $deskripsi ?: null,
-                        'urutan' => $urutan
-                    ]);
-                }
-                $message = 'Gambar gallery berhasil diupdate!';
-                $message_type = 'success';
-            } catch(PDOException $e) {
-                $message = 'Error: ' . $e->getMessage();
-                $message_type = 'error';
-            }
-        }
-    } elseif ($action === 'delete_gallery') {
-        $id = $_POST['id'] ?? 0;
-        try {
-            $stmt = $conn->prepare("DELETE FROM gallery WHERE id_gallery = :id");
-            $stmt->execute(['id' => $id]);
-            $message = 'Gambar gallery berhasil dihapus!';
-            $message_type = 'success';
-        } catch(PDOException $e) {
-            $message = 'Error: ' . $e->getMessage();
-            $message_type = 'error';
-        }
-    }
-}
+// Search setup
+$search_query = isset($_GET['search']) ? trim($_GET['search']) : '';
 
 // Pagination setup
-$items_per_page = 12;
+$items_per_page = 9; // 9 items per page for 3 columns grid
 $current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
-// Get total count
-try {
-    $stmt = $conn->query("SELECT COUNT(*) FROM gallery");
+// Get total count with search
+if (!empty($search_query)) {
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM berita WHERE judul ILIKE :search OR konten ILIKE :search");
+    $stmt->execute([':search' => '%' . $search_query . '%']);
     $total_items = $stmt->fetchColumn();
-} catch (PDOException $e) {
-    $total_items = 0;
+
+    // Get news with pagination and search
+    $stmt = $conn->prepare("SELECT * FROM berita WHERE judul ILIKE :search OR konten ILIKE :search ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
+    $stmt->bindValue(':search', '%' . $search_query . '%', PDO::PARAM_STR);
+} else {
+    $stmt = $conn->query("SELECT COUNT(*) FROM berita");
+    $total_items = $stmt->fetchColumn();
+
+    // Get news with pagination
+    $stmt = $conn->prepare("SELECT * FROM berita ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
 }
+$stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
+$news_list = $stmt->fetchAll();
 $total_pages = ceil($total_items / $items_per_page);
 
-// Get gallery items with pagination
-try {
-    $stmt = $conn->prepare("SELECT * FROM gallery ORDER BY urutan ASC, created_at DESC LIMIT :limit OFFSET :offset");
-    $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-    $gallery_list = $stmt->fetchAll();
+ => "https://picsum.photos/seed/news{$i}/{$w}/{$h}", 
+                "judul" => "Gallery Image {$i}",
+                "deskripsi" => ""
+            ];
+        }
+    } else {
+        // Rename 'gambar' to 'img' for compatibility with existing JavaScript
+        $all_gallery = array_map(function ($item) {
+            return [
+                "img" => $item['gambar'], 
+                "judul" => $item['judul'] ?? 'Gallery Image',
+                "deskripsi" => $item['deskripsi'] ?? ''
+            ];
+        }, $all_gallery);
+    }
 } catch (PDOException $e) {
-    $gallery_list = [];
+    // Fallback to dummy data if query fails
+    error_log("Gallery query error: " . $e->getMessage());
+    $all_gallery = [];
+    for ($i = 1; $i <= 80; $i++) {
+        $w = rand(320, 460);
+        $h = rand(240, 500);
+        $all_gallery[] = [
+            "img" => "https://picsum.photos/seed/news{$i}/{$w}/{$h}",
+            "judul" => "Gallery Image {$i}",
+            "deskripsi" => ""
+        ];
+    }
 }
+
+// Pagination for gallery
+$gallery_items_per_page = 12;
+$gallery_page = isset($_GET['gpage']) ? max(1, (int) $_GET['gpage']) : 1;
+$gallery_offset = ($gallery_page - 1) * $gallery_items_per_page;
+$total_gallery_items = count($all_gallery);
+$total_gallery_pages = ceil($total_gallery_items / $gallery_items_per_page);
+$gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_page);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gallery Management - CMS InLET</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="admin.css">
-    <style>
-        body {
-            background: var(--light);
-        }
-        .admin-header {
-            background: white;
-            padding: 1.5rem 2rem;
-            box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
-            margin-bottom: 2rem;
-            border-radius: 18px;
-        }
-        .admin-header h1 {
-            color: var(--dark);
-            font-size: 1.5rem;
-            margin-bottom: 0.35rem;
-        }
-        .cms-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding-bottom: 4rem;
-        }
-        .message {
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1.5rem;
-            font-weight: 500;
-        }
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .form-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 18px;
-            box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
-            margin-bottom: 2rem;
-        }
-        .form-section h2 {
-            color: var(--dark);
-            margin-bottom: 1.5rem;
-            font-size: 1.3rem;
-        }
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-            font-weight: 500;
-        }
-        .form-group input[type="text"],
-        .form-group input[type="number"],
-        .form-group input[type="file"],
-        .form-group textarea {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            font-family: 'Poppins', sans-serif;
-        }
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-        .btn-submit {
-            background: var(--primary);
-            color: white;
-            padding: 0.75rem 2rem;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .btn-submit:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
-        }
-        .btn-cancel {
-            background: #e2e8f0;
-            color: var(--dark);
-            padding: 0.75rem 2rem;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-left: 1rem;
-            transition: all 0.3s ease;
-        }
-        .btn-cancel:hover {
-            background: #cbd5e1;
-        }
-        .data-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 18px;
-            box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
-        }
-        .data-section h2 {
-            color: var(--dark);
-            margin-bottom: 1.5rem;
-            font-size: 1.3rem;
-        }
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-        .gallery-item {
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            overflow: hidden;
-            background: white;
-            transition: all 0.3s ease;
-        }
-        .gallery-item:hover {
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-            transform: translateY(-4px);
-        }
-        .gallery-item img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            display: block;
-        }
-        .gallery-item-content {
-            padding: 1rem;
-        }
-        .gallery-item h4 {
-            margin: 0 0 0.5rem 0;
-            font-size: 0.95rem;
-            color: var(--dark);
-            font-weight: 600;
-        }
-        .gallery-item p {
-            margin: 0 0 0.75rem 0;
-            font-size: 0.85rem;
-            color: var(--gray);
-        }
-        .gallery-item-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-        .btn-edit {
-            flex: 1;
-            background: var(--primary);
-            color: white;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .btn-edit:hover {
-            background: var(--primary-dark);
-        }
-        .btn-delete {
-            flex: 1;
-            background: #ef4444;
-            color: white;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .btn-delete:hover {
-            background: #dc2626;
-        }
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            list-style: none;
-            padding: 0;
-            margin-top: 2rem;
-        }
-        .pagination .page-link {
-            padding: 0.5rem 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            color: var(--dark);
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        .pagination .page-link:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-        .pagination .page-link.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-        .edit-form-section {
-            background: #f8fafc;
-            border: 2px solid var(--primary);
-        }
-    </style>
+    <title>News - Information And Learning Engineering Technology</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style-news.css">
 </head>
+
 <body>
-    <?php 
-    $active_page = 'gallery';
-    include 'partials/sidebar.php'; 
-    ?>
 
-    <div class="content">
-        <div class="content-inner">
-            <div class="admin-header">
-                <h1>Gallery Management</h1>
-                <p style="color: var(--gray); margin: 0;">Kelola gambar gallery untuk ditampilkan di website</p>
+    <!-- HEADER -->
+    <?php include 'includes/header.php'; ?>
+
+    <!-- HERO -->
+    <main class="flex-grow-1" style="flex: 1 0 auto; min-height: 0;">
+        <section class="hero d-flex align-items-center" id="home">
+            <div class="container text-center text-white">
+                <h1>News - Information And Learning Engineering Technology</h1>
+                <p>Stay updated with our latest publications, activities, and breakthroughs.</p>
             </div>
+        </section>
 
-            <div class="cms-content">
-            <?php if ($message): ?>
-                <div class="message <?php echo $message_type; ?>">
-                    <?php echo htmlspecialchars($message); ?>
+        <section id="news" class="research" style="padding: 6rem 0;">
+            <div class="container text-center">
+                <div class="section-title">
+                    <h2 style="font-size: 2.5rem;">Our News</h2>
+                    <p style="font-size: 1.1rem;">Read the latest blog posts about our research group and activities.
+                    </p>
                 </div>
-            <?php endif; ?>
 
-            <!-- Edit Form Section (Hidden by default) -->
-            <div id="edit-form-section" class="form-section edit-form-section" style="display: none;">
-                <h2>Edit Gallery</h2>
-                <form method="POST" action="" enctype="multipart/form-data" id="edit-gallery-form">
-                    <input type="hidden" name="action" value="update_gallery">
-                    <input type="hidden" name="id" id="edit_id">
-                    <div class="form-group">
-                        <label>Judul (Opsional)</label>
-                        <input type="text" name="judul" id="edit_judul">
+                <!-- Search Box -->
+                <div class="row justify-content-center mb-4">
+                    <div class="col-md-6">
+                        <form method="GET" action="" class="d-flex gap-2">
+                            <input type="text" name="search" class="form-control"
+                                placeholder="Cari berita berdasarkan judul..."
+                                value="<?php echo htmlspecialchars($search_query); ?>">
+                            <button type="submit" class="btn btn-primary">Cari</button>
+                            <?php if (!empty($search_query)): ?>
+                                <a href="news.php" class="btn btn-secondary">Reset</a>
+                            <?php endif; ?>
+                        </form>
+                        <?php if (!empty($search_query)): ?>
+                            <p class="mt-2 text-muted">
+                                Menampilkan <?php echo $total_items; ?> hasil untuk
+                                "<?php echo htmlspecialchars($search_query); ?>"
+                            </p>
+                        <?php endif; ?>
                     </div>
-                    <div class="form-group">
-                        <label>Deskripsi (Opsional)</label>
-                        <textarea name="deskripsi" id="edit_deskripsi" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Upload Gambar Baru (File)</label>
-                        <input type="file" name="gambar_file" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
-                        <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Maksimal 5MB. Format: JPG, PNG, GIF, WEBP</small>
-                    </div>
-                    <div class="form-group">
-                        <label>Atau Masukkan URL Gambar</label>
-                        <input type="text" name="gambar" id="edit_gambar" placeholder="https://example.com/image.jpg">
-                        <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Jika upload file, URL akan diabaikan</small>
-                    </div>
-                    <div class="form-group">
-                        <label>Urutan (0 = default)</label>
-                        <input type="number" name="urutan" id="edit_urutan" value="0" min="0">
-                    </div>
-                    <button type="submit" class="btn-submit">Update Gallery</button>
-                    <button type="button" class="btn-cancel" onclick="hideEditForm()">Batal</button>
-                </form>
-            </div>
+                </div>
+                <div class="row g-4 justify-content-center">
 
-            <div class="form-section">
-                <h2>Tambah Gallery Baru</h2>
-                <form method="POST" action="" enctype="multipart/form-data">
-                    <input type="hidden" name="action" value="add_gallery">
-                    <div class="form-group">
-                        <label>Judul (Opsional)</label>
-                        <input type="text" name="judul" placeholder="Judul gambar">
-                    </div>
-                    <div class="form-group">
-                        <label>Deskripsi (Opsional)</label>
-                        <textarea name="deskripsi" rows="3" placeholder="Deskripsi gambar"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Upload Gambar (File) <span style="color: #ef4444;">*</span></label>
-                        <input type="file" name="gambar_file" id="gambar_file" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
-                        <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Maksimal 5MB. Format: JPG, PNG, GIF, WEBP</small>
-                    </div>
-                    <div class="form-group">
-                        <label>Atau Masukkan URL Gambar <span style="color: #ef4444;">*</span></label>
-                        <input type="url" name="gambar" id="gambar_url" placeholder="https://example.com/image.jpg">
-                        <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Jika upload file, URL akan diabaikan. Minimal harus mengisi salah satu (File atau URL)</small>
-                    </div>
-                    <div class="form-group">
-                        <label>Urutan (0 = default)</label>
-                        <input type="number" name="urutan" value="0" min="0">
-                    </div>
-                    <button type="submit" class="btn-submit" onclick="return validateGalleryForm()">Tambah Gallery</button>
-                </form>
-            </div>
+                    <?php if (empty($news_list)): ?>
+                        <div class="col-12">
+                            <p style="color: var(--gray); padding: 3rem;">No news articles have been published.</p>
+                        </div>
+                    <?php else: ?>
 
-            <div class="data-section">
-                <h2>Daftar Gallery (<?php echo $total_items; ?> gambar)</h2>
-                <?php if (empty($gallery_list)): ?>
-                    <p>Belum ada gambar gallery.</p>
-                <?php else: ?>
-                    <div class="gallery-grid">
-                        <?php foreach ($gallery_list as $item): ?>
-                            <div class="gallery-item">
-                                <img src="<?php echo htmlspecialchars($item['gambar']); ?>" 
-                                     alt="<?php echo htmlspecialchars($item['judul'] ?? 'Gallery'); ?>" 
-                                     onerror="this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Gallery'">
-                                <div class="gallery-item-content">
-                                    <?php if ($item['judul']): ?>
-                                        <h4><?php echo htmlspecialchars($item['judul']); ?></h4>
+                        <?php foreach ($news_list as $news): ?>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="feature-card h-100 border-0 shadow-sm transition-hover"
+                                    style="border-radius: 12px; overflow: hidden; padding: 0;">
+                                    <?php if ($news['gambar_thumbnail']): ?>
+                                        <img src="<?php echo htmlspecialchars($news['gambar_thumbnail']); ?>" class="card-img-top"
+                                            alt="<?php echo htmlspecialchars($news['judul']); ?>"
+                                            style="height: 220px; object-fit: cover;">
+                                    <?php else: ?>
+                                        <div
+                                            style="height: 220px; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">
+                                            No Image
+                                        </div>
                                     <?php endif; ?>
-                                    <p>Urutan: <?php echo $item['urutan']; ?></p>
-                                    <div class="gallery-item-actions">
-                                        <button onclick="editGallery(<?php echo htmlspecialchars(json_encode($item)); ?>)" class="btn-edit">Edit</button>
-                                        <form method="POST" action="" style="flex: 1; margin: 0;" onsubmit="return confirm('Yakin ingin menghapus gambar ini?');">
-                                            <input type="hidden" name="action" value="delete_gallery">
-                                            <input type="hidden" name="id" value="<?php echo $item['id_gallery']; ?>">
-                                            <button type="submit" class="btn-delete" style="width: 100%;">Hapus</button>
-                                        </form>
+
+                                    <div class="card-body text-start" style="padding: 1.5rem 2.5rem;">
+                                        <small class="text-muted">Published on
+                                            <?php echo date('F d, Y', strtotime($news['created_at'])); ?>
+                                        </small>
+
+                                        <h3 class="mt-2" style="font-weight: 600;">
+                                            <?php echo htmlspecialchars($news['judul']); ?>
+                                        </h3>
+
+                                        <p class="card-text">
+                                            <?php echo htmlspecialchars(substr($news['konten'], 0, 150)) . '...'; ?>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         <?php endforeach; ?>
-                    </div>
-                    
-                    <?php if ($total_pages > 1): ?>
-                        <nav aria-label="Gallery pagination">
-                            <ul class="pagination">
-                                <?php if ($current_page > 1): ?>
-                                    <li><a href="?page=<?php echo $current_page - 1; ?>" class="page-link">Previous</a></li>
-                                <?php endif; ?>
-                                
-                                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                                    <li><a href="?page=<?php echo $i; ?>" class="page-link <?php echo ($i == $current_page) ? 'active' : ''; ?>"><?php echo $i; ?></a></li>
-                                <?php endfor; ?>
-                                
-                                <?php if ($current_page < $total_pages): ?>
-                                    <li><a href="?page=<?php echo $current_page + 1; ?>" class="page-link">Next</a></li>
-                                <?php endif; ?>
-                            </ul>
-                        </nav>
-                    <?php endif; ?>
-                <?php endif; ?>
-            </div>
-            </div>
-        </div>
-    </div>
 
+                    <?php endif; ?>
+                </div>
+
+                <!-- Pagination news -->
+                <?php if ($total_pages > 1): ?>
+                    <nav aria-label="News pagination" style="margin-top: 3rem;">
+                        <ul class="pagination justify-content-center" style="gap: 0.5rem;">
+
+                            <!-- PREVIOUS -->
+                            <?php
+                            $page_url = "?";
+                            if (!empty($search_query)) {
+                                $page_url .= "search=" . urlencode($search_query) . "&";
+                            }
+                            ?>
+
+                            <?php if ($current_page > 1): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="<?= $page_url ?>page=<?php echo $current_page - 1; ?>"
+                                        aria-label="Previous">
+                                        &laquo; Previous
+                                    </a>
+                                </li>
+                            <?php else: ?>
+                                <li class="page-item disabled">
+                                    <span class="page-link">&laquo; Previous</span>
+                                </li>
+                            <?php endif; ?>
+
+                            <!-- PAGE NUMBERS -->
+                            <?php
+                            $start_page = max(1, $current_page - 2);
+                            $end_page = min($total_pages, $current_page + 2);
+
+                            if ($start_page > 1): ?>
+                                <li class="page-item"><a class="page-link" href="<?= $page_url ?>page=1">1</a></li>
+                                <?php if ($start_page > 2): ?>
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                <?php endif; ?>
+                            <?php endif; ?>
+
+                            <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                                <li class="page-item <?= ($i == $current_page) ? 'active' : '' ?>">
+                                    <a class="page-link" href="<?= $page_url ?>page=<?= $i ?>"><?= $i ?></a>
+                                </li>
+                            <?php endfor; ?>
+
+                            <?php if ($end_page < $total_pages): ?>
+                                <?php if ($end_page < $total_pages - 1): ?>
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                <?php endif; ?>
+                                <li class="page-item"><a class="page-link"
+                                        href="<?= $page_url ?>page=<?= $total_pages ?>"><?= $total_pages ?></a></li>
+                            <?php endif; ?>
+
+                            <!-- NEXT -->
+                            <?php if ($current_page < $total_pages): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="<?= $page_url ?>page=<?= $current_page + 1 ?>" aria-label="Next">
+                                        Next &raquo;
+                                    </a>
+                                </li>
+                            <?php else: ?>
+                                <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
+                            <?php endif; ?>
+                        </ul>
+
+                        <div class="text-center mt-3" style="color: var(--gray);">
+                            Showing <?php echo ($offset + 1); ?> –
+                            <?php echo min($offset + $items_per_page, $total_items); ?>
+                            of <?php echo $total_items; ?> news articles
+                        </div>
+                    </nav>
+                <?php endif; ?>
+
+            </div>
+        </section>
+
+        <!-- GALLERY -->
+        <section class="py-5" id="gallery">
+            <div class="container">
+                <div class="section-title text-center mb-4">
+                    <h2>Gallery</h2>
+                    <p>Documentation of InLET</p>
+                </div>
+                <div id="pinterest-grid" class="pinterest-grid">
+                    <?php if (empty($gallery_init)): ?>
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--gray);">
+                            <p style="font-size: 1.1rem;">Belum ada gambar di gallery. Silakan tambahkan melalui halaman admin.</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($gallery_init as $g): ?>
+                            <?php
+                            $rawImg = $g['img'] ?? '';
+                            $imgSrc = ($rawImg !== null && trim($rawImg) !== '')
+                                ? htmlspecialchars($rawImg, ENT_QUOTES, 'UTF-8')
+                                : 'https://via.placeholder.com/400x300/cccccc/666666?text=Gallery';
+                            ?>
+                            <div class="pin-item">
+                                <div class="pin-img-wrapper">
+                                    <img src="<?= $imgSrc ?>" 
+                                         alt="<?= htmlspecialchars($g['judul'] ?? 'Gallery Image') ?>"
+                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Error+Loading+Image';">
+                                    <div class="pin-overlay">
+                                        <h5 class="pin-title"><?= htmlspecialchars($g['judul'] ?? 'Gallery Image') ?></h5>
+                                        <?php if (!empty($g['deskripsi'])): ?>
+                                            <p class="pin-desc"><?= htmlspecialchars($g['deskripsi']) ?></p>
+                                        <?php endif; ?>
+                                        <?php if (!empty($g['berita_judul'])): ?>
+                                            <small class="pin-berita" style="display: block; margin-top: 0.5rem; opacity: 0.8;">
+                                                Dari: <?= htmlspecialchars($g['berita_judul']) ?>
+                                            </small>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+                <?php if ($total_gallery_pages > 1): ?>
+                    <nav aria-label="Gallery pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <?php if ($gallery_page > 1): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="?gpage=<?= $gallery_page - 1 ?><?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo; Previous</span>
+                                    </a>
+                                </li>
+                            <?php else: ?>
+                                <li class="page-item disabled">
+                                    <span class="page-link">&laquo; Previous</span>
+                                </li>
+                            <?php endif; ?>
+
+                            <?php
+                            $start_page = max(1, $gallery_page - 2);
+                            $end_page = min($total_gallery_pages, $gallery_page + 2);
+
+                            if ($start_page > 1): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="?gpage=1<?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery">1</a>
+                                </li>
+                                <?php if ($start_page > 2): ?>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                <?php endif; ?>
+                            <?php endif; ?>
+
+                            <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                                <li class="page-item <?= $i == $gallery_page ? 'active' : '' ?>">
+                                    <a class="page-link" href="?gpage=<?= $i ?><?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery"><?= $i ?></a>
+                                </li>
+                            <?php endfor; ?>
+
+                            <?php if ($end_page < $total_gallery_pages): ?>
+                                <?php if ($end_page < $total_gallery_pages - 1): ?>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                <?php endif; ?>
+                                <li class="page-item">
+                                    <a class="page-link"
+                                        href="?gpage=<?= $total_gallery_pages ?><?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery"><?= $total_gallery_pages ?></a>
+                                </li>
+                            <?php endif; ?>
+
+                            <?php if ($gallery_page < $total_gallery_pages): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="?gpage=<?= $gallery_page + 1 ?><?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery" aria-label="Next">
+                                        <span aria-hidden="true">Next &raquo;</span>
+                                    </a>
+                                </li>
+                            <?php else: ?>
+                                <li class="page-item disabled">
+                                    <span class="page-link">Next &raquo;</span>
+                                </li>
+                            <?php endif; ?>
+                        </ul>
+                        <div class="text-center mt-3" style="color: var(--gray);">
+                            Menampilkan <?= ($gallery_offset + 1) ?> -
+                            <?= min($gallery_offset + $gallery_items_per_page, $total_gallery_items) ?> dari
+                            <?= $total_gallery_items ?> gambar
+                        </div>
+                    </nav>
+                <?php elseif (empty($all_gallery)): ?>
+                    <div class="text-center mt-3" style="color: var(--gray);">
+                        Belum ada gambar di gallery
+                    </div>
+                <?php endif; ?>
+                <div id="loader" class="text-center mt-3" style="display:none;">Loading more...</div>
+            </div>
+        </section>
+    </main>
+
+    <?php include 'includes/footer.php'; ?>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
-        function validateGalleryForm() {
-            const fileInput = document.getElementById('gambar_file');
-            const urlInput = document.getElementById('gambar_url');
-            
-            if (!fileInput.files.length && !urlInput.value.trim()) {
-                alert('Harap pilih file gambar atau masukkan URL gambar!');
-                return false;
+        // Swiper init
+        new Swiper(".teamSwiper", { slidesPerView: 3, spaceBetween: 30, navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" }, breakpoints: { 0: { slidesPerView: 1 }, 576: { slidesPerView: 2 }, 992: { slidesPerView: 3 } } });
+
+        // Masonry Layout
+        document.addEventListener("DOMContentLoaded", function () {
+            const container = document.getElementById("pinterest-grid");
+            const gap = 15;
+
+            function getColumns() { 
+                if (window.innerWidth < 576) return 1; 
+                if (window.innerWidth < 768) return 2; 
+                return 3; 
             }
             
-            return true;
-        }
-        
-        function editGallery(item) {
-            document.getElementById('edit_id').value = item.id_gallery;
-            document.getElementById('edit_judul').value = item.judul || '';
-            document.getElementById('edit_deskripsi').value = item.deskripsi || '';
-            document.getElementById('edit_gambar').value = item.gambar || '';
-            document.getElementById('edit_urutan').value = item.urutan || 0;
-            document.getElementById('edit-form-section').style.display = 'block';
-            document.getElementById('edit-form-section').scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        function hideEditForm() {
-            document.getElementById('edit-form-section').style.display = 'none';
-        }
-        
-        // Auto-hide message after 5 seconds
-        document.addEventListener('DOMContentLoaded', function() {
-            const messages = document.querySelectorAll('.message');
-            messages.forEach(function(msg) {
-                setTimeout(function() {
-                    msg.style.transition = 'opacity 0.5s';
-                    msg.style.opacity = '0';
-                    setTimeout(function() {
-                        msg.style.display = 'none';
-                    }, 500);
-                }, 5000);
-            });
+            function masonryLayout() {
+                const items = Array.from(container.querySelectorAll(".pin-item"));
+                const columns = getColumns();
+                
+                if (columns === 1) { 
+                    container.style.height = 'auto'; 
+                    items.forEach(i => { 
+                        i.style.position = ''; 
+                        i.style.transform = ''; 
+                        i.style.width = '100%'; 
+                    }); 
+                    return; 
+                }
+                
+                items.forEach(i => i.style.position = 'absolute');
+                const colWidth = (container.offsetWidth - (columns - 1) * gap) / columns;
+                const colHeights = Array(columns).fill(0);
+                
+                items.forEach(item => {
+                    item.style.width = colWidth + 'px';
+                    const minCol = colHeights.indexOf(Math.min(...colHeights));
+                    const x = minCol * (colWidth + gap);
+                    const y = colHeights[minCol];
+                    item.style.transform = `translate(${x}px,${y}px)`;
+                    item.classList.add('show');
+                    colHeights[minCol] += item.offsetHeight + gap;
+                });
+                
+                container.style.height = Math.max(...colHeights) + 'px';
+            }
+
+            function initialLayout() {
+                const imgs = container.querySelectorAll('img');
+                let loaded = 0;
+                
+                imgs.forEach(img => {
+                    if (img.complete) {
+                        loaded++;
+                    } else {
+                        img.addEventListener('load', () => {
+                            loaded++;
+                            if (loaded === imgs.length) masonryLayout();
+                        });
+                        img.addEventListener('error', () => {
+                            loaded++;
+                            if (loaded === imgs.length) masonryLayout();
+                        });
+                    }
+                });
+                
+                if (loaded === imgs.length) masonryLayout();
+            }
+
+            initialLayout();
+            window.addEventListener('resize', masonryLayout);
         });
     </script>
-</body>
-</html>
 
+</body>
+
+</html>

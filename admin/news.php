@@ -225,47 +225,17 @@ $news_list = $stmt->fetchAll();
             color: var(--primary);
             margin-bottom: 1.5rem;
         }
-        .news-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 2rem;
+        .table-container {
+            overflow-x: auto;
         }
-        .news-card {
-            background: var(--light);
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s;
+        .thumbnail-cell {
+            max-width: 120px;
         }
-        .news-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        }
-        .news-card img {
-            width: 100%;
-            height: 200px;
+        .thumbnail-cell img {
+            max-width: 100px;
+            max-height: 60px;
             object-fit: cover;
-        }
-        .news-card-content {
-            padding: 1.5rem;
-        }
-        .news-card h3 {
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-        }
-        .news-card p {
-            color: var(--gray);
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-        }
-        .news-card small {
-            color: var(--gray);
-            font-size: 0.85rem;
-        }
-        .news-card .actions {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid #e2e8f0;
+            border-radius: 8px;
         }
         .btn-delete {
             background: #ef4444;
@@ -448,35 +418,54 @@ $news_list = $stmt->fetchAll();
         </div>
 
         <div class="data-section">
-            <h2>Daftar Berita</h2>
+            <h2>Daftar Berita (<?php echo count($news_list); ?>)</h2>
             <?php if (empty($news_list)): ?>
                 <p style="color: var(--gray); text-align: center; padding: 2rem;">Belum ada berita</p>
             <?php else: ?>
-                <div class="news-grid">
-                    <?php foreach ($news_list as $news): ?>
-                        <div class="news-card">
-                            <?php if ($news['gambar_thumbnail']): ?>
-                                <img src="<?php echo htmlspecialchars($news['gambar_thumbnail']); ?>" alt="<?php echo htmlspecialchars($news['judul']); ?>">
-                            <?php else: ?>
-                                <div style="height: 200px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white;">
-                                    No Image
-                                </div>
-                            <?php endif; ?>
-                            <div class="news-card-content">
-                                <h3><?php echo htmlspecialchars($news['judul']); ?></h3>
-                                <p><?php echo htmlspecialchars(substr($news['konten'], 0, 150)) . '...'; ?></p>
-                                <small>Published: <?php echo date('d M Y', strtotime($news['created_at'])); ?></small>
-                                <div class="actions">
-                                    <button type="button" class="btn-edit" onclick="editNews(<?php echo htmlspecialchars(json_encode($news)); ?>)">Edit</button>
-                                    <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus berita ini?');">
-                                        <input type="hidden" name="action" value="delete_news">
-                                        <input type="hidden" name="id" value="<?php echo $news['id_berita']; ?>">
-                                        <button type="submit" class="btn-delete">Hapus</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Thumbnail</th>
+                                <th>Judul</th>
+                                <th>Konten</th>
+                                <th>Tanggal</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($news_list as $news): ?>
+                                <tr>
+                                    <td><?php echo $news['id_berita']; ?></td>
+                                    <td class="thumbnail-cell">
+                                        <?php if ($news['gambar_thumbnail']): ?>
+                                            <img src="<?php echo htmlspecialchars($news['gambar_thumbnail']); ?>" 
+                                                 alt="<?php echo htmlspecialchars($news['judul']); ?>"
+                                                 onerror="this.style.display='none'">
+                                        <?php else: ?>
+                                            <span style="color: var(--gray);">-</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($news['judul']); ?></td>
+                                    <td><?php echo htmlspecialchars(substr($news['konten'], 0, 100)) . (strlen($news['konten']) > 100 ? '...' : ''); ?></td>
+                                    <td><?php echo date('d M Y', strtotime($news['created_at'])); ?></td>
+                                    <td>
+                                        <button type="button" class="btn-edit" onclick="editNews(<?php echo htmlspecialchars(json_encode($news)); ?>)">
+                                            <i class="ri-edit-line"></i> Edit
+                                        </button>
+                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus berita ini?');">
+                                            <input type="hidden" name="action" value="delete_news">
+                                            <input type="hidden" name="id" value="<?php echo $news['id_berita']; ?>">
+                                            <button type="submit" class="btn-delete">
+                                                <i class="ri-delete-bin-line"></i> Hapus
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             <?php endif; ?>
             

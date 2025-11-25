@@ -7,10 +7,9 @@ $conn = getDBConnection();
 // -------------------
 // Get team members from database
 // -------------------
-$stmt = $conn->prepare("SELECT m.*, pm.deskripsi 
-                      FROM member m 
-                      LEFT JOIN profil_member pm ON m.id_member = pm.id_member 
-                      ORDER BY m.nama");
+$stmt = $conn->prepare("SELECT * 
+                      FROM member 
+                      ORDER BY nama");
 $stmt->execute();
 $team = $stmt->fetchAll();
 
@@ -25,14 +24,19 @@ for ($i = 1; $i <= 25; $i++) {
     ];
 }
 
-$partners = [
-    ["logo" => "https://picsum.photos/200/100?random=1"],
-    ["logo" => "https://picsum.photos/201/100?random=2"],
-    ["logo" => "https://picsum.photos/202/100?random=3"],
-    ["logo" => "https://picsum.photos/203/100?random=4"],
-    ["logo" => "https://picsum.photos/204/100?random=5"],
-    ["logo" => "https://picsum.photos/205/100?random=6"]
-];
+// Get mitra from database
+try {
+    $mitra_stmt = $conn->query("SELECT * FROM mitra ORDER BY nama_institusi");
+    $partners = $mitra_stmt->fetchAll();
+    
+    // If no mitra in database, use empty array
+    if (empty($partners)) {
+        $partners = [];
+    }
+} catch (PDOException $e) {
+    // Fallback to empty array if table doesn't exist
+    $partners = [];
+}
 
 // Create gallery table if not exists
 try {
@@ -203,12 +207,28 @@ function getInitials($name)
                     <p>Collaboration with academic and industry institutions.</p>
                 </div>
                 <div class="row justify-content-center g-4">
-                    <?php foreach ($partners as $p): ?>
-                        <div class="col-md-2 col-4 text-center"><img src="<?= htmlspecialchars($p["logo"]) ?>"
-                                class="partner-logo img-fluid rounded shadow-sm" alt="partner"
-                                onerror="this.onerror=null; this.src='https://via.placeholder.com/200x100/cccccc/666666?text=Partner';">
+                    <?php if (empty($partners)): ?>
+                        <div class="col-12 text-center">
+                            <p class="text-muted">Belum ada mitra yang terdaftar.</p>
                         </div>
-                    <?php endforeach; ?>
+                    <?php else: ?>
+                        <?php foreach ($partners as $p): ?>
+                            <div class="col-md-2 col-4 text-center">
+                                <?php if (!empty($p['logo'])): ?>
+                                    <img src="<?= htmlspecialchars($p['logo']) ?>"
+                                         class="partner-logo img-fluid rounded shadow-sm" 
+                                         alt="<?= htmlspecialchars($p['nama_institusi']) ?>"
+                                         title="<?= htmlspecialchars($p['nama_institusi']) ?>"
+                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/200x100/cccccc/666666?text=' + encodeURIComponent('<?= htmlspecialchars($p['nama_institusi']) ?>');">
+                                <?php else: ?>
+                                    <div class="partner-logo img-fluid rounded shadow-sm d-flex align-items-center justify-content-center" 
+                                         style="height: 100px; background: #f0f0f0; color: #666;">
+                                        <?= htmlspecialchars($p['nama_institusi']) ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </section>

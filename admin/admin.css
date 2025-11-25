@@ -14,10 +14,15 @@
     font-family: "Poppins", sans-serif;
 }
 
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
 body {
     background: var(--light);
     color: var(--dark);
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
 }
 
@@ -32,6 +37,14 @@ body {
     top: 0;
     align-self: flex-start;
     height: 100vh;
+    overflow: hidden;
+}
+
+.menu-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 0.5rem;
 }
 
 .brand {
@@ -87,6 +100,7 @@ body {
     flex: 1;
     padding: 2rem 3rem;
     overflow-y: auto;
+    height: 100vh;
 }
 
 .content-inner {
@@ -135,6 +149,11 @@ body {
 @media (max-width: 992px) {
     body {
         flex-direction: column;
+        height: auto;
+        overflow: auto;
+    }
+    html {
+        overflow: auto;
     }
 
     .sidebar {
@@ -143,6 +162,13 @@ body {
         position: relative;
         box-shadow: none;
         border-bottom: 1px solid #e2e8f0;
+        overflow: visible;
+    }
+
+    .menu-scroll {
+        max-height: none;
+        overflow: visible;
+        padding-right: 0;
     }
 
     .menu {
@@ -158,6 +184,7 @@ body {
 
     .content {
         padding: 1.5rem;
+        height: auto;
     }
 }
 
