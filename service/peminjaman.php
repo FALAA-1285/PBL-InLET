@@ -117,22 +117,22 @@ $peminjaman_list = $peminjaman_stmt->fetchAll();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style-peminjaman.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style-peminjaman.css">
 </head>
 
 <body>
     <?php include '../includes/header.php'; ?>
 
-    <main class="flex-grow-1" style="flex: 1 0 auto; min-height: 0;">
+    <main class="flex-grow-1" style="flex: 1 0 auto; min-height: 0; padding-top: 80px;">
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
-                <h1>Lab Borrowing Dashboard</h1>
-                <p>Easily manage room and equipment borrowing</p>
+                <h1 class="display-4 fw-bold">Lab Borrowing Dashboard</h1>
+                <p class="lead mt-3">Easily manage room and equipment borrowing</p>
             </div>
         </section>
 
-        <main class="container my-5">
+        <div class="container my-5">
             <?php if ($message): ?>
                 <div class="alert alert-<?php echo $message_type === 'success' ? 'success' : 'danger'; ?> alert-dismissible fade show" role="alert">
                     <?php echo htmlspecialchars($message); ?>
@@ -227,7 +227,7 @@ $peminjaman_list = $peminjaman_stmt->fetchAll();
                 </form>
             </div>
 
-        </main>
+        </div>
 
     </main>
 

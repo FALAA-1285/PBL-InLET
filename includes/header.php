@@ -44,7 +44,7 @@ $service_base = $is_service_page ? '' : 'service/';
                     </li>
 
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle <?= ($current_page == 'servise.php' || $current_page == 'peminjaman.php' || $current_page == 'absen.php' || $current_page == 'buku_tamu.php') ? 'active text-primary fw-bold' : ''; ?>"
+                        <a class="nav-link dropdown-toggle <?= ($current_page == 'servise.php' || $current_page == 'peminjaman.php' || $current_page == 'absen.php' || $current_page == 'buku_tamu.php') ? 'active text-primary fw-bold' : 'fw-500'; ?>"
                             href="#" id="serviceDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Service
                         </a>
@@ -82,7 +82,6 @@ $service_base = $is_service_page ? '' : 'service/';
     }
 
     body {
-        padding-top: 80px;
         overflow-y: scroll;
         scrollbar-width: none;
         -ms-overflow-style: none;
@@ -95,6 +94,19 @@ $service_base = $is_service_page ? '' : 'service/';
     .navbar {
         transition: all 0.3s ease-in-out;
         font-family: "Poppins", sans-serif;
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .navbar-brand {
+        font-weight: 700;
+        color: #1f2937 !important;
+    }
+
+    .navbar-brand img {
+        height: 40px;
+        width: auto;
+        object-fit: contain;
     }
 
     .logo-img {
@@ -111,6 +123,10 @@ $service_base = $is_service_page ? '' : 'service/';
         transition: all 0.25s ease;
     }
 
+    .navbar-nav .nav-link.fw-500 {
+        font-weight: 500;
+    }
+
     .navbar-nav .nav-link:hover {
         color: #0d6efd;
         transform: translateY(-1px);
@@ -118,7 +134,16 @@ $service_base = $is_service_page ? '' : 'service/';
 
     .navbar-nav .nav-link.active {
         color: #0d6efd !important;
-        font-weight: 600;
+        font-weight: 700 !important;
+    }
+
+    .fw-bold {
+        font-weight: 700 !important;
+    }
+
+    .text-primary.fw-bold {
+        color: #0d6efd !important;
+        font-weight: 700 !important;
     }
 
     .dropdown-menu {
@@ -158,7 +183,7 @@ $service_base = $is_service_page ? '' : 'service/';
     .dropdown-item.active:hover {
         background: rgba(13, 110, 253, 0.15);
         color: #0d6efd !important;
-        font-weight: 600;
+        font-weight: 700;
     }
 
     @keyframes fadeSlideDown {

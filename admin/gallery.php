@@ -600,27 +600,126 @@ $news_options = $news_stmt->fetchAll(PDO::FETCH_ASSOC);
                             <?php if ($start_page > 2): ?><span>...</span><?php endif; ?>
                         <?php endif; ?>
 
-                        <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
-                            <?php if ($i === $current_page): ?>
-                                <span class="active"><?php echo $i; ?></span>
+            </div>
+        </section>
+
+        <!-- GALLERY -->
+        <section class="py-5" id="gallery">
+            <div class="container">
+                <div class="section-title text-center mb-4">
+                    <h2>Gallery</h2>
+                    <p>Documentation of InLET</p>
+                </div>
+                <div id="pinterest-grid" class="pinterest-grid">
+                    <?php if (empty($gallery_init)): ?>
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--gray);">
+                            <p style="font-size: 1.1rem;">Belum ada gambar di gallery. Silakan tambahkan melalui halaman
+                                admin.</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($gallery_init as $g): ?>
+                            <?php
+                            $rawImg = $g['img'] ?? '';
+                            $imgSrc = ($rawImg !== null && trim($rawImg) !== '')
+                                ? htmlspecialchars($rawImg, ENT_QUOTES, 'UTF-8')
+                                : 'https://via.placeholder.com/400x300/cccccc/666666?text=Gallery';
+                            ?>
+                            <div class="pin-item">
+                                <div class="pin-img-wrapper">
+                                    <img src="<?= $imgSrc ?>" alt="<?= htmlspecialchars($g['judul'] ?? 'Gallery Image') ?>"
+                                        onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Error+Loading+Image';">
+                                    <div class="pin-overlay">
+                                        <h5 class="pin-title"><?= htmlspecialchars($g['judul'] ?? 'Gallery Image') ?></h5>
+                                        <?php if (!empty($g['deskripsi'])): ?>
+                                            <p class="pin-desc"><?= htmlspecialchars($g['deskripsi']) ?></p>
+                                        <?php endif; ?>
+                                        <?php if (!empty($g['berita_judul'])): ?>
+                                            <small class="pin-berita" style="display: block; margin-top: 0.5rem; opacity: 0.8;">
+                                                Dari: <?= htmlspecialchars($g['berita_judul']) ?>
+                                            </small>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+                <?php if ($total_gallery_pages > 1): ?>
+                    <nav aria-label="Gallery pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <?php if ($gallery_page > 1): ?>
+                                <li class="page-item">
+                                    <a class="page-link"
+                                        href="?gpage=<?= $gallery_page - 1 ?><?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery"
+                                        aria-label="Previous">
+                                        <span aria-hidden="true">&laquo; Previous</span>
+                                    </a>
+                                </li>
                             <?php else: ?>
-                                <a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                <li class="page-item disabled">
+                                    <span class="page-link">&laquo; Previous</span>
+                                </li>
+                            <?php endif; ?>
+
+                            <?php
+                            $start_page = max(1, $gallery_page - 2);
+                            $end_page = min($total_gallery_pages, $gallery_page + 2);
+
+                            if ($start_page > 1): ?>
+                                <li class="page-item">
+                                    <a class="page-link"
+                                        href="?gpage=1<?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery">1</a>
+                                </li>
+                                <?php if ($start_page > 2): ?>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                <?php endif; ?>
                             <?php endif; ?>
                         <?php endfor; ?>
 
-                        <?php if ($end_page < $total_pages): ?>
-                            <?php if ($end_page < $total_pages - 1): ?><span>...</span><?php endif; ?>
-                            <a href="?page=<?php echo $total_pages; ?>"><?php echo $total_pages; ?></a>
-                        <?php endif; ?>
+                            <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                                <li class="page-item <?= $i == $gallery_page ? 'active' : '' ?>">
+                                    <a class="page-link"
+                                        href="?gpage=<?= $i ?><?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery"><?= $i ?></a>
+                                </li>
+                            <?php endfor; ?>
 
-                        <?php if ($current_page < $total_pages): ?>
-                            <a href="?page=<?php echo $current_page + 1; ?>">Next &raquo;</a>
-                        <?php else: ?>
-                            <span class="disabled">Next &raquo;</span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="pagination-info">
-                        Menampilkan <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> dari <?php echo $total_items; ?> data gallery
+                            <?php if ($end_page < $total_gallery_pages): ?>
+                                <?php if ($end_page < $total_gallery_pages - 1): ?>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                <?php endif; ?>
+                                <li class="page-item">
+                                    <a class="page-link"
+                                        href="?gpage=<?= $total_gallery_pages ?><?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery"><?= $total_gallery_pages ?></a>
+                                </li>
+                            <?php endif; ?>
+
+                            <?php if ($gallery_page < $total_gallery_pages): ?>
+                                <li class="page-item">
+                                    <a class="page-link"
+                                        href="?gpage=<?= $gallery_page + 1 ?><?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery"
+                                        aria-label="Next">
+                                        <span aria-hidden="true">Next &raquo;</span>
+                                    </a>
+                                </li>
+                            <?php else: ?>
+                                <li class="page-item disabled">
+                                    <span class="page-link">Next &raquo;</span>
+                                </li>
+                            <?php endif; ?>
+                        </ul>
+                        <div class="text-center mt-3" style="color: var(--gray);">
+                            Menampilkan <?= ($gallery_offset + 1) ?> -
+                            <?= min($gallery_offset + $gallery_items_per_page, $total_gallery_items) ?> dari
+                            <?= $total_gallery_items ?> gambar
+                        </div>
+                    </nav>
+                <?php elseif (empty($all_gallery)): ?>
+                    <div class="text-center mt-3" style="color: var(--gray);">
+                        Belum ada gambar di gallery
                     </div>
                 <?php endif; ?>
             </div>
@@ -629,14 +728,71 @@ $news_options = $news_stmt->fetchAll(PDO::FETCH_ASSOC);
     </main>
 
     <script>
-        function editGallery(item) {
-            document.getElementById('edit_id').value = item.id_gallery;
-            document.getElementById('edit_judul').value = item.judul || '';
-            document.getElementById('edit_current_gambar').value = item.gambar || '';
-            document.getElementById('edit_gambar_url').value = item.gambar || '';
-            var beritaSelect = document.getElementById('edit_id_berita');
-            if (beritaSelect) {
-                beritaSelect.value = item.id_berita || '';
+        // Swiper init
+        new Swiper(".teamSwiper", { slidesPerView: 3, spaceBetween: 30, navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" }, breakpoints: { 0: { slidesPerView: 1 }, 576: { slidesPerView: 2 }, 992: { slidesPerView: 3 } } });
+
+        // Masonry Layout
+        document.addEventListener("DOMContentLoaded", function () {
+            const container = document.getElementById("pinterest-grid");
+            const gap = 15;
+
+            function getColumns() {
+                if (window.innerWidth < 576) return 1;
+                if (window.innerWidth < 768) return 2;
+                return 3;
+            }
+
+            function masonryLayout() {
+                const items = Array.from(container.querySelectorAll(".pin-item"));
+                const columns = getColumns();
+
+                if (columns === 1) {
+                    container.style.height = 'auto';
+                    items.forEach(i => {
+                        i.style.position = '';
+                        i.style.transform = '';
+                        i.style.width = '100%';
+                    });
+                    return;
+                }
+
+                items.forEach(i => i.style.position = 'absolute');
+                const colWidth = (container.offsetWidth - (columns - 1) * gap) / columns;
+                const colHeights = Array(columns).fill(0);
+
+                items.forEach(item => {
+                    item.style.width = colWidth + 'px';
+                    const minCol = colHeights.indexOf(Math.min(...colHeights));
+                    const x = minCol * (colWidth + gap);
+                    const y = colHeights[minCol];
+                    item.style.transform = `translate(${x}px,${y}px)`;
+                    item.classList.add('show');
+                    colHeights[minCol] += item.offsetHeight + gap;
+                });
+
+                container.style.height = Math.max(...colHeights) + 'px';
+            }
+
+            function initialLayout() {
+                const imgs = container.querySelectorAll('img');
+                let loaded = 0;
+
+                imgs.forEach(img => {
+                    if (img.complete) {
+                        loaded++;
+                    } else {
+                        img.addEventListener('load', () => {
+                            loaded++;
+                            if (loaded === imgs.length) masonryLayout();
+                        });
+                        img.addEventListener('error', () => {
+                            loaded++;
+                            if (loaded === imgs.length) masonryLayout();
+                        });
+                    }
+                });
+
+                if (loaded === imgs.length) masonryLayout();
             }
             document.getElementById('edit-form-section').classList.add('active');
             document.getElementById('add-form-section').style.display = 'none';

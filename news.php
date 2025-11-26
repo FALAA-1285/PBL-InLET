@@ -93,6 +93,7 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style-news.css">
 </head>
 
@@ -102,11 +103,11 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
     <?php include 'includes/header.php'; ?>
 
     <!-- HERO -->
-    <main class="flex-grow-1" style="flex: 1 0 auto; min-height: 0;">
+    <main class="flex-grow-1" style="flex: 1 0 auto; min-height: 0; padding-top: 80px;">
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
-                <h1>News - Information And Learning Engineering Technology</h1>
-                <p>Stay updated with our latest publications, activities, and breakthroughs.</p>
+                <h1 class="display-4 fw-bold">News - Information And Learning Engineering Technology</h1>
+                <p class="lead mt-3">Stay updated with our latest publications, activities, and breakthroughs.</p>
             </div>
         </section>
 
