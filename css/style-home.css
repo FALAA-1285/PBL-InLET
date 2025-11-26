@@ -9,6 +9,7 @@ body {
 
 main {
     flex: 1;
+    padding-top: 80px;
 }
 
 .hero {
@@ -22,6 +23,8 @@ main {
     align-items: center;
     justify-content: center;
     position: relative;
+    margin-top: 0;
+    padding-top: 0;
 }
 
 .hero::before {
@@ -40,19 +43,70 @@ main {
 }
 
 .hero h1 {
+    font-size: 2.5rem;
     font-weight: 700 !important;
     text-align: center;
+    color: #ffffff;
+    margin-bottom: 1rem;
+    line-height: 1.2;
 }
 
+.hero h1.display-4 {
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+}
 
 .hero p {
     font-size: 1.1rem;
     margin-top: 0.5rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.hero p.lead {
+    font-size: 1.25rem !important;
+    font-weight: 500;
+    margin-top: 1rem !important;
 }
 
 .section-title h2,
 .section-title p {
     text-align: center;
+}
+
+.section-title h2 {
+    color: #0d6efd;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+/* Responsive Hero */
+@media (max-width: 768px) {
+    .hero {
+        min-height: 40vh;
+    }
+
+    .hero h1 {
+        font-size: 1.6rem;
+    }
+
+    .hero p {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero {
+        min-height: 35vh;
+    }
+
+    .hero h1 {
+        font-size: 1.4rem;
+    }
+
+    .hero p {
+        font-size: 0.9rem;
+    }
 }
 
 /* Masonry gallery */

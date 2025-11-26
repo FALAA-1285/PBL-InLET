@@ -33,23 +33,46 @@ $stmt->execute();
 $news_list = $stmt->fetchAll();
 $total_pages = ceil($total_items / $items_per_page);
 
- => "https://picsum.photos/seed/news{$i}/{$w}/{$h}", 
+// --------------------------------------
+// GALLERY DATA HANDLING
+// --------------------------------------
+try {
+    $stmt = $conn->prepare("
+        SELECT g.id_gallery, g.gambar, g.judul, g.deskripsi,
+               b.judul AS berita_judul
+        FROM gallery g
+        LEFT JOIN berita b ON g.id_berita = b.id
+        ORDER BY g.id_gallery DESC
+    ");
+    $stmt->execute();
+    $all_gallery = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (!$all_gallery) {
+        // Dummy data jika kosong
+        $all_gallery = [];
+        for ($i = 1; $i <= 80; $i++) {
+            $w = rand(320, 460);
+            $h = rand(240, 500);
+            $all_gallery[] = [
+                "img" => "https://picsum.photos/seed/news{$i}/{$w}/{$h}",
                 "judul" => "Gallery Image {$i}",
                 "deskripsi" => ""
             ];
         }
     } else {
-        // Rename 'gambar' to 'img' for compatibility with existing JavaScript
+        // Rename gambar → img agar sesuai JavaScript
         $all_gallery = array_map(function ($item) {
             return [
-                "img" => $item['gambar'], 
+                "img" => $item['gambar'],
                 "judul" => $item['judul'] ?? 'Gallery Image',
-                "deskripsi" => $item['deskripsi'] ?? ''
+                "deskripsi" => $item['deskripsi'] ?? '',
+                "berita_judul" => $item['berita_judul'] ?? ''
             ];
         }, $all_gallery);
     }
+
 } catch (PDOException $e) {
-    // Fallback to dummy data if query fails
+    // Fallback ke dummy data jika query gagal
     error_log("Gallery query error: " . $e->getMessage());
     $all_gallery = [];
     for ($i = 1; $i <= 80; $i++) {
@@ -63,13 +86,14 @@ $total_pages = ceil($total_items / $items_per_page);
     }
 }
 
-// Pagination for gallery
+// Pagination
 $gallery_items_per_page = 12;
 $gallery_page = isset($_GET['gpage']) ? max(1, (int) $_GET['gpage']) : 1;
 $gallery_offset = ($gallery_page - 1) * $gallery_items_per_page;
 $total_gallery_items = count($all_gallery);
 $total_gallery_pages = ceil($total_gallery_items / $gallery_items_per_page);
 $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_page);
+
 
 ?>
 <!DOCTYPE html>
@@ -255,7 +279,8 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
                 <div id="pinterest-grid" class="pinterest-grid">
                     <?php if (empty($gallery_init)): ?>
                         <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--gray);">
-                            <p style="font-size: 1.1rem;">Belum ada gambar di gallery. Silakan tambahkan melalui halaman admin.</p>
+                            <p style="font-size: 1.1rem;">Belum ada gambar di gallery. Silakan tambahkan melalui halaman
+                                admin.</p>
                         </div>
                     <?php else: ?>
                         <?php foreach ($gallery_init as $g): ?>
@@ -267,9 +292,8 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
                             ?>
                             <div class="pin-item">
                                 <div class="pin-img-wrapper">
-                                    <img src="<?= $imgSrc ?>" 
-                                         alt="<?= htmlspecialchars($g['judul'] ?? 'Gallery Image') ?>"
-                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Error+Loading+Image';">
+                                    <img src="<?= $imgSrc ?>" alt="<?= htmlspecialchars($g['judul'] ?? 'Gallery Image') ?>"
+                                        onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Error+Loading+Image';">
                                     <div class="pin-overlay">
                                         <h5 class="pin-title"><?= htmlspecialchars($g['judul'] ?? 'Gallery Image') ?></h5>
                                         <?php if (!empty($g['deskripsi'])): ?>
@@ -291,7 +315,9 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
                         <ul class="pagination justify-content-center">
                             <?php if ($gallery_page > 1): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="?gpage=<?= $gallery_page - 1 ?><?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery" aria-label="Previous">
+                                    <a class="page-link"
+                                        href="?gpage=<?= $gallery_page - 1 ?><?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery"
+                                        aria-label="Previous">
                                         <span aria-hidden="true">&laquo; Previous</span>
                                     </a>
                                 </li>
@@ -307,7 +333,8 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
 
                             if ($start_page > 1): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="?gpage=1<?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery">1</a>
+                                    <a class="page-link"
+                                        href="?gpage=1<?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery">1</a>
                                 </li>
                                 <?php if ($start_page > 2): ?>
                                     <li class="page-item disabled">
@@ -318,7 +345,8 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
 
                             <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
                                 <li class="page-item <?= $i == $gallery_page ? 'active' : '' ?>">
-                                    <a class="page-link" href="?gpage=<?= $i ?><?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery"><?= $i ?></a>
+                                    <a class="page-link"
+                                        href="?gpage=<?= $i ?><?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery"><?= $i ?></a>
                                 </li>
                             <?php endfor; ?>
 
@@ -336,7 +364,9 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
 
                             <?php if ($gallery_page < $total_gallery_pages): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="?gpage=<?= $gallery_page + 1 ?><?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery" aria-label="Next">
+                                    <a class="page-link"
+                                        href="?gpage=<?= $gallery_page + 1 ?><?= !empty($search_query) ? '&search=' . urlencode($search_query) : '' ?>#gallery"
+                                        aria-label="Next">
                                         <span aria-hidden="true">Next &raquo;</span>
                                     </a>
                                 </li>
@@ -375,30 +405,30 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
             const container = document.getElementById("pinterest-grid");
             const gap = 15;
 
-            function getColumns() { 
-                if (window.innerWidth < 576) return 1; 
-                if (window.innerWidth < 768) return 2; 
-                return 3; 
+            function getColumns() {
+                if (window.innerWidth < 576) return 1;
+                if (window.innerWidth < 768) return 2;
+                return 3;
             }
-            
+
             function masonryLayout() {
                 const items = Array.from(container.querySelectorAll(".pin-item"));
                 const columns = getColumns();
-                
-                if (columns === 1) { 
-                    container.style.height = 'auto'; 
-                    items.forEach(i => { 
-                        i.style.position = ''; 
-                        i.style.transform = ''; 
-                        i.style.width = '100%'; 
-                    }); 
-                    return; 
+
+                if (columns === 1) {
+                    container.style.height = 'auto';
+                    items.forEach(i => {
+                        i.style.position = '';
+                        i.style.transform = '';
+                        i.style.width = '100%';
+                    });
+                    return;
                 }
-                
+
                 items.forEach(i => i.style.position = 'absolute');
                 const colWidth = (container.offsetWidth - (columns - 1) * gap) / columns;
                 const colHeights = Array(columns).fill(0);
-                
+
                 items.forEach(item => {
                     item.style.width = colWidth + 'px';
                     const minCol = colHeights.indexOf(Math.min(...colHeights));
@@ -408,14 +438,14 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
                     item.classList.add('show');
                     colHeights[minCol] += item.offsetHeight + gap;
                 });
-                
+
                 container.style.height = Math.max(...colHeights) + 'px';
             }
 
             function initialLayout() {
                 const imgs = container.querySelectorAll('img');
                 let loaded = 0;
-                
+
                 imgs.forEach(img => {
                     if (img.complete) {
                         loaded++;
@@ -430,7 +460,7 @@ $gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_pa
                         });
                     }
                 });
-                
+
                 if (loaded === imgs.length) masonryLayout();
             }
 

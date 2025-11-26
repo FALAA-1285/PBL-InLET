@@ -1,17 +1,26 @@
 <?php
-// index.php (combined: page + AJAX endpoint for gallery)
+// index.php (cleaned & fixed) - replace your existing file with this
 require_once 'config/database.php';
 
 $conn = getDBConnection();
 
 // -------------------
-// Get team members from database
+// Helper: safe fetch all
 // -------------------
-$stmt = $conn->prepare("SELECT * 
-                      FROM member 
-                      ORDER BY nama");
-$stmt->execute();
-$team = $stmt->fetchAll();
+function safeQueryAll($conn, $sql)
+{
+    try {
+        $stmt = $conn->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return [];
+    }
+}
+
+// -------------------
+// Team (member) fetch
+// -------------------
+$team = safeQueryAll($conn, "SELECT * FROM member ORDER BY nama");
 
 // -------------------
 // Dummy data for research
@@ -24,22 +33,38 @@ for ($i = 1; $i <= 25; $i++) {
     ];
 }
 
-// Get mitra from database
-try {
-    $mitra_stmt = $conn->query("SELECT * FROM mitra ORDER BY nama_institusi");
-    $partners = $mitra_stmt->fetchAll();
-    
-    // If no mitra in database, use empty array
-    if (empty($partners)) {
-        $partners = [];
-    }
-} catch (PDOException $e) {
-    // Fallback to empty array if table doesn't exist
-    $partners = [];
-}
+/* ------------------------------------------
+   PAGINATION for Research Fields (FIXED)
+-------------------------------------------*/
 
-// Create gallery table if not exists
+// Data menggunakan $riset (dummy 25 data)
+$perPage = 9;
+$totalRF = count($riset);
+$totalPagesRF = ($totalRF > 0) ? ceil($totalRF / $perPage) : 1;
+
+// Halaman aktif
+$pageRF = isset($_GET['rf']) ? (int) $_GET['rf'] : 1;
+if ($pageRF < 1)
+    $pageRF = 1;
+if ($pageRF > $totalPagesRF)
+    $pageRF = $totalPagesRF;
+
+// Hitung start index
+$startRF = ($pageRF - 1) * $perPage;
+
+// Slice data riset sesuai halaman
+$research_fields_paginated = array_slice($riset, $startRF, $perPage);
+
+// -------------------
+// Partners (mitra) fetch
+// -------------------
+$partners = safeQueryAll($conn, "SELECT * FROM mitra ORDER BY nama_institusi");
+
+// -------------------
+// Ensure gallery table exists (best-effort, won't break on failure)
+// -------------------
 try {
+    // using SERIAL might be DB-specific; try to use generic SQL tolerant for common DBs
     $conn->exec("CREATE TABLE IF NOT EXISTS gallery (
         id_gallery SERIAL PRIMARY KEY,
         gambar VARCHAR(500) NOT NULL,
@@ -52,71 +77,47 @@ try {
     $conn->exec("CREATE INDEX IF NOT EXISTS idx_gallery_urutan ON gallery(urutan)");
     $conn->exec("CREATE INDEX IF NOT EXISTS idx_gallery_created ON gallery(created_at)");
 } catch (PDOException $e) {
-    // Table might already exist, continue
+    // ignore - some DB engines may not support the exact DDL
 }
 
-// Get gallery from database
-try {
-    $gallery_stmt = $conn->query("SELECT gambar, judul FROM gallery ORDER BY urutan ASC, created_at DESC");
-    $all_gallery = $gallery_stmt->fetchAll();
-    
-    // If no gallery in database, use dummy data as fallback
-    if (empty($all_gallery)) {
-        for ($i = 1; $i <= 100; $i++) {
-            $w = rand(300, 450);
-            $h = rand(250, 500);
-            $all_gallery[] = ["gambar" => "https://picsum.photos/seed/$i/{$w}/{$h}", "judul" => ""];
+// -------------------
+// Fetch gallery entries and normalize keys to 'img' & 'judul'
+// -------------------
+$raw_gallery = safeQueryAll($conn, "SELECT gambar, judul FROM gallery ORDER BY urutan ASC, created_at DESC");
+
+$all_gallery = [];
+if (!empty($raw_gallery)) {
+    foreach ($raw_gallery as $row) {
+        $img = trim($row['gambar'] ?? '');
+        // keep absolute URLs as-is; if path looks relative, make it relative to 'uploads/'
+        if ($img !== '' && !preg_match('#^https?://#i', $img)) {
+            // if it's already contains uploads/ keep it; else prepend uploads/
+            if (strpos($img, 'uploads/') !== 0 && strpos($img, './uploads/') !== 0) {
+                $img = 'uploads/' . ltrim($img, '/');
+            }
         }
-    } else {
-        // Rename 'gambar' to 'img' for compatibility
-        $all_gallery = array_map(function($item) {
-            return ["img" => $item['gambar'], "judul" => $item['judul'] ?? ''];
-        }, $all_gallery);
+        $all_gallery[] = [
+            'img' => $img ?: null,
+            'judul' => $row['judul'] ?? ''
+        ];
     }
-} catch (PDOException $e) {
-    // Fallback to dummy data if table doesn't exist
-    $all_gallery = [];
-    for ($i = 1; $i <= 100; $i++) {
+}
+
+// If no gallery data, fallback to dummy images (picsum)
+if (empty($all_gallery)) {
+    for ($i = 1; $i <= 60; $i++) {
         $w = rand(300, 450);
         $h = rand(250, 500);
-        $all_gallery[] = ["img" => "https://picsum.photos/seed/$i/{$w}/{$h}"];
+        $all_gallery[] = [
+            'img' => "https://picsum.photos/seed/{$i}/{$w}/{$h}",
+            'judul' => "Image #{$i}"
+        ];
     }
 }
 
 // -------------------
-// AJAX endpoint: load more gallery
+// helper: initials
 // -------------------
-if (isset($_GET['action']) && $_GET['action'] === 'load_gallery') {
-    $limit = 12;
-    $page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
-    $start = ($page - 1) * $limit;
-    $data = array_slice($all_gallery, $start, $limit);
-
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(array_values($data));
-    exit;
-}
-
-// -------------------
-// Pagination & slices
-// -------------------
-$research_limit = 9;
-$rpage = isset($_GET["rpage"]) ? max(1, (int) $_GET["rpage"]) : 1;
-$rstart = ($rpage - 1) * $research_limit;
-$total_items = count($riset);
-$total_pages = ceil($total_items / $research_limit);
-$current_riset = array_slice($riset, $rstart, $research_limit);
-
-// -------------------
-// Pagination for gallery
-// -------------------
-$gallery_items_per_page = 12;
-$gallery_page = isset($_GET['gpage']) ? max(1, (int) $_GET['gpage']) : 1;
-$gallery_offset = ($gallery_page - 1) * $gallery_items_per_page;
-$total_gallery_items = count($all_gallery);
-$total_gallery_pages = ceil($total_gallery_items / $gallery_items_per_page);
-$gallery_init = array_slice($all_gallery, $gallery_offset, $gallery_items_per_page);
-
 function getInitials($name)
 {
     $words = preg_split('/\s+/', trim($name));
@@ -137,9 +138,12 @@ function getInitials($name)
 <head>
     <meta charset="UTF-8">
     <title>Home - Information & Learning Engineering Technology</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style-home.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 </head>
 
 <body>
@@ -165,37 +169,54 @@ function getInitials($name)
             </div>
         </section>
 
-        <!-- RESEARCH FIELDS -->
-        <section class="py-5 bg-light" id="bidang">
+        <section id="research-fields" class="py-5">
             <div class="container">
-                <div class="section-title">
-                    <h2>Research Fields</h2>
-                    <p>List of research fields</p>
-                </div>
-                <div class="row g-4">
-                    <?php foreach ($current_riset as $item): ?>
-                        <div class="col-md-4">
-                            <div class="p-4 bg-white shadow-sm rounded">
-                                <h5 class="fw-bold text-primary"><?= htmlspecialchars($item["judul"]) ?></h5>
-                                <p><?= htmlspecialchars($item["deskripsi"]) ?></p>
+                <h2 class="section-title mb-4 text-center">Research Fields</h2>
+
+                <div class="row">
+                    <?php if (!empty($research_fields_paginated)): ?>
+                        <?php foreach ($research_fields_paginated as $r): ?>
+                            <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                                <div class="rf-card p-4 shadow-sm rounded h-100">
+                                    <h4 class="fw-bold mb-2 text-center">
+                                        <?= htmlspecialchars($r['judul']) ?>
+                                    </h4>
+                                    <p class="text-muted text-center mb-0">
+                                        <?= htmlspecialchars($r['deskripsi']) ?>
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p class="text-center">No Research Fields available.</p>
+                    <?php endif; ?>
                 </div>
-                <nav class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        <?php if ($rpage > 1): ?>
-                            <li class="page-item"><a class="page-link" href="?rpage=<?= $rpage - 1 ?>#bidang">Previous</a>
-                            </li><?php endif; ?>
-                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                            <li class="page-item <?= $i == $rpage ? 'active' : '' ?>"><a class="page-link"
-                                    href="?rpage=<?= $i ?>#bidang"><?= $i ?></a></li>
-                        <?php endfor; ?>
-                        <?php if ($rpage < $total_pages): ?>
-                            <li class="page-item"><a class="page-link" href="?rpage=<?= $rpage + 1 ?>#bidang">Next</a></li>
-                        <?php endif; ?>
-                    </ul>
-                </nav>
+
+                <!-- Pagination -->
+                <?php if ($totalPagesRF > 1): ?>
+                    <nav aria-label="RF Pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+
+                            <!-- Previous -->
+                            <li class="page-item <?= ($pageRF <= 1) ? 'disabled' : '' ?>">
+                                <a class="page-link" href="?rf=<?= $pageRF - 1 ?>">Previous</a>
+                            </li>
+
+                            <!-- Number -->
+                            <?php for ($i = 1; $i <= $totalPagesRF; $i++): ?>
+                                <li class="page-item <?= ($i == $pageRF) ? 'active' : '' ?>">
+                                    <a class="page-link" href="?rf=<?= $i ?>"><?= $i ?></a>
+                                </li>
+                            <?php endfor; ?>
+
+                            <!-- Next -->
+                            <li class="page-item <?= ($pageRF >= $totalPagesRF) ? 'disabled' : '' ?>">
+                                <a class="page-link" href="?rf=<?= $pageRF + 1 ?>">Next</a>
+                            </li>
+
+                        </ul>
+                    </nav>
+                <?php endif; ?>
             </div>
         </section>
 
@@ -215,14 +236,13 @@ function getInitials($name)
                         <?php foreach ($partners as $p): ?>
                             <div class="col-md-2 col-4 text-center">
                                 <?php if (!empty($p['logo'])): ?>
-                                    <img src="<?= htmlspecialchars($p['logo']) ?>"
-                                         class="partner-logo img-fluid rounded shadow-sm" 
-                                         alt="<?= htmlspecialchars($p['nama_institusi']) ?>"
-                                         title="<?= htmlspecialchars($p['nama_institusi']) ?>"
-                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/200x100/cccccc/666666?text=' + encodeURIComponent('<?= htmlspecialchars($p['nama_institusi']) ?>');">
+                                    <img src="<?= htmlspecialchars($p['logo']) ?>" class="partner-logo img-fluid rounded shadow-sm"
+                                        alt="<?= htmlspecialchars($p['nama_institusi']) ?>"
+                                        title="<?= htmlspecialchars($p['nama_institusi']) ?>"
+                                        onerror="this.onerror=null; this.src='https://via.placeholder.com/200x100/cccccc/666666?text=' + encodeURIComponent('<?= addslashes(htmlspecialchars($p['nama_institusi'])) ?>');">
                                 <?php else: ?>
-                                    <div class="partner-logo img-fluid rounded shadow-sm d-flex align-items-center justify-content-center" 
-                                         style="height: 100px; background: #f0f0f0; color: #666;">
+                                    <div class="partner-logo img-fluid rounded shadow-sm d-flex align-items-center justify-content-center"
+                                        style="height: 100px; background: #f0f0f0; color: #666;">
                                         <?= htmlspecialchars($p['nama_institusi']) ?>
                                     </div>
                                 <?php endif; ?>
@@ -242,52 +262,45 @@ function getInitials($name)
                 </div>
                 <div class="swiper teamSwiper">
                     <div class="swiper-wrapper">
-                        <?php 
-                        // Get team members from database
-                        if (!empty($team)): 
-                            foreach ($team as $t): 
-                                $has_photo = false;
+                        <?php if (!empty($team)): ?>
+                            <?php foreach ($team as $t):
                                 $foto_url = '';
                                 if (!empty($t['foto'])) {
                                     $foto_url = $t['foto'];
-                                    if (!preg_match('/^https?:\/\//', $foto_url)) {
+                                    if (!preg_match('/^https?:\/\//i', $foto_url)) {
                                         if (strpos($foto_url, 'uploads/') !== 0) {
                                             $foto_url = 'uploads/' . ltrim($foto_url, '/');
                                         }
                                     }
-                                    $has_photo = true;
                                 }
-                        ?>
-                            <div class="swiper-slide">
-                                <div class="member-card card-surface h-100 text-center">
-                                    <div class="member-img-wrapper">
-                                        <?php if ($has_photo): ?>
-                                            <img src="<?php echo htmlspecialchars($foto_url); ?>" 
-                                                 alt="<?php echo htmlspecialchars($t['nama']); ?>" 
-                                                 class="member-img"
-                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                            <div class="member-initials" style="display: none;">
-                                                <?= htmlspecialchars(getInitials($t["nama"])) ?>
-                                            </div>
-                                        <?php else: ?>
-                                            <div class="member-initials">
-                                                <?= htmlspecialchars(getInitials($t["nama"])) ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="member-info">
-                                        <h3 class="member-name"><?= htmlspecialchars($t["nama"]) ?></h3>
-                                        <div class="member-role"><?= htmlspecialchars($t["jabatan"] ?: 'Member') ?></div>
-                                        <?php if (!empty($t["deskripsi"])): ?>
-                                            <p class="member-desc"><?= htmlspecialchars($t["deskripsi"]) ?></p>
-                                        <?php endif; ?>
+                                ?>
+                                <div class="swiper-slide">
+                                    <div class="member-card card-surface h-100 text-center">
+                                        <div class="member-img-wrapper">
+                                            <?php if (!empty($foto_url)): ?>
+                                                <img src="<?= htmlspecialchars($foto_url) ?>"
+                                                    alt="<?= htmlspecialchars($t['nama']) ?>" class="member-img"
+                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                <div class="member-initials" style="display: none;">
+                                                    <?= htmlspecialchars(getInitials($t["nama"])) ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="member-initials">
+                                                    <?= htmlspecialchars(getInitials($t["nama"])) ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="member-info">
+                                            <h3 class="member-name"><?= htmlspecialchars($t["nama"]) ?></h3>
+                                            <div class="member-role"><?= htmlspecialchars($t["jabatan"] ?: 'Member') ?></div>
+                                            <?php if (!empty($t["deskripsi"])): ?>
+                                                <p class="member-desc"><?= htmlspecialchars($t["deskripsi"]) ?></p>
+                                            <?php endif; ?>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        <?php 
-                            endforeach; 
-                        else:
-                        ?>
+                            <?php endforeach; ?>
+                        <?php else: ?>
                             <div class="swiper-slide">
                                 <div class="member-card card-surface h-100 text-center">
                                     <div class="member-info">
@@ -300,161 +313,146 @@ function getInitials($name)
                     <div class="swiper-button-next"></div>
                     <div class="swiper-button-prev"></div>
                 </div>
+            </div>
         </section>
 
-        <!-- GALLERY -->
+        <!-- GALLERY (ALL IMAGES — no pagination, no loading) -->
         <section class="py-5" id="gallery">
             <div class="container">
                 <div class="section-title text-center mb-4">
                     <h2>Gallery</h2>
                     <p>Documentation of InLET</p>
                 </div>
+
+                <!-- Pinterest-like grid -->
                 <div id="pinterest-grid" class="pinterest-grid">
-                    <?php foreach ($gallery_init as $g): ?>
+                    <?php foreach ($all_gallery as $g):
+                        $img_src = $g['img'] ?? null;
+                        // if empty or null, use placeholder
+                        if (empty($img_src)) {
+                            $img_src = "https://via.placeholder.com/400x300/cccccc/666666?text=Gallery";
+                        }
+                        // ensure safe attributes
+                        $judul = $g['judul'] ?? '';
+                        ?>
                         <div class="pin-item">
                             <div class="pin-img-wrapper">
-                                <img src="<?= htmlspecialchars($g['img']) ?>" alt="Gallery Image"
+                                <img src="<?= htmlspecialchars($img_src) ?>"
+                                    alt="<?= htmlspecialchars($judul ?: 'Gallery Image') ?>"
                                     onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Gallery';">
                                 <div class="pin-overlay">
-                                    <h5 class="pin-title"><?= htmlspecialchars($g['judul'] ?? 'Image') ?></h5>
+                                    <h5 class="pin-title"><?= htmlspecialchars($judul ?: 'Image') ?></h5>
                                 </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
-                <?php if ($total_gallery_pages > 1): ?>
-                    <nav aria-label="Gallery pagination" class="mt-4">
-                        <ul class="pagination justify-content-center">
-                            <?php if ($gallery_page > 1): ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="?gpage=<?= $gallery_page - 1 ?>#gallery" aria-label="Previous">
-                                        <span aria-hidden="true">&laquo; Previous</span>
-                                    </a>
-                                </li>
-                            <?php else: ?>
-                                <li class="page-item disabled">
-                                    <span class="page-link">&laquo; Previous</span>
-                                </li>
-                            <?php endif; ?>
-                            
-                            <?php
-                            $start_page = max(1, $gallery_page - 2);
-                            $end_page = min($total_gallery_pages, $gallery_page + 2);
-                            
-                            if ($start_page > 1): ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="?gpage=1#gallery">1</a>
-                                </li>
-                                <?php if ($start_page > 2): ?>
-                                    <li class="page-item disabled">
-                                        <span class="page-link">...</span>
-                                    </li>
-                                <?php endif; ?>
-                            <?php endif; ?>
-                            
-                            <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
-                                <li class="page-item <?= $i == $gallery_page ? 'active' : '' ?>">
-                                    <a class="page-link" href="?gpage=<?= $i ?>#gallery"><?= $i ?></a>
-                                </li>
-                            <?php endfor; ?>
-                            
-                            <?php if ($end_page < $total_gallery_pages): ?>
-                                <?php if ($end_page < $total_gallery_pages - 1): ?>
-                                    <li class="page-item disabled">
-                                        <span class="page-link">...</span>
-                                    </li>
-                                <?php endif; ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="?gpage=<?= $total_gallery_pages ?>#gallery"><?= $total_gallery_pages ?></a>
-                                </li>
-                            <?php endif; ?>
-                            
-                            <?php if ($gallery_page < $total_gallery_pages): ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="?gpage=<?= $gallery_page + 1 ?>#gallery" aria-label="Next">
-                                        <span aria-hidden="true">Next &raquo;</span>
-                                    </a>
-                                </li>
-                            <?php else: ?>
-                                <li class="page-item disabled">
-                                    <span class="page-link">Next &raquo;</span>
-                                </li>
-                            <?php endif; ?>
-                        </ul>
-                        <div class="text-center mt-3" style="color: var(--gray);">
-                            Menampilkan <?= ($gallery_offset + 1) ?> - <?= min($gallery_offset + $gallery_items_per_page, $total_gallery_items) ?> dari <?= $total_gallery_items ?> gambar
-                        </div>
-                    </nav>
-                <?php endif; ?>
-                <div id="loader" class="text-center mt-3" style="display:none;">Loading more...</div>
+
             </div>
         </section>
 
     </main>
+
     <?php include 'includes/footer.php'; ?>
 
+    <!-- JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
     <script>
         // Swiper init
-        new Swiper(".teamSwiper", { slidesPerView: 3, spaceBetween: 30, navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" }, breakpoints: { 0: { slidesPerView: 1 }, 576: { slidesPerView: 2 }, 992: { slidesPerView: 3 } } });
+        new Swiper(".teamSwiper", {
+            slidesPerView: 3,
+            spaceBetween: 30,
+            navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" },
+            breakpoints: { 0: { slidesPerView: 1 }, 576: { slidesPerView: 2 }, 992: { slidesPerView: 3 } }
+        });
 
-        // Masonry + Infinite Scroll
+        // Masonry layout for pinterest-grid (all images shown at once)
         document.addEventListener("DOMContentLoaded", function () {
             const container = document.getElementById("pinterest-grid");
-            const gap = 15; let page = 2; let allLoaded = false; let isLoading = false;
+            const gap = 15;
 
-            function getColumns() { if (window.innerWidth < 576) return 1; if (window.innerWidth < 768) return 2; return 3; }
+            function getColumns() {
+                if (window.innerWidth < 576) return 1;
+                if (window.innerWidth < 768) return 2;
+                return 3;
+            }
+
             function masonryLayout() {
                 const items = Array.from(container.querySelectorAll(".pin-item"));
                 const columns = getColumns();
-                if (columns === 1) { container.style.height = 'auto'; items.forEach(i => { i.style.position = ''; i.style.transform = ''; i.style.width = '100%'; }); return; }
-                items.forEach(i => i.style.position = 'absolute');
-                const colWidth = (container.offsetWidth - (columns - 1) * gap) / columns;
+
+                // Reset for single column (flow layout)
+                if (columns === 1) {
+                    container.style.height = 'auto';
+                    items.forEach(i => {
+                        i.style.position = 'static';
+                        i.style.transform = '';
+                        i.style.width = '100%';
+                        i.style.marginBottom = gap + 'px';
+                    });
+                    return;
+                }
+
+                // absolute positioning layout
+                items.forEach(i => {
+                    i.style.position = 'absolute';
+                    i.style.marginBottom = '0';
+                });
+
+                const containerWidth = container.clientWidth;
+                const colWidth = Math.floor((containerWidth - (columns - 1) * gap) / columns);
                 const colHeights = Array(columns).fill(0);
+
                 items.forEach(item => {
                     item.style.width = colWidth + 'px';
+                    // ensure image is displayed block so offsetHeight is proper
+                    const rect = item.getBoundingClientRect();
+                    // choose shortest column
                     const minCol = colHeights.indexOf(Math.min(...colHeights));
                     const x = minCol * (colWidth + gap);
                     const y = colHeights[minCol];
-                    item.style.transform = `translate(${x}px,${y}px)`;
+                    item.style.transform = `translate(${x}px, ${y}px)`;
                     item.classList.add('show');
-                    colHeights[minCol] += item.offsetHeight + gap;
+
+                    // compute item's full height including margins
+                    const h = item.offsetHeight;
+                    colHeights[minCol] += h + gap;
                 });
+
                 container.style.height = Math.max(...colHeights) + 'px';
             }
 
-            function appendItems(data) {
-                if (!data || data.length === 0) return;
-                data.forEach(g => {
-                    const item = document.createElement('div'); item.className = 'pin-item';
-                    const wrapper = document.createElement('div'); wrapper.className = 'pin-img-wrapper';
-                    const img = document.createElement('img'); img.src = g.img; img.alt = g.judul || 'Gallery Image';
-                    img.onerror = function () { this.src = 'https://via.placeholder.com/400x300/cccccc/666666?text=Gallery'; };
-                    const overlay = document.createElement('div'); overlay.className = 'pin-overlay';
-                    const title = document.createElement('h5'); title.className = 'pin-title'; title.textContent = g.judul || 'Image'; overlay.appendChild(title);
-                    wrapper.appendChild(img); wrapper.appendChild(overlay); item.appendChild(wrapper); container.appendChild(item);
-                    img.onload = masonryLayout;
+            // Wait for all images inside grid to load (or error) before layout
+            const imgs = Array.from(container.querySelectorAll('img'));
+            if (imgs.length === 0) {
+                masonryLayout();
+            } else {
+                let loaded = 0;
+                imgs.forEach(img => {
+                    if (img.complete) {
+                        loaded++;
+                    } else {
+                        img.addEventListener('load', () => {
+                            loaded++;
+                            if (loaded === imgs.length) masonryLayout();
+                        });
+                        img.addEventListener('error', () => {
+                            loaded++;
+                            if (loaded === imgs.length) masonryLayout();
+                        });
+                    }
                 });
+                if (loaded === imgs.length) masonryLayout();
             }
 
-            // Disabled infinite scroll, using pagination instead
-            // function loadMore() {
-            //     if (isLoading || allLoaded) return;
-            //     isLoading = true; document.getElementById('loader').style.display = 'block';
-            //     fetch(`<?= basename($_SERVER['PHP_SELF']); ?>?action=load_gallery&page=${page}`)
-            //         .then(r => r.json())
-            //         .then(data => { if (!data || data.length === 0) { allLoaded = true; } else { appendItems(data); page++; } })
-            //         .finally(() => { isLoading = false; document.getElementById('loader').style.display = 'none'; });
-            // }
-
-            // window.addEventListener('scroll', () => { if (window.innerHeight + window.scrollY > document.body.offsetHeight - 200) loadMore(); });
-            window.addEventListener('resize', masonryLayout);
-
-            // initial layout
-            const imgs = container.querySelectorAll('img'); let loadedCount = 0;
-            imgs.forEach(img => { if (img.complete) loadedCount++; else img.onload = img.onerror = () => { loadedCount++; if (loadedCount === imgs.length) masonryLayout(); } });
-            if (loadedCount === imgs.length) masonryLayout();
+            // Re-layout on resize
+            let resizeTimeout = null;
+            window.addEventListener('resize', function () {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(masonryLayout, 150);
+            });
         });
     </script>
 </body>

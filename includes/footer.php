@@ -67,33 +67,6 @@
         }
 
         /* ==========================================
-   HERO SECTION
-   ========================================== */
-        .hero {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 350px;
-            position: relative;
-            overflow: hidden;
-            padding: 80px 0;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="rgba(255,255,255,0.05)"/><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/></svg>');
-            opacity: 0.3;
-        }
-
-        .hero .container {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ==========================================
    TEAM SECTION
    ========================================== */
         .team-section {
@@ -271,11 +244,6 @@
         }
 
         @media (max-width: 992px) {
-            .hero {
-                min-height: 300px;
-                padding: 60px 0;
-            }
-
             .section-title h2 {
                 font-size: 2rem;
             }
@@ -294,15 +262,6 @@
                 padding: 50px 0 60px;
             }
 
-            .hero {
-                min-height: 280px;
-                padding: 50px 0;
-            }
-
-            .hero .display-4 {
-                font-size: 2rem;
-            }
-
             .member-img-wrapper {
                 height: 280px;
             }
@@ -315,10 +274,6 @@
         @media (max-width: 576px) {
             .team-section {
                 padding: 40px 0 50px;
-            }
-
-            .hero {
-                padding: 40px 0;
             }
 
             .member-img-wrapper {

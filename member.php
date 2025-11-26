@@ -79,18 +79,19 @@ function getInitials($name)
     <title>Our Experts - Information & Learning Engineering Technology</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style-member.css   ">
+    <link rel="stylesheet" href="css/style-member.css">
 </head>
 
 <body>
     <?php include 'includes/header.php'; ?>
 
-    <main class="flex-grow-1" style="flex: 1 0 auto; min-height: 0;">
+    <main class="flex-grow-1" style="flex: 1 0 auto; min-height: 0; padding-top: 80px;">
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
-                <h1>Our Experts - Information And Learning Engineering Technology</h1>
-                <p>Driving innovation in Information and Learning Engineering Technology.</p>
+                <h1 class="display-4 fw-bold">Our Experts - Information And Learning Engineering Technology</h1>
+                <p class="lead mt-3">Driving innovation in Information and Learning Engineering Technology.</p>
             </div>
         </section>
 
