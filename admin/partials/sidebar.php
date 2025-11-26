@@ -28,7 +28,7 @@ $menu_items = [
         'id' => 'mitra',
         'label' => 'Mitra Lab',
         'href' => 'mitra.php',
-        'icon' => 'ri-handshake-line',
+        'icon' => 'ri-community-line',
     ],
     [
         'id' => 'mahasiswa',
