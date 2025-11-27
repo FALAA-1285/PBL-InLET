@@ -266,63 +266,283 @@ $total_gallery_pages = (int)ceil($total_gallery_items / max(1, $gallery_items_pe
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
     <style>
-        :root{
-            --primary:#2563eb;
-            --primary-dark:#1e40af;
-            --light:#f8fafc;
-            --dark:#0f172a;
-            --gray:#6b7280;
+        body {
+            background: var(--light);
         }
-        body{ font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto, 'Helvetica Neue', Arial; margin:0; background:var(--light); color:var(--dark); }
-        .container{ max-width:1200px; margin:0 auto; padding:2rem; }
-        .content-header{ display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1.5rem;}
-        .content-header h1{ margin:0; color:var(--primary); display:flex; align-items:center; gap:.75rem; font-size:1.6rem;}
-        .form-section, .data-section { background:#fff; padding:1.5rem; border-radius:12px; box-shadow:0 6px 20px rgba(2,6,23,0.06); margin-bottom:1.5rem; }
-        .form-group{ margin-bottom:1rem; }
-        label{ display:block; font-weight:600; margin-bottom:.4rem; color:var(--dark); }
-        input[type="text"], input[type="file"], textarea, select { width:100%; padding:.65rem; border:1px solid #e6edf9; border-radius:8px; font-size:0.95rem; }
-        .btn{ display:inline-block; padding:.6rem .9rem; border-radius:8px; font-weight:600; cursor:pointer; border:none; }
-        .btn-primary{ background:var(--primary); color:#fff; }
-        .btn-ghost{ background:#eef2ff; color:var(--primary); border:1px solid rgba(37,99,235,0.08); }
-        .btn-danger{ background:#ef4444; color:#fff; }
-        .table-container{ overflow:auto; }
-        table{ width:100%; border-collapse:collapse; min-width:800px; }
-        th, td{ padding:.85rem; border-bottom:1px solid #f1f5f9; text-align:left; vertical-align:middle; }
-        th{ background:#fafcff; font-weight:700; color:var(--dark); }
-        .image-cell img{ width:140px; height:90px; object-fit:cover; border-radius:8px; border:1px solid #eef2ff; }
-        .message{ padding:.9rem; border-radius:8px; margin-bottom:1rem; }
-        .message.success{ background:#e6fffa; color:#065f46; border-left:4px solid #10b981; }
-        .message.error{ background:#fff1f2; color:#991b1b; border-left:4px solid #ef4444; }
-        .pagination { display:flex; gap:.5rem; justify-content:center; padding:1rem 0; }
-        .pagination a, .pagination span { padding:.5rem .75rem; border-radius:8px; border:1px solid #eef2ff; text-decoration:none; color:var(--dark); }
-        .pagination .active { background:var(--primary); color:#fff; border-color:var(--primary); }
-        .pagination .disabled { opacity:.5; pointer-events:none; }
-
-        /* Gallery (public) grid */
-        #gallery { padding:2rem 0 3rem; }
-        .pinterest-grid { position:relative; width:100%; }
-        .pin-item { position:absolute; width:300px; transition:transform .25s ease, opacity .25s; opacity:0; }
-        .pin-item.show { opacity:1; }
-        .pin-img-wrapper { position:relative; border-radius:12px; overflow:hidden; box-shadow:0 8px 24px rgba(2,6,23,0.06); }
-        .pin-img-wrapper img{ width:100%; height:auto; display:block; }
-        .pin-overlay{ position:absolute; left:0; right:0; bottom:0; padding:1rem; background:linear-gradient(0deg, rgba(0,0,0,0.6), rgba(0,0,0,0.15)); color:#fff; }
-        .pin-title{ margin:0; font-weight:700; font-size:1rem; }
-        .pin-desc{ margin:.3rem 0 0; font-size:.9rem; color:rgba(255,255,255,0.9); }
-        /* responsive */
-        @media (max-width:768px){ .pin-item{ position:static; width:100% !important; margin-bottom:15px; } .pinterest-grid{ height:auto !important; } }
+        .admin-header {
+            background: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            border-radius: 18px;
+        }
+        .admin-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+        .admin-header h1 {
+            color: var(--dark);
+            font-size: 1.5rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .cms-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-bottom: 4rem;
+        }
+        .message {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+        .form-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+        }
+        .form-section h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+            font-weight: 500;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="file"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .form-group small {
+            display: block;
+            margin-top: 0.5rem;
+            color: var(--gray);
+            font-size: 0.875rem;
+        }
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-submit:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        .btn-cancel {
+            background: #6b7280;
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 1rem;
+        }
+        .btn-cancel:hover {
+            background: #4b5563;
+        }
+        .data-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+        }
+        .data-section h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background: var(--light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+        tr:hover {
+            background: var(--light);
+        }
+        .image-cell {
+            text-align: center;
+        }
+        .image-cell img {
+            width: 120px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            transition: transform 0.3s;
+        }
+        .image-cell img:hover {
+            transform: scale(1.05);
+        }
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            margin-right: 0.5rem;
+        }
+        .btn-edit:hover {
+            background: #2563eb;
+        }
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+        .edit-form-section {
+            display: none;
+        }
+        .edit-form-section.active {
+            display: block;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 1rem;
+        }
+        .pagination a,
+        .pagination span {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--dark);
+            transition: all 0.3s;
+        }
+        .pagination a:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .pagination .active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .pagination .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .pagination-info {
+            text-align: center;
+            color: var(--gray);
+            margin-top: 1rem;
+        }
+        .btn-primary-header {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary-header:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
     <?php $active_page = 'gallery'; include __DIR__ . '/partials/sidebar.php'; ?>
 
-    <main class="container">
-        <div class="content-header">
-            <h1><i class="ri-image-line"></i> Gallery</h1>
-            <div>
-                <button class="btn btn-primary" onclick="document.getElementById('add-form-section').scrollIntoView({behavior:'smooth'});">Tambah Gambar</button>
+    <main class="content">
+        <div class="content-inner">
+            <div class="admin-header">
+                <div class="admin-header-content">
+                    <div>
+                        <h1><i class="ri-image-line"></i> Gallery CMS InLET</h1>
+                        <p style="color: var(--gray); margin-top: 0.5rem;">Kelola gambar gallery website</p>
+                    </div>
+                    <a href="#add-form-section" class="btn-primary-header" onclick="document.getElementById('add-form-section').scrollIntoView({behavior:'smooth'}); return false;">
+                        <i class="ri-add-line"></i> Tambah Gambar
+                    </a>
+                </div>
             </div>
-        </div>
+
+            <div class="cms-content">
 
         <?php if ($message): ?>
             <div class="message <?php echo htmlspecialchars($message_type); ?>">
@@ -331,7 +551,7 @@ $total_gallery_pages = (int)ceil($total_gallery_items / max(1, $gallery_items_pe
         <?php endif; ?>
 
         <!-- Edit Form (hidden by default) -->
-        <div id="edit-form-section" class="form-section" style="display:none;">
+        <div id="edit-form-section" class="form-section edit-form-section">
             <h2>Edit Gambar Gallery</h2>
             <form method="POST" enctype="multipart/form-data" id="edit-gallery-form">
                 <input type="hidden" name="action" value="update_gallery">
@@ -339,11 +559,11 @@ $total_gallery_pages = (int)ceil($total_gallery_items / max(1, $gallery_items_pe
                 <input type="hidden" name="current_gambar" id="edit_current_gambar">
                 <div class="form-group">
                     <label>Judul *</label>
-                    <input type="text" name="judul" id="edit_judul" required>
+                    <input type="text" name="judul" id="edit_judul" required placeholder="Judul gambar">
                 </div>
                 <div class="form-group">
                     <label>Deskripsi (opsional)</label>
-                    <textarea name="deskripsi" id="edit_deskripsi" rows="3"></textarea>
+                    <textarea name="deskripsi" id="edit_deskripsi" rows="3" placeholder="Deskripsi gambar"></textarea>
                 </div>
                 <div class="form-group">
                     <label>Berita Terkait (Opsional)</label>
@@ -353,19 +573,20 @@ $total_gallery_pages = (int)ceil($total_gallery_items / max(1, $gallery_items_pe
                             <option value="<?php echo $news['id_berita']; ?>"><?php echo htmlspecialchars($news['judul']); ?></option>
                         <?php endforeach; ?>
                     </select>
+                    <small>Jika tidak mengupload/URL, gambar dapat mengambil thumbnail berita ini (jika ada).</small>
                 </div>
                 <div class="form-group">
                     <label>Upload Gambar (File)</label>
                     <input type="file" name="gambar_file" accept="image/*">
-                    <small style="display:block;color:var(--gray);">Jika diisi, unggahan ini akan menggantikan gambar lama.</small>
+                    <small>Jika diisi, unggahan ini akan menggantikan gambar lama.</small>
                 </div>
                 <div class="form-group">
                     <label>Atau Masukkan URL Gambar</label>
                     <input type="text" name="gambar_url" id="edit_gambar_url" placeholder="https://example.com/image.jpg">
                 </div>
-                <div style="display:flex;gap:.5rem;margin-top:.5rem;">
-                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                    <button type="button" class="btn btn-ghost" onclick="cancelEdit()">Batal</button>
+                <div>
+                    <button type="submit" class="btn-submit">Simpan Perubahan</button>
+                    <button type="button" class="btn-cancel" onclick="cancelEdit()">Batal</button>
                 </div>
             </form>
         </div>
@@ -401,8 +622,8 @@ $total_gallery_pages = (int)ceil($total_gallery_items / max(1, $gallery_items_pe
                     <label>Atau Masukkan URL Gambar</label>
                     <input type="text" name="gambar_url" placeholder="https://example.com/image.jpg">
                 </div>
-                <div style="display:flex;gap:.5rem;">
-                    <button type="submit" class="btn btn-primary">Tambah Gambar</button>
+                <div>
+                    <button type="submit" class="btn-submit">Tambah Gambar</button>
                 </div>
             </form>
         </div>
@@ -440,11 +661,15 @@ $total_gallery_pages = (int)ceil($total_gallery_items / max(1, $gallery_items_pe
                                     </td>
                                     <td><?php echo !empty($item['created_at']) ? date('d M Y', strtotime($item['created_at'])) : '-'; ?></td>
                                     <td>
-                                        <button class="btn btn-ghost" onclick='editGallery(<?php echo json_encode($item, JSON_HEX_APOS|JSON_HEX_QUOT); ?>)'><i class="ri-edit-line"></i> Edit</button>
+                                        <button type="button" class="btn-edit" onclick='editGallery(<?php echo json_encode($item, JSON_HEX_APOS|JSON_HEX_QUOT); ?>)'>
+                                            <i class="ri-edit-line"></i> Edit
+                                        </button>
                                         <form method="POST" style="display:inline;" onsubmit="return confirm('Yakin hapus gambar ini?');">
                                             <input type="hidden" name="action" value="delete_gallery">
                                             <input type="hidden" name="id" value="<?php echo $item['id_gallery']; ?>">
-                                            <button type="submit" class="btn btn-danger"><i class="ri-delete-bin-line"></i> Hapus</button>
+                                            <button type="submit" class="btn-delete">
+                                                <i class="ri-delete-bin-line"></i> Hapus
+                                            </button>
                                         </form>
                                     </td>
                                 </tr>
@@ -455,21 +680,24 @@ $total_gallery_pages = (int)ceil($total_gallery_items / max(1, $gallery_items_pe
 
                 <!-- Pagination -->
                 <?php if ($total_pages > 1): ?>
-                    <div class="pagination" role="navigation" aria-label="Pagination">
+                    <div class="pagination">
                         <?php if ($current_page > 1): ?>
-                            <a href="?page=<?php echo $current_page - 1; ?>">&laquo; Prev</a>
+                            <a href="?page=<?php echo $current_page - 1; ?>">&laquo; Previous</a>
                         <?php else: ?>
-                            <span class="disabled">&laquo; Prev</span>
+                            <span class="disabled">&laquo; Previous</span>
                         <?php endif; ?>
-
+                        
                         <?php
                         $start_page = max(1, $current_page - 2);
                         $end_page = min($total_pages, $current_page + 2);
+                        
                         if ($start_page > 1): ?>
                             <a href="?page=1">1</a>
-                            <?php if ($start_page > 2): ?><span>...</span><?php endif; ?>
+                            <?php if ($start_page > 2): ?>
+                                <span>...</span>
+                            <?php endif; ?>
                         <?php endif; ?>
-
+                        
                         <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
                             <?php if ($i == $current_page): ?>
                                 <span class="active"><?php echo $i; ?></span>
@@ -477,53 +705,29 @@ $total_gallery_pages = (int)ceil($total_gallery_items / max(1, $gallery_items_pe
                                 <a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
                             <?php endif; ?>
                         <?php endfor; ?>
-
+                        
                         <?php if ($end_page < $total_pages): ?>
-                            <?php if ($end_page < $total_pages - 1): ?><span>...</span><?php endif; ?>
+                            <?php if ($end_page < $total_pages - 1): ?>
+                                <span>...</span>
+                            <?php endif; ?>
                             <a href="?page=<?php echo $total_pages; ?>"><?php echo $total_pages; ?></a>
                         <?php endif; ?>
-
+                        
                         <?php if ($current_page < $total_pages): ?>
                             <a href="?page=<?php echo $current_page + 1; ?>">Next &raquo;</a>
                         <?php else: ?>
                             <span class="disabled">Next &raquo;</span>
                         <?php endif; ?>
                     </div>
+                    <div class="pagination-info">
+                        Menampilkan <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> dari <?php echo $total_items; ?> gambar
+                    </div>
                 <?php endif; ?>
             <?php endif; ?>
         </div>
 
-        <!-- PUBLIC GALLERY -->
-        <section id="gallery">
-            <div style="text-align:center; margin-bottom:1rem;">
-                <h2>Gallery</h2>
-                <p style="color:var(--gray);">Documentation of InLET</p>
             </div>
-
-            <div id="pinterest-grid" class="pinterest-grid">
-                <?php if (empty($gallery_init)): ?>
-                    <div style="grid-column:1/-1; text-align:center; padding:3rem; color:var(--gray);">
-                        <p style="font-size:1.1rem;">Belum ada gambar di gallery. Silakan tambahkan melalui halaman admin.</p>
-                    </div>
-                <?php else: ?>
-                    <?php foreach ($gallery_init as $g): 
-                        $rawImg = $g['img'] ?? '';
-                        $imgSrc = ($rawImg !== null && trim($rawImg) !== '') ? htmlspecialchars($rawImg, ENT_QUOTES, 'UTF-8') : 'https://via.placeholder.com/400x300/cccccc/666666?text=Gallery';
-                    ?>
-                        <div class="pin-item">
-                            <div class="pin-img-wrapper">
-                                <img src="<?php echo $imgSrc; ?>" alt="<?php echo htmlspecialchars($g['judul'] ?? 'Gallery Image'); ?>" onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Error+Loading+Image';">
-                                <div class="pin-overlay">
-                                    <h5 class="pin-title"><?php echo htmlspecialchars($g['judul'] ?? 'Gallery Image'); ?></h5>
-                                    <?php if (!empty($g['deskripsi'])): ?><p class="pin-desc"><?php echo htmlspecialchars($g['deskripsi']); ?></p><?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
-        </section>
-
+        </div>
     </main>
 
     <script>
@@ -545,7 +749,7 @@ $total_gallery_pages = (int)ceil($total_gallery_items / max(1, $gallery_items_pe
         }
 
         // show edit form
-        document.getElementById('edit-form-section').style.display = 'block';
+        document.getElementById('edit-form-section').classList.add('active');
         document.getElementById('add-form-section').style.display = 'none';
         document.getElementById('edit-form-section').scrollIntoView({behavior:'smooth', block:'start'});
     }
@@ -553,98 +757,9 @@ $total_gallery_pages = (int)ceil($total_gallery_items / max(1, $gallery_items_pe
     function cancelEdit() {
         var form = document.getElementById('edit-gallery-form');
         if (form) form.reset();
-        document.getElementById('edit-form-section').style.display = 'none';
+        document.getElementById('edit-form-section').classList.remove('active');
         document.getElementById('add-form-section').style.display = 'block';
     }
-
-    // ----- Masonry layout for pinterest-grid -----
-    document.addEventListener("DOMContentLoaded", function () {
-        const container = document.getElementById("pinterest-grid");
-        const gap = 15;
-
-        if (!container) return;
-
-        function getColumns() {
-            if (window.innerWidth < 576) return 1;
-            if (window.innerWidth < 768) return 2;
-            return 3;
-        }
-
-        function masonryLayout() {
-            const items = Array.from(container.querySelectorAll(".pin-item"));
-            const columns = getColumns();
-
-            if (columns === 1) {
-                container.style.height = 'auto';
-                items.forEach(i => {
-                    i.style.position = '';
-                    i.style.transform = '';
-                    i.style.width = '100%';
-                    i.classList.add('show');
-                });
-                return;
-            }
-
-            items.forEach(i => {
-                i.style.position = 'absolute';
-                i.style.marginBottom = '0';
-            });
-
-            const containerWidth = container.clientWidth || container.offsetWidth;
-            const colWidth = Math.floor((containerWidth - (columns - 1) * gap) / columns);
-            const colHeights = Array(columns).fill(0);
-
-            items.forEach(item => {
-                item.style.width = colWidth + 'px';
-
-                // force reflow to ensure offsetHeight is accurate after width change
-                const h = item.offsetHeight;
-
-                const minCol = colHeights.indexOf(Math.min(...colHeights));
-                const x = minCol * (colWidth + gap);
-                const y = colHeights[minCol];
-
-                item.style.transform = `translate(${x}px, ${y}px)`;
-                item.classList.add('show');
-
-                colHeights[minCol] += item.offsetHeight + gap;
-            });
-
-            container.style.height = Math.max(...colHeights) + 'px';
-        }
-
-        function initialLayout() {
-            const imgs = Array.from(container.querySelectorAll('img'));
-            if (imgs.length === 0) {
-                masonryLayout();
-                return;
-            }
-
-            let loaded = 0;
-            imgs.forEach(img => {
-                if (img.complete) {
-                    loaded++;
-                } else {
-                    img.addEventListener('load', () => {
-                        loaded++;
-                        if (loaded === imgs.length) masonryLayout();
-                    }, { once: true });
-                    img.addEventListener('error', () => {
-                        loaded++;
-                        if (loaded === imgs.length) masonryLayout();
-                    }, { once: true });
-                }
-            });
-
-            if (loaded === imgs.length) masonryLayout();
-        }
-
-        initialLayout();
-        window.addEventListener('resize', function () {
-            clearTimeout(window.__masonryResizeTimer);
-            window.__masonryResizeTimer = setTimeout(masonryLayout, 120);
-        });
-    });
     </script>
 </body>
 </html>

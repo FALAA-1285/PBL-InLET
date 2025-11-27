@@ -6,6 +6,52 @@ $conn = getDBConnection();
 $message = '';
 $message_type = '';
 
+// Pastikan views ada - buat jika belum ada
+try {
+    // View untuk melihat alat yang sedang dipinjam
+    $view_dipinjam_sql = "CREATE OR REPLACE VIEW view_alat_dipinjam AS
+        SELECT 
+            pj.id_peminjaman,
+            pj.id_alat,
+            alat.nama_alat,
+            alat.deskripsi,
+            pj.nama_peminjam,
+            pj.tanggal_pinjam,
+            pj.tanggal_kembali,
+            pj.keterangan,
+            pj.status,
+            pj.created_at
+        FROM peminjaman pj
+        JOIN alat_lab alat 
+            ON alat.id_alat = pj.id_alat
+        WHERE pj.status = 'dipinjam'";
+    $conn->exec($view_dipinjam_sql);
+} catch(PDOException $e) {
+    // View mungkin sudah ada atau ada error, ignore
+}
+
+try {
+    // View untuk melihat alat yang tersedia dengan informasi stok
+    $view_tersedia_sql = "CREATE OR REPLACE VIEW view_alat_tersedia AS
+        SELECT 
+            alat.id_alat,
+            alat.nama_alat,
+            alat.deskripsi,
+            alat.stock,
+            COALESCE(pj.jumlah_dipinjam, 0) AS jumlah_dipinjam,
+            (alat.stock - COALESCE(pj.jumlah_dipinjam, 0)) AS stok_tersedia
+        FROM alat_lab alat
+        LEFT JOIN (
+            SELECT id_alat, COUNT(*) AS jumlah_dipinjam
+            FROM peminjaman
+            WHERE status = 'dipinjam'
+            GROUP BY id_alat
+        ) pj ON pj.id_alat = alat.id_alat";
+    $conn->exec($view_tersedia_sql);
+} catch(PDOException $e) {
+    // View mungkin sudah ada atau ada error, ignore
+}
+
 // Get current admin ID
 $admin_id = $_SESSION['id_admin'] ?? null;
 
@@ -65,8 +111,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'delete_alat') {
         $id = $_POST['id'] ?? 0;
         try {
-            // Check if alat is being borrowed
-            $check_stmt = $conn->prepare("SELECT COUNT(*) FROM peminjaman WHERE id_alat = :id AND status = 'dipinjam'");
+            // Check if alat is being borrowed menggunakan view_alat_dipinjam
+            $check_stmt = $conn->prepare("SELECT COUNT(*) FROM view_alat_dipinjam WHERE id_alat = :id");
             $check_stmt->execute(['id' => $id]);
             $borrowed_count = $check_stmt->fetchColumn();
             
@@ -86,11 +132,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Get all alat lab
-$stmt = $conn->query("SELECT * FROM alat_lab ORDER BY nama_alat");
+// Get all alat lab dengan informasi stok tersedia menggunakan view_alat_tersedia
+$stmt = $conn->query("SELECT * FROM view_alat_tersedia ORDER BY nama_alat");
 $alat_list = $stmt->fetchAll();
 
-// Get alat for edit
+// Get alat for edit - perlu ambil dari tabel karena view tidak memiliki semua field untuk edit
 $edit_alat = null;
 if (isset($_GET['edit'])) {
     $edit_id = intval($_GET['edit']);
@@ -347,7 +393,8 @@ if (isset($_GET['edit'])) {
                                         <th>ID</th>
                                         <th>Nama Alat</th>
                                         <th>Deskripsi</th>
-                                        <th>Stock</th>
+                                        <th>Stock Total</th>
+                                        <th>Stock Tersedia</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
@@ -357,11 +404,16 @@ if (isset($_GET['edit'])) {
                                             <td><?php echo $alat['id_alat']; ?></td>
                                             <td><?php echo htmlspecialchars($alat['nama_alat']); ?></td>
                                             <td><?php echo htmlspecialchars($alat['deskripsi'] ?? '-'); ?></td>
+                                            <td><?php echo $alat['stock']; ?> unit</td>
                                             <td>
                                                 <span class="stock-badge <?php 
-                                                    echo $alat['stock'] > 5 ? 'stock-available' : ($alat['stock'] > 0 ? 'stock-low' : 'stock-empty'); 
+                                                    $stok_tersedia = $alat['stok_tersedia'] ?? 0;
+                                                    echo $stok_tersedia > 5 ? 'stock-available' : ($stok_tersedia > 0 ? 'stock-low' : 'stock-empty'); 
                                                 ?>">
-                                                    <?php echo $alat['stock']; ?> unit
+                                                    <?php echo $stok_tersedia; ?> unit tersedia
+                                                    <?php if (isset($alat['jumlah_dipinjam']) && $alat['jumlah_dipinjam'] > 0): ?>
+                                                        <br><small style="color: #6b7280;">(<?php echo $alat['jumlah_dipinjam']; ?> dipinjam)</small>
+                                                    <?php endif; ?>
                                                 </span>
                                             </td>
                                             <td>

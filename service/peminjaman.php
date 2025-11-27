@@ -5,6 +5,52 @@ $conn = getDBConnection();
 $message = '';
 $message_type = '';
 
+// Pastikan views ada - buat jika belum ada
+try {
+    // View untuk melihat alat yang sedang dipinjam
+    $view_dipinjam_sql = "CREATE OR REPLACE VIEW view_alat_dipinjam AS
+        SELECT 
+            pj.id_peminjaman,
+            pj.id_alat,
+            alat.nama_alat,
+            alat.deskripsi,
+            pj.nama_peminjam,
+            pj.tanggal_pinjam,
+            pj.tanggal_kembali,
+            pj.keterangan,
+            pj.status,
+            pj.created_at
+        FROM peminjaman pj
+        JOIN alat_lab alat 
+            ON alat.id_alat = pj.id_alat
+        WHERE pj.status = 'dipinjam'";
+    $conn->exec($view_dipinjam_sql);
+} catch(PDOException $e) {
+    // View mungkin sudah ada atau ada error, ignore
+}
+
+try {
+    // View untuk melihat alat yang tersedia dengan informasi stok
+    $view_tersedia_sql = "CREATE OR REPLACE VIEW view_alat_tersedia AS
+        SELECT 
+            alat.id_alat,
+            alat.nama_alat,
+            alat.deskripsi,
+            alat.stock,
+            COALESCE(pj.jumlah_dipinjam, 0) AS jumlah_dipinjam,
+            (alat.stock - COALESCE(pj.jumlah_dipinjam, 0)) AS stok_tersedia
+        FROM alat_lab alat
+        LEFT JOIN (
+            SELECT id_alat, COUNT(*) AS jumlah_dipinjam
+            FROM peminjaman
+            WHERE status = 'dipinjam'
+            GROUP BY id_alat
+        ) pj ON pj.id_alat = alat.id_alat";
+    $conn->exec($view_tersedia_sql);
+} catch(PDOException $e) {
+    // View mungkin sudah ada atau ada error, ignore
+}
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -20,16 +66,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message_type = 'error';
         } else {
             try {
-                // Check stock availability
-                $check_stmt = $conn->prepare("SELECT stock FROM alat_lab WHERE id_alat = :id");
-                $check_stmt->execute(['id' => $id_alat]);
-                $alat = $check_stmt->fetch();
+                // Check stock availability menggunakan view atau fallback ke query langsung
+                try {
+                    $check_stmt = $conn->prepare("SELECT stok_tersedia FROM view_alat_tersedia WHERE id_alat = :id");
+                    $check_stmt->execute(['id' => $id_alat]);
+                    $alat = $check_stmt->fetch();
+                } catch(PDOException $e) {
+                    // Fallback jika view error
+                    $check_stmt = $conn->prepare("SELECT a.stock - COALESCE((SELECT COUNT(*) FROM peminjaman WHERE id_alat = a.id_alat AND status = 'dipinjam'), 0) as stok_tersedia
+                        FROM alat_lab a WHERE a.id_alat = :id");
+                    $check_stmt->execute(['id' => $id_alat]);
+                    $alat = $check_stmt->fetch();
+                }
                 
                 if (!$alat) {
                     $message = 'Alat tidak ditemukan!';
                     $message_type = 'error';
-                } elseif ($alat['stock'] <= 0) {
-                    $message = 'Stock alat habis!';
+                } elseif ($alat['stok_tersedia'] <= 0) {
+                    $message = 'Stock alat habis atau sedang dipinjam!';
                     $message_type = 'error';
                 } else {
                     // Insert peminjaman
@@ -93,17 +147,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Get all alat lab
-$alat_stmt = $conn->query("SELECT * FROM alat_lab ORDER BY nama_alat");
-$alat_list = $alat_stmt->fetchAll();
+// Get alat lab yang tersedia menggunakan view view_alat_tersedia
+try {
+    $alat_stmt = $conn->query("SELECT * FROM view_alat_tersedia WHERE stok_tersedia > 0 ORDER BY nama_alat");
+    $alat_list = $alat_stmt->fetchAll();
+} catch(PDOException $e) {
+    // Fallback jika view error - query langsung dari tabel
+    $alat_stmt = $conn->query("SELECT a.*, 
+        (a.stock - COALESCE((SELECT COUNT(*) FROM peminjaman WHERE id_alat = a.id_alat AND status = 'dipinjam'), 0)) as stok_tersedia,
+        COALESCE((SELECT COUNT(*) FROM peminjaman WHERE id_alat = a.id_alat AND status = 'dipinjam'), 0) as jumlah_dipinjam
+        FROM alat_lab a 
+        WHERE (a.stock - COALESCE((SELECT COUNT(*) FROM peminjaman WHERE id_alat = a.id_alat AND status = 'dipinjam'), 0)) > 0
+        ORDER BY a.nama_alat");
+    $alat_list = $alat_stmt->fetchAll();
+}
 
-// Get active peminjaman
-$peminjaman_stmt = $conn->query("SELECT p.*, a.nama_alat, a.stock 
-                                  FROM peminjaman p 
-                                  JOIN alat_lab a ON p.id_alat = a.id_alat_lab
-                                  WHERE p.status = 'dipinjam' 
-                                  ORDER BY p.tanggal_pinjam DESC");
-$peminjaman_list = $peminjaman_stmt->fetchAll();
+// Get active peminjaman menggunakan view view_alat_dipinjam
+try {
+    $peminjaman_stmt = $conn->query("SELECT * FROM view_alat_dipinjam ORDER BY tanggal_pinjam DESC");
+    $peminjaman_list = $peminjaman_stmt->fetchAll();
+} catch(PDOException $e) {
+    // Fallback jika view error - query langsung dari tabel
+    $peminjaman_stmt = $conn->query("SELECT pj.*, alat.nama_alat, alat.deskripsi 
+        FROM peminjaman pj
+        JOIN alat_lab alat ON alat.id_alat = pj.id_alat
+        WHERE pj.status = 'dipinjam'
+        ORDER BY pj.tanggal_pinjam DESC");
+    $peminjaman_list = $peminjaman_stmt->fetchAll();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -199,10 +270,9 @@ $peminjaman_list = $peminjaman_stmt->fetchAll();
                                 <option value="">Pilih Alat Lab</option>
                                 <?php foreach ($alat_list as $alat): ?>
                                     <option value="<?php echo $alat['id_alat']; ?>" 
-                                            data-stock="<?php echo $alat['stock']; ?>"
-                                            <?php echo $alat['stock'] <= 0 ? 'disabled' : ''; ?>>
+                                            data-stock="<?php echo $alat['stok_tersedia']; ?>">
                                         <?php echo htmlspecialchars($alat['nama_alat']); ?> 
-                                        (Stock: <?php echo $alat['stock']; ?>)
+                                        (Tersedia: <?php echo $alat['stok_tersedia']; ?>, Total: <?php echo $alat['stock']; ?>)
                                     </option>
                                 <?php endforeach; ?>
                             </select>

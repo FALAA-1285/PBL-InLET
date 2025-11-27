@@ -33,17 +33,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $alamat = $_POST['alamat'] ?? '';
                 $no_tlp = $_POST['no_tlp'] ?? '';
                 $deskripsi = $_POST['deskripsi'] ?? '';
+                $bidang_keahlian = $_POST['bidang_keahlian'] ?? '';
+                $admin_id = $_SESSION['id_admin'] ?? null;
                 
-                $stmt = $conn->prepare("INSERT INTO member (nama, email, jabatan, foto, alamat, notlp, deskripsi) VALUES (:nama, :email, :jabatan, :foto, :alamat, :notlp, :deskripsi) RETURNING id_member");
+                // Menggunakan stored procedure tambah_member
+                $stmt = $conn->prepare("SELECT tambah_member(:nama, :email, :jabatan, :foto, :keahlian, :notlp, :deskripsi, :alamat, :id_admin)");
                 $stmt->execute([
                     'nama' => $nama,
                     'email' => $email ?: null,
                     'jabatan' => $jabatan ?: null,
                     'foto' => $foto ?: null,
-                    'alamat' => $alamat ?: null,
+                    'keahlian' => $bidang_keahlian ?: null,
                     'notlp' => $no_tlp ?: null,
-                    'deskripsi' => $deskripsi ?: null
+                    'deskripsi' => $deskripsi ?: null,
+                    'alamat' => $alamat ?: null,
+                    'id_admin' => $admin_id
                 ]);
+                $stmt->fetch(); // Execute function yang returns VOID
                 
                 $message = 'Member berhasil ditambahkan!';
                 $message_type = 'success';
@@ -394,6 +400,10 @@ $members = $stmt->fetchAll();
                     <input type="text" name="jabatan" id="edit_jabatan">
                 </div>
                 <div class="form-group">
+                    <label>Bidang Keahlian</label>
+                    <input type="text" name="bidang_keahlian" id="edit_bidang_keahlian" placeholder="Bidang keahlian (opsional)">
+                </div>
+                <div class="form-group">
                     <label>Upload Foto (File)</label>
                     <input type="file" name="foto_file" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
                     <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Maksimal 5MB. Format: JPG, PNG, GIF, WEBP</small>
@@ -436,6 +446,10 @@ $members = $stmt->fetchAll();
                 <div class="form-group">
                     <label>Jabatan</label>
                     <input type="text" name="jabatan">
+                </div>
+                <div class="form-group">
+                    <label>Bidang Keahlian</label>
+                    <input type="text" name="bidang_keahlian" placeholder="Bidang keahlian (opsional)">
                 </div>
                 <div class="form-group">
                     <label>Upload Foto (File)</label>
@@ -564,6 +578,7 @@ $members = $stmt->fetchAll();
             document.getElementById('edit_nama').value = member.nama || '';
             document.getElementById('edit_email').value = member.email || '';
             document.getElementById('edit_jabatan').value = member.jabatan || '';
+            document.getElementById('edit_bidang_keahlian').value = member.bidang_keahlian || '';
             document.getElementById('edit_foto').value = member.foto || '';
             document.getElementById('edit_alamat').value = member.alamat || '';
             document.getElementById('edit_no_tlp').value = member.notlp || '';

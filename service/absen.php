@@ -9,7 +9,7 @@ $message = '';
 $message_type = '';
 
 // Get all mahasiswa for dropdown
-$mhs_stmt = $conn->query("SELECT id_mahasiswa, nama, status FROM mahasiswa ORDER BY nama");
+$mhs_stmt = $conn->query("SELECT id_mhs, nama, status FROM mahasiswa ORDER BY nama");
 $mahasiswa_list = $mhs_stmt->fetchAll();
 
 // Handle form submission

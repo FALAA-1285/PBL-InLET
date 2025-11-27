@@ -16,8 +16,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $konten = $_POST['konten'] ?? '';
         
         try {
-            $stmt = $conn->prepare("INSERT INTO artikel (judul, tahun, konten) VALUES (:judul, :tahun, :konten)");
-            $stmt->execute(['judul' => $judul, 'tahun' => $tahun ?: null, 'konten' => $konten]);
+            // Menggunakan stored procedure tambah_artikel
+            $stmt = $conn->prepare("SELECT tambah_artikel(:judul, :tahun, :konten)");
+            $stmt->execute([
+                'judul' => $judul, 
+                'tahun' => $tahun ?: null, 
+                'konten' => $konten
+            ]);
+            $stmt->fetch(); // Execute function yang returns VOID
             $message = 'Artikel berhasil ditambahkan!';
             $message_type = 'success';
         } catch(PDOException $e) {
