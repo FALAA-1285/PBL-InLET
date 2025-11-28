@@ -182,7 +182,7 @@ $offset_progress = ($current_page_progress - 1) * $items_per_page;
 $stmt = $conn->prepare("SELECT p.*, a.judul as artikel_judul, m.nama as mahasiswa_nama, mem.nama as member_nama, pr.nama_produk, mt.nama_institusi as mitra_nama
                       FROM penelitian p 
                       LEFT JOIN artikel a ON p.id_artikel = a.id_artikel 
-                      LEFT JOIN mahasiswa m ON p.id_mhs = m.id_mhs 
+                      LEFT JOIN mahasiswa m ON p.id_mhs = m.id_mahasiswa 
                       LEFT JOIN member mem ON p.id_member = mem.id_member 
                       LEFT JOIN produk pr ON p.id_produk = pr.id_produk
                       LEFT JOIN mitra mt ON p.id_mitra = mt.id_mitra
@@ -194,7 +194,7 @@ $stmt->execute();
 $progress_list = $stmt->fetchAll();
 
 // Get dropdown options
-$stmt = $conn->query("SELECT id_mhs, nama FROM mahasiswa ORDER BY nama");
+$stmt = $conn->query("SELECT id_mahasiswa, nama FROM mahasiswa ORDER BY nama");
 $mahasiswa_list = $stmt->fetchAll();
 
 $stmt = $conn->query("SELECT id_member, nama FROM member ORDER BY nama");

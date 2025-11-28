@@ -189,31 +189,39 @@ form button {
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
 
+/* Custom Pagination */
+.pagination-modern {
+    gap: 0.35rem;
+}
 
-.pagination .page-link {
-    border-radius: 12px;
+.pagination-modern .page-link {
     border: none;
-    padding: .55rem 1rem;
-    color: var(--primary);
-    background: #ffffff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    border-radius: 18px;
+    padding: 0.65rem 1.3rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #475569;
+    background: #fff;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+    transition: all 0.2s ease;
 }
 
-.pagination .page-item.active .page-link {
-    background: var(--primary);
-    color: white;
+.pagination-modern .page-link:hover {
+    color: var(--primary-color);
+    transform: translateY(-1px);
 }
 
-.pagination .page-item.disabled .page-link {
-    background: #f1f1f1 !important;
-    color: #aaa !important;
+.pagination-modern .page-item.active .page-link {
+    background: var(--primary-color);
+    color: #fff;
+    box-shadow: 0 15px 30px rgba(13, 110, 253, 0.35);
 }
 
-
-.pagination+.text-center {
-    font-size: 0.95rem;
+.pagination-modern .page-item.disabled .page-link {
+    opacity: 0.4;
+    box-shadow: none;
+    color: #94a3b8;
 }
-
 
 #progress .research-card h4 {
     color: var(--primary-dark);
