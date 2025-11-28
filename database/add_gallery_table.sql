@@ -24,3 +24,4 @@ CREATE INDEX IF NOT EXISTS idx_gallery_created ON gallery(created_at);
 -- 3. created_at dan updated_at: untuk tracking waktu
 -- -------------------------------------------------------
 
+

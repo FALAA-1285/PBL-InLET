@@ -8,9 +8,9 @@ $search_query = isset($_GET['search']) ? trim($_GET['search']) : '';
 $letter_filter = isset($_GET['letter']) ? strtoupper(trim($_GET['letter'])) : '';
 
 // Pagination setup
-$items_per_page = 8;
-$current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-$offset = ($current_page - 1) * $items_per_page;
+$items_per_page = 8; // 8 items per page for grid layout
+$current_page_members = isset($_GET['page_members']) ? max(1, intval($_GET['page_members'])) : 1;
+$offset_members = ($current_page_members - 1) * $items_per_page;
 
 // Build WHERE clause
 $where_clauses = [];
@@ -35,23 +35,34 @@ foreach ($params as $key => $value) {
     $stmt->bindValue($key, $value);
 }
 $stmt->execute();
-$total_items = $stmt->fetchColumn();
-$total_pages = ceil($total_items / $items_per_page);
+$total_items_members = (int)$stmt->fetchColumn();
+$total_pages_members = max(1, ($items_per_page > 0 && $total_items_members > 0) ? (int)ceil($total_items_members / $items_per_page) : 1);
+$current_page_members = min(max(1, $current_page_members), $total_pages_members);
+$offset_members = ($current_page_members - 1) * $items_per_page;
+
 
 // Get members (all fields are already in member table)
-$sql = "SELECT * 
-        FROM member 
-        $where_sql
-        ORDER BY nama
-        LIMIT :limit OFFSET :offset";
-$stmt = $conn->prepare($sql);
-foreach ($params as $key => $value) {
-    $stmt->bindValue($key, $value);
+// Get total count for members with search
+if (!empty($search_name) && is_numeric($search_name)) {
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM member WHERE nama = :name");
+    $stmt->execute([':name' => (int)$search_name]);
+    $total_items_members = $stmt->fetchColumn();
+    
+    // Get members with pagination and search
+    $stmt = $conn->prepare("SELECT * FROM member WHERE nama = :name ORDER BY nama LIMIT :limit OFFSET :offset");
+    $stmt->bindValue(':name', (int)$search_name, PDO::PARAM_INT);
+} else {
+    $stmt = $conn->query("SELECT COUNT(*) FROM member");
+    $total_items_members = $stmt->fetchColumn();
+    
+    // Get members with pagination
+    $stmt = $conn->prepare("SELECT * FROM member ORDER BY nama LIMIT :limit OFFSET :offset");
 }
 $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset_members, PDO::PARAM_INT);
 $stmt->execute();
 $members = $stmt->fetchAll();
+$total_pages_members = ceil($total_items_members / $items_per_page);
 
 // Get all first letters for index
 $stmt = $conn->query("SELECT DISTINCT UPPER(SUBSTRING(nama FROM 1 FOR 1)) as first_letter FROM member WHERE nama IS NOT NULL AND nama != '' ORDER BY first_letter");
@@ -216,62 +227,74 @@ function getInitials($name)
                     <?php endif; ?>
                 </div>
 
-                <?php if ($total_pages > 1): ?>
-                    <nav aria-label="Page navigation" class="mt-5 mb-5">
-                        <ul class="pagination pagination-modern justify-content-center">
-                            <?php
+                <!-- Pagination for Members -->
+                <?php if ($total_pages_members > 1): ?>
+                    <nav aria-label="Members pagination" style="margin-top: 3rem;">
+                        <ul class="pagination justify-content-center" style="gap: 0.5rem;">
+                            <?php 
                             $page_url = "?";
-                            if (!empty($search_query)) {
-                                $page_url .= "search=" . urlencode($search_query) . "&";
-                            }
-                            if (!empty($letter_filter)) {
-                                $page_url .= "letter=" . urlencode($letter_filter) . "&";
+                            if (!empty($search_name)) {
+                                $page_url .= "name=" . urlencode($search_name) . "&";
                             }
                             ?>
-
-                            <li class="page-item <?php echo ($current_page <= 1) ? 'disabled' : ''; ?>">
-                                <a class="page-link" href="<?= $page_url ?>page=<?php echo $current_page - 1; ?>"
-                                    aria-label="Previous">
-                                    <span aria-hidden="true">&laquo;</span>
-                                </a>
-                            </li>
-
-                            <?php
-                            $start_page = max(1, $current_page - 2);
-                            $end_page = min($total_pages, $current_page + 2);
-
-                            if ($start_page > 1) {
-                                echo '<li class="page-item"><a class="page-link" href="' . $page_url . 'page=1">1</a></li>';
-                                if ($start_page > 2)
-                                    echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                            }
-
-                            for ($i = $start_page; $i <= $end_page; $i++): ?>
-                                <li class="page-item <?php echo ($i == $current_page) ? 'active' : ''; ?>">
-                                    <a class="page-link" href="<?= $page_url ?>page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            
+                            <?php if ($current_page_members > 1): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="<?= $page_url ?>page_members=<?php echo $current_page_members - 1; ?>#focus-areas" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo; Previous</span>
+                                    </a>
                                 </li>
-                            <?php endfor;
-
-                            if ($end_page < $total_pages) {
-                                if ($end_page < $total_pages - 1)
-                                    echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                                echo '<li class="page-item"><a class="page-link" href="' . $page_url . 'page=' . $total_pages . '">' . $total_pages . '</a></li>';
-                            }
-                            ?>
-
-                            <li class="page-item <?php echo ($current_page >= $total_pages) ? 'disabled' : ''; ?>">
-                                <a class="page-link"
-                                    href="<?= $page_url ?>page=<?php echo ($current_page >= $total_pages) ? $total_pages : $current_page + 1; ?>"
-                                    aria-label="Next">
-                                    <span aria-hidden="true">&raquo;</span>
-                                </a>
-                            </li>
+                            <?php else: ?>
+                                <li class="page-item disabled">
+                                    <span class="page-link" aria-hidden="true">&laquo; Previous</span>
+                                </li>
+                            <?php endif; ?>
+                            
+                            <?php
+                            $start_page = max(1, $current_page_members - 2);
+                            $end_page = min($total_pages_members, $current_page_members + 2);
+                            
+                            if ($start_page > 1): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="<?= $page_url ?>page_members=1#focus-areas">1</a>
+                                </li>
+                                <?php if ($start_page > 2): ?>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                            
+                            <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                                <li class="page-item <?php echo ($i == $current_page_members) ? 'active' : ''; ?>">
+                                    <a class="page-link" href="<?= $page_url ?>page_members=<?php echo $i; ?>#focus-areas"><?php echo $i; ?></a>
+                                </li>
+                            <?php endfor; ?>
+                            
+                            <?php if ($end_page < $total_pages_members): ?>
+                                <?php if ($end_page < $total_pages_members - 1): ?>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                <?php endif; ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="<?= $page_url ?>page_members=<?php echo $total_pages_members; ?>#focus-areas"><?php echo $total_pages_members; ?></a>
+                                </li>
+                            <?php endif; ?>
+                            
+                            <?php if ($current_page_members < $total_pages_members): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="<?= $page_url ?>page_members=<?php echo $current_page_members + 1; ?>#focus-areas" aria-label="Next">
+                                        <span aria-hidden="true">Next &raquo;</span>
+                                    </a>
+                                </li>
+                            <?php else: ?>
+                                <li class="page-item disabled">
+                                    <span class="page-link" aria-hidden="true">Next &raquo;</span>
+                                </li>
+                            <?php endif; ?>
                         </ul>
-                        <div class="text-center mt-3 text-muted small">
-                            Showing <?php echo ($offset + 1); ?> -
-                            <?php echo min($offset + $items_per_page, $total_items); ?> of <?php echo $total_items; ?>
-                            experts
-                        </div>
+                        
                     </nav>
                 <?php endif; ?>
             </div>

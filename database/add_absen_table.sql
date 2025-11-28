@@ -35,3 +35,4 @@ CREATE INDEX IF NOT EXISTS idx_absensi_tipe ON absensi(tipe_absen);
 -- 4. Status: 'magang', 'skripsi', atau 'regular' (selain magang dan skripsi)
 -- -------------------------------------------------------
 
+
