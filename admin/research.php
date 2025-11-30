@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tahun = $_POST['tahun'] ?? null;
         $deskripsi = $_POST['deskripsi'] ?? '';
         $id_artikel = $_POST['id_artikel'] ?? null;
-        $id_mhs = $_POST['id_mhs'] ?? null;
+        $id_mahasiswa = $_POST['id_mahasiswa'] ?? null;
         $id_member = $_POST['id_member'] ?? null;
         $id_produk = $_POST['id_produk'] ?? null;
         $id_mitra = $_POST['id_mitra'] ?? null;
@@ -43,13 +43,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tgl_selesai = $_POST['tgl_selesai'] ?? null;
         
         try {
-            $stmt = $conn->prepare("INSERT INTO penelitian (judul, tahun, deskripsi, id_artikel, id_mhs, id_member, id_produk, id_mitra, tgl_mulai, tgl_selesai) VALUES (:judul, :tahun, :deskripsi, :id_artikel, :id_mhs, :id_member, :id_produk, :id_mitra, :tgl_mulai, :tgl_selesai)");
+            $stmt = $conn->prepare("INSERT INTO penelitian (judul, tahun, deskripsi, id_artikel, id_mahasiswa, id_member, id_produk, id_mitra, tgl_mulai, tgl_selesai) VALUES (:judul, :tahun, :deskripsi, :id_artikel, :id_mahasiswa, :id_member, :id_produk, :id_mitra, :tgl_mulai, :tgl_selesai)");
             $stmt->execute([
                 'judul' => $judul,
                 'tahun' => $tahun ?: null,
                 'deskripsi' => $deskripsi ?: null,
                 'id_artikel' => $id_artikel ?: null,
-                'id_mhs' => $id_mhs ?: null,
+                'id_mahasiswa' => $id_mahasiswa ?: null,
                 'id_member' => $id_member ?: null,
                 'id_produk' => $id_produk ?: null,
                 'id_mitra' => $id_mitra ?: null,
@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tahun = $_POST['tahun'] ?? null;
         $deskripsi = $_POST['deskripsi'] ?? '';
         $id_artikel = $_POST['id_artikel'] ?? null;
-        $id_mhs = $_POST['id_mhs'] ?? null;
+        $id_mahasiswa = $_POST['id_mahasiswa'] ?? null;
         $id_member = $_POST['id_member'] ?? null;
         $id_produk = $_POST['id_produk'] ?? null;
         $id_mitra = $_POST['id_mitra'] ?? null;
@@ -96,14 +96,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tgl_selesai = $_POST['tgl_selesai'] ?? null;
         
         try {
-            $stmt = $conn->prepare("UPDATE penelitian SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, id_artikel = :id_artikel, id_mhs = :id_mhs, id_member = :id_member, id_produk = :id_produk, id_mitra = :id_mitra, tgl_mulai = :tgl_mulai, tgl_selesai = :tgl_selesai WHERE id_penelitian = :id");
+            $stmt = $conn->prepare("UPDATE penelitian SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, id_artikel = :id_artikel, id_mahasiswa = :id_mahasiswa, id_member = :id_member, id_produk = :id_produk, id_mitra = :id_mitra, tgl_mulai = :tgl_mulai, tgl_selesai = :tgl_selesai WHERE id_penelitian = :id");
             $stmt->execute([
                 'id' => $id,
                 'judul' => $judul,
                 'tahun' => $tahun ?: null,
                 'deskripsi' => $deskripsi ?: null,
                 'id_artikel' => $id_artikel ?: null,
-                'id_mhs' => $id_mhs ?: null,
+                'id_mahasiswwa' => $id_mahasiswa ?: null,
                 'id_member' => $id_member ?: null,
                 'id_produk' => $id_produk ?: null,
                 'id_mitra' => $id_mitra ?: null,
@@ -188,7 +188,7 @@ $offset_progress = ($current_page_progress - 1) * $items_per_page;
 $stmt = $conn->prepare("SELECT p.*, a.judul as artikel_judul, m.nama as mahasiswa_nama, mem.nama as member_nama, pr.nama_produk, mt.nama_institusi as mitra_nama
                       FROM penelitian p 
                       LEFT JOIN artikel a ON p.id_artikel = a.id_artikel 
-                      LEFT JOIN mahasiswa m ON p.id_mhs = m.id_mahasiswa 
+                      LEFT JOIN mahasiswa m ON p.id_mahasiswa = m.id_mahasiswa 
                       LEFT JOIN member mem ON p.id_member = mem.id_member 
                       LEFT JOIN produk pr ON p.id_produk = pr.id_produk
                       LEFT JOIN mitra mt ON p.id_mitra = mt.id_mitra
@@ -647,10 +647,10 @@ $member_list = $stmt->fetchAll();
                     </div>
                     <div class="form-group">
                         <label>Mahasiswa (Opsional)</label>
-                        <select name="id_mhs" id="edit_penelitian_id_mhs">
+                        <select name="id_mahasiswa" id="edit_penelitian_id_mahasiswa">
                             <option value="">-- Pilih Mahasiswa --</option>
                             <?php foreach ($mahasiswa_list as $mhs): ?>
-                                <option value="<?php echo $mhs['id_mhs']; ?>">
+                                <option value="<?php echo $mhs['id_mahasiswa']; ?>">
                                     <?php echo htmlspecialchars($mhs['nama']); ?>
                                 </option>
                             <?php endforeach; ?>
@@ -737,10 +737,10 @@ $member_list = $stmt->fetchAll();
                     </div>
                     <div class="form-group">
                         <label>Mahasiswa (Opsional)</label>
-                        <select name="id_mhs">
+                        <select name="id_mahasiswa">
                             <option value="">-- Pilih Mahasiswa --</option>
                             <?php foreach ($mahasiswa_list as $mhs): ?>
-                                <option value="<?php echo $mhs['id_mhs']; ?>">
+                                <option value="<?php echo $mhs['id_mahasiswa']; ?>">
                                     <?php echo htmlspecialchars($mhs['nama']); ?>
                                 </option>
                             <?php endforeach; ?>
@@ -965,7 +965,7 @@ $member_list = $stmt->fetchAll();
             document.getElementById('edit_penelitian_tahun').value = penelitian.tahun || '';
             document.getElementById('edit_penelitian_deskripsi').value = penelitian.deskripsi || '';
             document.getElementById('edit_penelitian_id_artikel').value = penelitian.id_artikel || '';
-            document.getElementById('edit_penelitian_id_mhs').value = penelitian.id_mhs || '';
+            document.getElementById('edit_penelitian_id_mahasiswa').value = penelitian.id_mahasiswa || '';
             document.getElementById('edit_penelitian_id_member').value = penelitian.id_member || '';
             document.getElementById('edit_penelitian_id_produk').value = penelitian.id_produk || '';
             document.getElementById('edit_penelitian_id_mitra').value = penelitian.id_mitra || '';
