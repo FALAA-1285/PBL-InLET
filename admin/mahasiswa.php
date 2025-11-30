@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message_type = 'error';
         } else {
             try {
-                $stmt = $conn->prepare("UPDATE mahasiswa SET nama = :nama, title = :title, tahun = :tahun, status = :status WHERE id_mhs = :id");
+                $stmt = $conn->prepare("UPDATE mahasiswa SET nama = :nama, title = :title, tahun = :tahun, status = :status WHERE id_mahasiswa = :id");
                 $stmt->execute([
                     'id' => $id,
                     'nama' => $nama,
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'delete_mahasiswa') {
         $id = $_POST['id'] ?? 0;
         try {
-            $stmt = $conn->prepare("DELETE FROM mahasiswa WHERE id_mhs = :id");
+            $stmt = $conn->prepare("DELETE FROM mahasiswa WHERE id_mahasiswa = :id");
             $stmt->execute(['id' => $id]);
             $message = 'Mahasiswa berhasil dihapus!';
             $message_type = 'success';
@@ -88,7 +88,7 @@ $mahasiswa_list = $stmt->fetchAll();
 $edit_mahasiswa = null;
 if (isset($_GET['edit'])) {
     $edit_id = intval($_GET['edit']);
-    $stmt = $conn->prepare("SELECT * FROM mahasiswa WHERE id_mhs = :id");
+    $stmt = $conn->prepare("SELECT * FROM mahasiswa WHERE id_mahasiswa = :id");
     $stmt->execute(['id' => $edit_id]);
     $edit_mahasiswa = $stmt->fetch();
 }
@@ -292,7 +292,7 @@ if (isset($_GET['edit'])) {
                     <form method="POST">
                         <input type="hidden" name="action" value="<?php echo $edit_mahasiswa ? 'update_mahasiswa' : 'add_mahasiswa'; ?>">
                         <?php if ($edit_mahasiswa): ?>
-                            <input type="hidden" name="id" value="<?php echo $edit_mahasiswa['id_mhs']; ?>">
+                            <input type="hidden" name="id" value="<?php echo $edit_mahasiswa['id_mahasiswa']; ?>">
                         <?php endif; ?>
                         
                         <div class="form-group">
@@ -355,7 +355,7 @@ if (isset($_GET['edit'])) {
                                 <tbody>
                                     <?php foreach ($mahasiswa_list as $mhs): ?>
                                         <tr>
-                                            <td><?php echo $mhs['id_mhs']; ?></td>
+                                            <td><?php echo $mhs['id_mahasiswa']; ?></td>
                                             <td><?php echo htmlspecialchars($mhs['nama']); ?></td>
                                             <td><?php echo htmlspecialchars($mhs['title'] ?? '-'); ?></td>
                                             <td><?php echo $mhs['tahun'] ?? '-'; ?></td>
@@ -367,12 +367,12 @@ if (isset($_GET['edit'])) {
                                                 </span>
                                             </td>
                                             <td>
-                                                <a href="?edit=<?php echo $mhs['id_mhs']; ?>" class="btn-edit">
+                                                <a href="?edit=<?php echo $mhs['id_mahasiswa']; ?>" class="btn-edit">
                                                     <i class="ri-edit-line"></i> Edit
                                                 </a>
                                                 <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus mahasiswa ini?');">
                                                     <input type="hidden" name="action" value="delete_mahasiswa">
-                                                    <input type="hidden" name="id" value="<?php echo $mhs['id_mhs']; ?>">
+                                                    <input type="hidden" name="id" value="<?php echo $mhs['id_mahasiswa']; ?>">
                                                     <button type="submit" class="btn-delete">
                                                         <i class="ri-delete-bin-line"></i> Hapus
                                                     </button>

@@ -10,11 +10,11 @@ $message_type = '';
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
-    
+
     if ($action === 'add_mitra') {
         $nama_institusi = trim($_POST['nama_institusi'] ?? '');
         $logo = $_POST['logo'] ?? ''; // URL input
-        
+
         // Handle file upload
         if (isset($_FILES['logo_file']) && $_FILES['logo_file']['error'] === UPLOAD_ERR_OK) {
             $uploadResult = uploadImage($_FILES['logo_file'], 'mitra/');
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message_type = 'error';
             }
         }
-        
+
         if (empty($message)) {
             if (empty($nama_institusi)) {
                 $message = 'Nama institusi harus diisi!';
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ]);
                     $message = 'Mitra berhasil ditambahkan!';
                     $message_type = 'success';
-                } catch(PDOException $e) {
+                } catch (PDOException $e) {
                     $message = 'Error: ' . $e->getMessage();
                     $message_type = 'error';
                 }
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = $_POST['id'] ?? 0;
         $nama_institusi = trim($_POST['nama_institusi'] ?? '');
         $logo = $_POST['logo'] ?? '';
-        
+
         // Handle file upload
         if (isset($_FILES['logo_file']) && $_FILES['logo_file']['error'] === UPLOAD_ERR_OK) {
             $uploadResult = uploadImage($_FILES['logo_file'], 'mitra/');
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message_type = 'error';
             }
         }
-        
+
         if (empty($message)) {
             if (empty($nama_institusi)) {
                 $message = 'Nama institusi harus diisi!';
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $message = 'Mitra berhasil diupdate!';
                     $message_type = 'success';
-                } catch(PDOException $e) {
+                } catch (PDOException $e) {
                     $message = 'Error: ' . $e->getMessage();
                     $message_type = 'error';
                 }
@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute(['id' => $id]);
             $message = 'Mitra berhasil dihapus!';
             $message_type = 'success';
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
         }
@@ -118,6 +118,7 @@ if (isset($_GET['edit'])) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -131,21 +132,25 @@ if (isset($_GET['edit'])) {
             margin: 0 auto;
             padding-bottom: 4rem;
         }
+
         .message {
             padding: 1rem;
             border-radius: 10px;
             margin-bottom: 2rem;
         }
+
         .message.success {
             background: #d1fae5;
             color: #065f46;
             border-left: 4px solid #10b981;
         }
+
         .message.error {
             background: #fee2e2;
             color: #991b1b;
             border-left: 4px solid #ef4444;
         }
+
         .form-section {
             background: white;
             padding: 2rem;
@@ -153,19 +158,23 @@ if (isset($_GET['edit'])) {
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
             margin-bottom: 2rem;
         }
+
         .form-section h2 {
             color: var(--primary);
             margin-bottom: 1.5rem;
         }
+
         .form-group {
             margin-bottom: 1.5rem;
         }
+
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
             color: var(--dark);
             font-weight: 500;
         }
+
         .form-group input {
             width: 100%;
             padding: 0.75rem;
@@ -175,10 +184,12 @@ if (isset($_GET['edit'])) {
             font-family: inherit;
             transition: border-color 0.3s;
         }
+
         .form-group input:focus {
             outline: none;
             border-color: var(--primary);
         }
+
         .btn-submit {
             background: var(--primary);
             color: white;
@@ -190,10 +201,12 @@ if (isset($_GET['edit'])) {
             cursor: pointer;
             transition: all 0.3s;
         }
+
         .btn-submit:hover {
             background: var(--primary-dark);
             transform: translateY(-2px);
         }
+
         .data-section {
             background: white;
             padding: 2rem;
@@ -201,39 +214,49 @@ if (isset($_GET['edit'])) {
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
             margin-bottom: 2rem;
         }
+
         .data-section h2 {
             color: var(--primary);
             margin-bottom: 1.5rem;
         }
+
         .table-container {
             overflow-x: auto;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
         }
-        th, td {
+
+        th,
+        td {
             padding: 1rem;
             text-align: left;
             border-bottom: 1px solid #e2e8f0;
         }
+
         th {
             background: var(--light);
             color: var(--primary);
             font-weight: 600;
         }
+
         tr:hover {
             background: var(--light);
         }
+
         .logo-cell {
             max-width: 120px;
         }
+
         .logo-cell img {
             max-width: 100px;
             max-height: 60px;
             object-fit: contain;
             border-radius: 8px;
         }
+
         .btn-delete {
             background: #ef4444;
             color: white;
@@ -244,9 +267,11 @@ if (isset($_GET['edit'])) {
             font-size: 0.9rem;
             transition: all 0.3s;
         }
+
         .btn-delete:hover {
             background: #dc2626;
         }
+
         .btn-edit {
             background: #3b82f6;
             color: white;
@@ -259,15 +284,19 @@ if (isset($_GET['edit'])) {
             text-decoration: none;
             display: inline-block;
         }
+
         .btn-edit:hover {
             background: #2563eb;
         }
+
         .edit-form-section {
             display: none;
         }
+
         .edit-form-section.active {
             display: block;
         }
+
         .btn-cancel {
             background: #6b7280;
             color: white;
@@ -278,18 +307,22 @@ if (isset($_GET['edit'])) {
             font-size: 0.9rem;
             margin-left: 0.5rem;
         }
+
         .btn-cancel:hover {
             background: #4b5563;
         }
     </style>
 </head>
+
 <body>
-    <?php $active_page = 'mitra'; include __DIR__ . '/partials/sidebar.php'; ?>
-    
+    <?php $active_page = 'mitra';
+    include __DIR__ . '/partials/sidebar.php'; ?>
+
     <main class="content">
         <div class="content-inner">
             <div class="cms-content">
-                <h1 style="color: var(--primary); margin-bottom: 2rem;"><i class="ri-handshake-line"></i> Kelola Mitra Lab</h1>
+                <h1 style="color: var(--primary); margin-bottom: 2rem;"><i class="ri-community-line"></i> Kelola Mitra
+                    Lab</h1>
 
                 <?php if ($message): ?>
                     <div class="message <?php echo $message_type; ?>">
@@ -301,29 +334,30 @@ if (isset($_GET['edit'])) {
                 <div class="form-section <?php echo $edit_mitra ? 'edit-form-section active' : ''; ?>">
                     <h2><?php echo $edit_mitra ? 'Edit Mitra' : 'Tambah Mitra Baru'; ?></h2>
                     <form method="POST" enctype="multipart/form-data">
-                        <input type="hidden" name="action" value="<?php echo $edit_mitra ? 'update_mitra' : 'add_mitra'; ?>">
+                        <input type="hidden" name="action"
+                            value="<?php echo $edit_mitra ? 'update_mitra' : 'add_mitra'; ?>">
                         <?php if ($edit_mitra): ?>
                             <input type="hidden" name="id" value="<?php echo $edit_mitra['id_mitra']; ?>">
                         <?php endif; ?>
-                        
+
                         <div class="form-group">
                             <label for="nama_institusi">Nama Institusi *</label>
-                            <input type="text" id="nama_institusi" name="nama_institusi" 
-                                   value="<?php echo htmlspecialchars($edit_mitra['nama_institusi'] ?? ''); ?>" required>
+                            <input type="text" id="nama_institusi" name="nama_institusi"
+                                value="<?php echo htmlspecialchars($edit_mitra['nama_institusi'] ?? ''); ?>" required>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="logo">Logo URL (opsional)</label>
-                            <input type="url" id="logo" name="logo" 
-                                   value="<?php echo htmlspecialchars($edit_mitra['logo'] ?? ''); ?>" 
-                                   placeholder="https://example.com/logo.png">
+                            <input type="url" id="logo" name="logo"
+                                value="<?php echo htmlspecialchars($edit_mitra['logo'] ?? ''); ?>"
+                                placeholder="https://example.com/logo.png">
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="logo_file">Atau Upload Logo</label>
                             <input type="file" id="logo_file" name="logo_file" accept="image/*">
                         </div>
-                        
+
                         <button type="submit" class="btn-submit">
                             <?php echo $edit_mitra ? 'Update Mitra' : 'Tambah Mitra'; ?>
                         </button>
@@ -336,7 +370,7 @@ if (isset($_GET['edit'])) {
                 <!-- Data List -->
                 <div class="data-section">
                     <h2>Daftar Mitra (<?php echo count($mitra_list); ?>)</h2>
-                    
+
                     <?php if (empty($mitra_list)): ?>
                         <p style="color: var(--gray);">Belum ada mitra yang terdaftar.</p>
                     <?php else: ?>
@@ -356,9 +390,9 @@ if (isset($_GET['edit'])) {
                                             <td><?php echo $mitra['id_mitra']; ?></td>
                                             <td class="logo-cell">
                                                 <?php if (!empty($mitra['logo'])): ?>
-                                                    <img src="<?php echo htmlspecialchars($mitra['logo']); ?>" 
-                                                         alt="<?php echo htmlspecialchars($mitra['nama_institusi']); ?>"
-                                                         onerror="this.style.display='none'">
+                                                    <img src="<?php echo htmlspecialchars($mitra['logo']); ?>"
+                                                        alt="<?php echo htmlspecialchars($mitra['nama_institusi']); ?>"
+                                                        onerror="this.style.display='none'">
                                                 <?php else: ?>
                                                     <span style="color: var(--gray);">-</span>
                                                 <?php endif; ?>
@@ -368,7 +402,8 @@ if (isset($_GET['edit'])) {
                                                 <a href="?edit=<?php echo $mitra['id_mitra']; ?>" class="btn-edit">
                                                     <i class="ri-edit-line"></i> Edit
                                                 </a>
-                                                <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus mitra ini?');">
+                                                <form method="POST" style="display: inline;"
+                                                    onsubmit="return confirm('Yakin hapus mitra ini?');">
                                                     <input type="hidden" name="action" value="delete_mitra">
                                                     <input type="hidden" name="id" value="<?php echo $mitra['id_mitra']; ?>">
                                                     <button type="submit" class="btn-delete">
@@ -387,5 +422,5 @@ if (isset($_GET['edit'])) {
         </div>
     </main>
 </body>
-</html>
 
+</html>

@@ -365,14 +365,7 @@ $members = $stmt->fetchAll();
     <?php $active_page = 'member'; include __DIR__ . '/partials/sidebar.php'; ?>
     <main class="content">
         <div class="content-inner">
-            <div class="admin-header">
-                <div class="admin-header-content">
-                    <div>
-                        <p>Kelola data member dan profil</p>
-                        <h1>Member CMS InLET</h1>
-                    </div>
-                </div>
-            </div>
+            <h1 style="color: var(--primary); margin-bottom: 2rem;"><i class="ri-team-line"></i> Kelola Data Member</h1>
 
             <div class="cms-content">
         <?php if ($message): ?>

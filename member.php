@@ -45,12 +45,10 @@ $offset_members = ($current_page_members - 1) * $items_per_page;
 // Get total count for members with search
 if (!empty($search_name) && is_numeric($search_name)) {
     $stmt = $conn->prepare("SELECT COUNT(*) FROM member WHERE nama = :name");
-    $stmt->execute([':name' => (int)$search_name]);
     $total_items_members = $stmt->fetchColumn();
     
     // Get members with pagination and search
     $stmt = $conn->prepare("SELECT * FROM member WHERE nama = :name ORDER BY nama LIMIT :limit OFFSET :offset");
-    $stmt->bindValue(':name', (int)$search_name, PDO::PARAM_INT);
 } else {
     $stmt = $conn->query("SELECT COUNT(*) FROM member");
     $total_items_members = $stmt->fetchColumn();
@@ -113,27 +111,6 @@ function getInitials($name)
                     <p class="text-muted">The brilliant minds behind our research.</p>
                     <div
                         style="width: 60px; height: 3px; background: var(--primary-color, #0d6efd); margin: 15px auto;">
-                    </div>
-                </div>
-
-                <!-- Search Box -->
-                <div class="row justify-content-center mb-4">
-                    <div class="col-md-6">
-                        <form method="GET" action="" class="d-flex gap-2 mb-3">
-                            <input type="text" name="search" class="form-control"
-                                placeholder="Cari member berdasarkan nama..."
-                                value="<?php echo htmlspecialchars($search_query); ?>">
-                            <button type="submit" class="btn btn-primary">Cari</button>
-                            <?php if (!empty($search_query) || !empty($letter_filter)): ?>
-                                <a href="member.php" class="btn btn-secondary">Reset</a>
-                            <?php endif; ?>
-                        </form>
-                        <?php if (!empty($search_query)): ?>
-                            <p class="text-muted text-center">
-                                Menampilkan <?php echo $total_items; ?> hasil untuk
-                                "<?php echo htmlspecialchars($search_query); ?>"
-                            </p>
-                        <?php endif; ?>
                     </div>
                 </div>
 

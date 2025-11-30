@@ -465,14 +465,7 @@ $member_list = $stmt->fetchAll();
     <?php $active_page = 'research'; include __DIR__ . '/partials/sidebar.php'; ?>
     <main class="content">
         <div class="content-inner">
-            <div class="admin-header">
-                <div class="admin-header-content">
-                    <div>
-                        <p>Kelola artikel dan penelitian</p>
-                        <h1>Research CMS InLET</h1>
-                    </div>
-                </div>
-            </div>
+            <h1 style="color: var(--primary); margin-bottom: 2rem;"><i class="ri-flask-line"></i> Kelola Data Member</h1>
 
             <div class="cms-content">
         <?php if ($message): ?>

@@ -346,14 +346,8 @@ $news_list = $stmt->fetchAll();
     <?php $active_page = 'news'; include __DIR__ . '/partials/sidebar.php'; ?>
     <main class="content">
         <div class="content-inner">
-            <div class="admin-header">
-                <div class="admin-header-content">
-                    <div>
-                        <p>Kelola berita dan pengumuman terbaru</p>
-                        <h1>News CMS InLET</h1>
-                    </div>
-                </div>
-            </div>
+            <h1 style="color: var(--primary); margin-bottom: 2rem;"><i class="ri-newspaper-line"></i> Kelola Data Member</h1>
+
 
             <div class="cms-content">
         <?php if ($message): ?>

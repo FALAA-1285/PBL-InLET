@@ -13,7 +13,7 @@ $filter_mhs = $_GET['mhs'] ?? '';
 // Build query
 $query = "SELECT a.*, m.nama as nama_mahasiswa, m.status as status_mahasiswa 
           FROM absensi a 
-          LEFT JOIN mahasiswa m ON a.id_mhs = m.id_mhs 
+          LEFT JOIN mahasiswa m ON a.id_mahasiswa = m.id_mahasiswa
           WHERE 1=1";
 $params = [];
 
@@ -23,7 +23,7 @@ if ($filter_date) {
 }
 
 if ($filter_mhs) {
-    $query .= " AND a.id_mhs = :filter_mhs";
+    $query .= " AND a.id_mahasiswa = :filter_mhs";
     $params['filter_mhs'] = $filter_mhs;
 }
 
@@ -34,13 +34,13 @@ $stmt->execute($params);
 $absensi_list = $stmt->fetchAll();
 
 // Get all mahasiswa for filter
-$mhs_stmt = $conn->query("SELECT id_mhs, nama FROM mahasiswa ORDER BY nama");
+$mhs_stmt = $conn->query("SELECT id_mahasiswa, nama FROM mahasiswa ORDER BY nama");
 $mahasiswa_list = $mhs_stmt->fetchAll();
 
 // Statistics
 $stats_stmt = $conn->query("SELECT 
     COUNT(*) as total_absensi,
-    COUNT(DISTINCT id_mhs) as total_mahasiswa,
+    COUNT(DISTINCT id_mahasiswa) as total_mahasiswa,
     COUNT(DISTINCT DATE(tanggal)) as total_hari
     FROM absensi");
 $stats = $stats_stmt->fetch();
@@ -246,7 +246,7 @@ $stats = $stats_stmt->fetch();
                             <select id="mhs" name="mhs">
                                 <option value="">Semua Mahasiswa</option>
                                 <?php foreach ($mahasiswa_list as $mhs): ?>
-                                    <option value="<?php echo $mhs['id_mhs']; ?>" <?php echo ($filter_mhs == $mhs['id_mhs']) ? 'selected' : ''; ?>>
+                                    <option value="<?php echo $mhs['id_mahasiswa']; ?>" <?php echo ($filter_mhs == $mhs['id_mahasiswa']) ? 'selected' : ''; ?>>
                                         <?php echo htmlspecialchars($mhs['nama']); ?>
                                     </option>
                                 <?php endforeach; ?>
