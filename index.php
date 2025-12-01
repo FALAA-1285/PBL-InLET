@@ -91,7 +91,8 @@ function getInitials($name)
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="css/style-home.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 </head>
@@ -99,7 +100,6 @@ function getInitials($name)
 <body>
     <?php include 'includes/header.php'; ?>
     <main>
-        <!-- Hero section -->
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
                 <h1 class="display-4 fw-bold">InLET - Information And Learning Engineering Technology</h1>
@@ -197,7 +197,8 @@ function getInitials($name)
                                         title="<?= htmlspecialchars($p['nama_institusi']) ?>"
                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/200x100/cccccc/666666?text=' + encodeURIComponent('<?= addslashes(htmlspecialchars($p['nama_institusi'])) ?>');">
                                 <?php else: ?>
-                                    <div class="partner-logo img-fluid rounded shadow-sm d-flex align-items-center justify-content-center partner-placeholder">
+                                    <div
+                                        class="partner-logo img-fluid rounded shadow-sm d-flex align-items-center justify-content-center partner-placeholder">
                                         <?= htmlspecialchars($p['nama_institusi']) ?>
                                     </div>
                                 <?php endif; ?>

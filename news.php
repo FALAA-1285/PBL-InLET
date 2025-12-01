@@ -304,7 +304,7 @@ function getPaginationUrl($page, $search = '')
     <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
 
     <script>
-        // Swiper init
+        // Init swiper
         new Swiper(".teamSwiper", {
             slidesPerView: 3,
             spaceBetween: 30,

@@ -508,7 +508,8 @@ try {
                                                     </div>
                                                     <?php if ($p['keterangan']): ?>
                                                         <p class="text-muted small mb-2">
-                                                            <?php echo htmlspecialchars($p['keterangan']); ?></p>
+                                                            <?php echo htmlspecialchars($p['keterangan']); ?>
+                                                        </p>
                                                     <?php endif; ?>
                                                     <form method="POST" class="d-inline"
                                                         onsubmit="return confirm('Are you sure you want to return this room?');">

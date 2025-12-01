@@ -104,4 +104,3 @@ $active_page = $active_page ?? pathinfo($_SERVER['PHP_SELF'], PATHINFO_FILENAME)
         </div>
     </div>
 </aside>
-

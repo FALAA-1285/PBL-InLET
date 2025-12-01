@@ -5,7 +5,8 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/database.php';
 
 // Login admin
-function loginAdmin($username, $password) {
+function loginAdmin($username, $password)
+{
     $conn = getDBConnection();
 
     try {
@@ -25,24 +26,27 @@ function loginAdmin($username, $password) {
         }
 
         return false;
-    } catch(PDOException $e) {
+    } catch (PDOException $e) {
         error_log("Login error: " . $e->getMessage());
         return false;
     }
 }
 
 // Check if logged in
-function isLoggedIn() {
+function isLoggedIn()
+{
     return isset($_SESSION['id_admin']) && isset($_SESSION['is_admin']);
 }
 
 // Check if admin
-function isAdmin() {
+function isAdmin()
+{
     return isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === true;
 }
 
 // Require login
-function requireLogin() {
+function requireLogin()
+{
     if (!isLoggedIn()) {
         header('Location: ../login.php');
         exit();
@@ -50,7 +54,8 @@ function requireLogin() {
 }
 
 // Require admin
-function requireAdmin() {
+function requireAdmin()
+{
     requireLogin();
     if (!isAdmin()) {
         header('Location: ../index.php');
@@ -59,7 +64,8 @@ function requireAdmin() {
 }
 
 // Logout
-function logout() {
+function logout()
+{
     session_unset();
     session_destroy();
     header('Location: ../login.php');
@@ -67,7 +73,8 @@ function logout() {
 }
 
 // Get admin info
-function getAdminInfo() {
+function getAdminInfo()
+{
     if (!isLoggedIn()) {
         return null;
     }

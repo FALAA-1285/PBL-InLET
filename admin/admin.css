@@ -14,7 +14,8 @@
     font-family: "Poppins", sans-serif;
 }
 
-html, body {
+html,
+body {
     height: 100%;
     overflow: hidden;
 }
@@ -152,6 +153,7 @@ body {
         height: auto;
         overflow: auto;
     }
+
     html {
         overflow: auto;
     }
@@ -187,4 +189,3 @@ body {
         height: auto;
     }
 }
-

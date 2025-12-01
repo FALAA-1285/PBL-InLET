@@ -12,7 +12,7 @@ $ajax_response = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $is_ajax = isset($_POST['ajax']) && $_POST['ajax'] === '1';
-    
+
     if ($action === 'mark_read') {
         $id = $_POST['id'] ?? 0;
         try {
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Message marked as read successfully!';
             $message_type = 'success';
             $ajax_response = ['success' => true, 'status' => 'read'];
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
             $ajax_response = ['success' => false, 'message' => $e->getMessage()];
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Message marked as unread successfully!';
             $message_type = 'success';
             $ajax_response = ['success' => true, 'status' => 'unread'];
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
             $ajax_response = ['success' => false, 'message' => $e->getMessage()];
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Message successfully deleted!';
             $message_type = 'success';
             $ajax_response = ['success' => true, 'status' => 'deleted'];
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
             $ajax_response = ['success' => false, 'message' => $e->getMessage()];
@@ -103,6 +103,7 @@ $unread_count = $stmt->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -132,7 +133,7 @@ $unread_count = $stmt->fetchColumn();
             background: white;
             padding: 0.5rem;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .filter-tab {
@@ -281,14 +282,37 @@ $unread_count = $stmt->fetchColumn();
             color: white;
         }
 
-        .btn-read { background: #10b981; }
-        .btn-read:hover { background: #059669; }
-        .btn-unread { background: #f59e0b; }
-        .btn-unread:hover { background: #d97706; }
-        .btn-delete { background: #ef4444; }
-        .btn-delete:hover { background: #dc2626; }
-        .btn-view { background: #3b82f6; }
-        .btn-view:hover { background: #2563eb; }
+        .btn-read {
+            background: #10b981;
+        }
+
+        .btn-read:hover {
+            background: #059669;
+        }
+
+        .btn-unread {
+            background: #f59e0b;
+        }
+
+        .btn-unread:hover {
+            background: #d97706;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        .btn-view {
+            background: #3b82f6;
+        }
+
+        .btn-view:hover {
+            background: #2563eb;
+        }
 
         .status-badge {
             display: inline-flex;
@@ -301,12 +325,12 @@ $unread_count = $stmt->fetchColumn();
         }
 
         .status-badge.unread {
-            background: rgba(79,70,229,0.15);
+            background: rgba(79, 70, 229, 0.15);
             color: var(--primary);
         }
 
         .status-badge.read {
-            background: rgba(16,185,129,0.15);
+            background: rgba(16, 185, 129, 0.15);
             color: #047857;
         }
 
@@ -351,9 +375,11 @@ $unread_count = $stmt->fetchColumn();
         }
     </style>
 </head>
+
 <body>
-    <?php $active_page = 'buku_tamu'; include __DIR__ . '/partials/sidebar.php'; ?>
-    
+    <?php $active_page = 'buku_tamu';
+    include __DIR__ . '/partials/sidebar.php'; ?>
+
     <main class="content">
         <div class="content-inner">
             <div class="content-header">
@@ -400,7 +426,8 @@ $unread_count = $stmt->fetchColumn();
                         </thead>
                         <tbody>
                             <?php foreach ($messages as $index => $msg): ?>
-                                <tr id="row-<?= $msg['id_buku_tamu']; ?>" data-is-read="<?= $msg['is_read'] ? '1' : '0'; ?>" class="<?= !$msg['is_read'] ? 'unread' : ''; ?>">
+                                <tr id="row-<?= $msg['id_buku_tamu']; ?>" data-is-read="<?= $msg['is_read'] ? '1' : '0'; ?>"
+                                    class="<?= !$msg['is_read'] ? 'unread' : ''; ?>">
                                     <td><?= $offset + $index + 1; ?></td>
                                     <td>
                                         <div class="guest-info">
@@ -411,15 +438,16 @@ $unread_count = $stmt->fetchColumn();
                                         </div>
                                         <div class="guest-meta">
                                             <span><i class="ri-mail-line"></i> <?= htmlspecialchars($msg['email']); ?></span>
-                                            <span><i class="ri-building-line"></i> <?= htmlspecialchars($msg['institusi'] ?? 'N/A'); ?></span>
-                                            <span><i class="ri-phone-line"></i> <?= htmlspecialchars($msg['no_hp'] ?? 'N/A'); ?></span>
+                                            <span><i class="ri-building-line"></i>
+                                                <?= htmlspecialchars($msg['institusi'] ?? 'N/A'); ?></span>
+                                            <span><i class="ri-phone-line"></i>
+                                                <?= htmlspecialchars($msg['no_hp'] ?? 'N/A'); ?></span>
                                         </div>
                                     </td>
                                     <td>
                                         <?php if (!empty($msg['pesan'])): ?>
-                                            <button type="button"
-                                                    class="btn-action btn-view"
-                                                    onclick="toggleMessage(<?= $msg['id_buku_tamu']; ?>)">
+                                            <button type="button" class="btn-action btn-view"
+                                                onclick="toggleMessage(<?= $msg['id_buku_tamu']; ?>)">
                                                 <i class="ri-eye-line"></i> View Message
                                             </button>
                                             <div id="message-<?= $msg['id_buku_tamu']; ?>" class="message-panel">
@@ -434,7 +462,8 @@ $unread_count = $stmt->fetchColumn();
                                         <?php endif; ?>
                                     </td>
                                     <td class="status-cell">
-                                            <span class="status-badge <?= $msg['is_read'] ? 'read' : 'unread'; ?>" id="status-badge-<?= $msg['id_buku_tamu']; ?>">
+                                        <span class="status-badge <?= $msg['is_read'] ? 'read' : 'unread'; ?>"
+                                            id="status-badge-<?= $msg['id_buku_tamu']; ?>">
                                             <i class="<?= $msg['is_read'] ? 'ri-check-line' : 'ri-time-line'; ?>"></i>
                                             <span><?= $msg['is_read'] ? 'Read' : 'Unread'; ?></span>
                                         </span>
@@ -443,7 +472,8 @@ $unread_count = $stmt->fetchColumn();
                                         </div>
                                     </td>
                                     <td class="actions-cell">
-                                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this message?');">
+                                        <form method="POST"
+                                            onsubmit="return confirm('Are you sure you want to delete this message?');">
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="id" value="<?= $msg['id_buku_tamu']; ?>">
                                             <button type="submit" class="btn-action btn-delete">
@@ -465,18 +495,18 @@ $unread_count = $stmt->fetchColumn();
                         <?php else: ?>
                             <span class="page-pill disabled">&laquo; Previous</span>
                         <?php endif; ?>
-                        
+
                         <?php
                         $start_page = max(1, $current_page - 2);
                         $end_page = min($total_pages, $current_page + 2);
-                        
+
                         if ($start_page > 1): ?>
                             <a href="?page=1&filter=<?= $filter; ?>" class="page-pill">1</a>
                             <?php if ($start_page > 2): ?>
                                 <span>...</span>
                             <?php endif; ?>
                         <?php endif; ?>
-                        
+
                         <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
                             <?php if ($i == $current_page): ?>
                                 <span class="page-pill active"><?= $i; ?></span>
@@ -484,14 +514,14 @@ $unread_count = $stmt->fetchColumn();
                                 <a href="?page=<?= $i; ?>&filter=<?= $filter; ?>" class="page-pill"><?= $i; ?></a>
                             <?php endif; ?>
                         <?php endfor; ?>
-                        
+
                         <?php if ($end_page < $total_pages): ?>
                             <?php if ($end_page < $total_pages - 1): ?>
                                 <span>...</span>
                             <?php endif; ?>
                             <a href="?page=<?= $total_pages; ?>&filter=<?= $filter; ?>" class="page-pill"><?= $total_pages; ?></a>
                         <?php endif; ?>
-                        
+
                         <?php if ($current_page < $total_pages): ?>
                             <a href="?page=<?= $current_page + 1; ?>&filter=<?= $filter; ?>" class="page-pill">Next &raquo;</a>
                         <?php else: ?>
@@ -499,7 +529,8 @@ $unread_count = $stmt->fetchColumn();
                         <?php endif; ?>
                     </div>
                     <div class="text-center muted-gray mt-3">
-                        Showing <?= ($offset + 1); ?> - <?= min($offset + $items_per_page, $total_items); ?> of <?= $total_items; ?> messages
+                        Showing <?= ($offset + 1); ?> - <?= min($offset + $items_per_page, $total_items); ?> of
+                        <?= $total_items; ?> messages
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
@@ -530,15 +561,15 @@ $unread_count = $stmt->fetchColumn();
                 method: 'POST',
                 body: formData
             }).then(response => response.json())
-              .then(data => {
-                  if (data.success) {
-                      row.dataset.isRead = '1';
-                      row.classList.remove('unread');
-                      updateStatusBadge(id);
-                      removeNewBadge(id);
-                      decrementUnreadCounter();
-                  }
-              }).catch(error => console.error(error));
+                .then(data => {
+                    if (data.success) {
+                        row.dataset.isRead = '1';
+                        row.classList.remove('unread');
+                        updateStatusBadge(id);
+                        removeNewBadge(id);
+                        decrementUnreadCounter();
+                    }
+                }).catch(error => console.error(error));
         }
 
         function updateStatusBadge(id) {
@@ -578,5 +609,5 @@ $unread_count = $stmt->fetchColumn();
         }
     </script>
 </body>
-</html>
 
+</html>

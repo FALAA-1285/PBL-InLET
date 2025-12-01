@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tipe_absen = $_POST['tipe_absen'] ?? '';
     $keterangan = trim($_POST['keterangan'] ?? '');
 
-// Validate input
+    // Validate input
     if (empty($nim)) {
         $message = 'Student ID is required!';
         $message_type = 'error';
@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message_type = 'error';
     } else {
         try {
-// Check student
+            // Check student
             $check_mhs = $conn->prepare("SELECT id_mahasiswa as id_mhs, nama FROM mahasiswa WHERE id_mahasiswa = :nim LIMIT 1");
             $check_mhs->execute(['nim' => $nim]);
             $mahasiswa = $check_mhs->fetch();
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $message = 'You have already checked in today!';
                         $message_type = 'error';
                     } else {
-// Check record
+                        // Check record
                         $check_stmt = $conn->prepare("SELECT id_absensi FROM absensi 
                                                      WHERE id_mhs = :id_mhs 
                                                      AND tanggal = :tanggal");
@@ -124,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ]);
                         $existing = $check_stmt->fetch();
 
-// Build note
+                        // Build note
                         $keterangan_full = 'Status: ' . ucfirst($status);
                         if (!empty($keterangan)) {
                             $keterangan_full .= ' | ' . $keterangan;
@@ -180,13 +180,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $message = 'You have already checked out today!';
                             $message_type = 'error';
                         } else {
-// Prepare note
+                            // Prepare note
                             $keterangan_full = $keterangan;
                             if (!empty($keterangan)) {
                                 $keterangan_full = 'Status: ' . ucfirst($status) . ' | ' . $keterangan;
                             }
 
-// Update checkout
+                            // Update checkout
                             $stmt = $conn->prepare("UPDATE absensi 
                                                    SET waktu_pulang = CURRENT_TIMESTAMP,
                                                        keterangan = COALESCE(:keterangan, keterangan)
@@ -282,12 +282,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <input type="hidden" name="tipe_absen" id="tipe_absen" value="">
 
-<!-- Divider -->
+                    <!-- Divider -->
                     <div class="btn-divider my-4">
                         <span>Select Attendance Type</span>
                     </div>
 
-<!-- Button group -->
+                    <!-- Button group -->
                     <div class="btn-group-absensi">
                         <button type="button" class="btn-attendance btn-check-in" onclick="setAttendanceType('masuk')">
                             <i class="ri-login-box-line btn-icon"></i>
@@ -322,18 +322,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const nimValidation = document.getElementById('nim-validation');
         const nimHelp = document.getElementById('nim-help');
 
-// Handle input
+        // Handle input
         nimInput.addEventListener('input', function () {
             const value = this.value.trim();
             nimValid = false;
             selectedNim = null;
 
-// Clear timeout
+            // Clear timeout
             if (searchTimeout) {
                 clearTimeout(searchTimeout);
             }
 
-// Hide elements
+            // Hide elements
             nimSuggestions.innerHTML = '';
             nimSuggestions.style.display = 'none';
             nimValidation.innerHTML = '';
@@ -344,13 +344,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 return;
             }
 
-// Debounce
+            // Debounce
             searchTimeout = setTimeout(() => {
                 searchStudentID(value);
             }, 300);
         });
 
-// Validate on blur
+        // Validate on blur
         nimInput.addEventListener('blur', function () {
             const value = this.value.trim();
             if (value.length > 0 && !nimValid) {
@@ -358,7 +358,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         });
 
-// Search function
+        // Search function
         function searchStudentID(query) {
             if (query.length < 2) return;
 
@@ -377,7 +377,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 });
         }
 
-// Show suggestions
+        // Show suggestions
         function displaySuggestions(suggestions) {
             nimSuggestions.innerHTML = '';
             suggestions.forEach(item => {
@@ -396,7 +396,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             nimSuggestions.style.display = 'block';
         }
 
-// Select suggestion
+        // Select suggestion
         function selectStudentID(nim, nama) {
             nimInput.value = nim;
             selectedNim = nim;
@@ -438,14 +438,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 });
         }
 
-// Close on click outside
+        // Close on click outside
         document.addEventListener('click', function (e) {
             if (!nimInput.contains(e.target) && !nimSuggestions.contains(e.target)) {
                 nimSuggestions.style.display = 'none';
             }
         });
 
-// Validate form
+        // Validate form
         function setAttendanceType(type) {
             const nim = document.getElementById('nim').value.trim();
             const status = document.getElementById('status').value;
@@ -462,9 +462,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 return false;
             }
 
-// Sync validate
+            // Sync validate
             if (!nimValid || selectedNim !== nim) {
-// Show loading
+                // Show loading
                 nimValidation.innerHTML = '<i class="ri-loader-4-line"></i> <span>Validating Student ID...</span>';
                 nimValidation.className = 'nim-validation';
 
@@ -496,12 +496,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 return false;
             }
 
-// Submit if valid
+            // Submit if valid
             document.getElementById('tipe_absen').value = type;
             document.getElementById('absenForm').submit();
         }
 
-// Add button feedback
+        // Add button feedback
         document.querySelectorAll('.btn-attendance').forEach(button => {
             button.addEventListener('mousedown', function () {
                 this.style.transform = 'translateY(-1px) scale(0.99)';

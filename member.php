@@ -35,8 +35,8 @@ foreach ($params as $key => $value) {
     $stmt->bindValue($key, $value);
 }
 $stmt->execute();
-$total_items_members = (int)$stmt->fetchColumn();
-$total_pages_members = max(1, ($items_per_page > 0 && $total_items_members > 0) ? (int)ceil($total_items_members / $items_per_page) : 1);
+$total_items_members = (int) $stmt->fetchColumn();
+$total_pages_members = max(1, ($items_per_page > 0 && $total_items_members > 0) ? (int) ceil($total_items_members / $items_per_page) : 1);
 $current_page_members = min(max(1, $current_page_members), $total_pages_members);
 $offset_members = ($current_page_members - 1) * $items_per_page;
 
@@ -78,7 +78,8 @@ function getInitials($name)
     <title>Our Experts - Information & Learning Engineering Technology</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/style-member.css">
 </head>
@@ -205,10 +206,12 @@ function getInitials($name)
                                 $page_url .= "letter=" . urlencode($letter_filter) . "&";
                             }
                             ?>
-                            
+
                             <?php if ($current_page_members > 1): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="<?= $page_url ?>page_members=<?php echo $current_page_members - 1; ?>#focus-areas" aria-label="Previous">
+                                    <a class="page-link"
+                                        href="<?= $page_url ?>page_members=<?php echo $current_page_members - 1; ?>#focus-areas"
+                                        aria-label="Previous">
                                         <span aria-hidden="true">&laquo; Previous</span>
                                     </a>
                                 </li>
@@ -217,11 +220,11 @@ function getInitials($name)
                                     <span class="page-link" aria-hidden="true">&laquo; Previous</span>
                                 </li>
                             <?php endif; ?>
-                            
+
                             <?php
                             $start_page = max(1, $current_page_members - 2);
                             $end_page = min($total_pages_members, $current_page_members + 2);
-                            
+
                             if ($start_page > 1): ?>
                                 <li class="page-item">
                                     <a class="page-link" href="<?= $page_url ?>page_members=1#focus-areas">1</a>
@@ -232,13 +235,14 @@ function getInitials($name)
                                     </li>
                                 <?php endif; ?>
                             <?php endif; ?>
-                            
+
                             <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
                                 <li class="page-item <?php echo ($i == $current_page_members) ? 'active' : ''; ?>">
-                                    <a class="page-link" href="<?= $page_url ?>page_members=<?php echo $i; ?>#focus-areas"><?php echo $i; ?></a>
+                                    <a class="page-link"
+                                        href="<?= $page_url ?>page_members=<?php echo $i; ?>#focus-areas"><?php echo $i; ?></a>
                                 </li>
                             <?php endfor; ?>
-                            
+
                             <?php if ($end_page < $total_pages_members): ?>
                                 <?php if ($end_page < $total_pages_members - 1): ?>
                                     <li class="page-item disabled">
@@ -246,13 +250,16 @@ function getInitials($name)
                                     </li>
                                 <?php endif; ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="<?= $page_url ?>page_members=<?php echo $total_pages_members; ?>#focus-areas"><?php echo $total_pages_members; ?></a>
+                                    <a class="page-link"
+                                        href="<?= $page_url ?>page_members=<?php echo $total_pages_members; ?>#focus-areas"><?php echo $total_pages_members; ?></a>
                                 </li>
                             <?php endif; ?>
-                            
+
                             <?php if ($current_page_members < $total_pages_members): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="<?= $page_url ?>page_members=<?php echo $current_page_members + 1; ?>#focus-areas" aria-label="Next">
+                                    <a class="page-link"
+                                        href="<?= $page_url ?>page_members=<?php echo $current_page_members + 1; ?>#focus-areas"
+                                        aria-label="Next">
                                         <span aria-hidden="true">Next &raquo;</span>
                                     </a>
                                 </li>
@@ -262,7 +269,7 @@ function getInitials($name)
                                 </li>
                             <?php endif; ?>
                         </ul>
-                        
+
                     </nav>
                 <?php endif; ?>
             </div>

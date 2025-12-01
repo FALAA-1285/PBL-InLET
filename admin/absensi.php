@@ -9,7 +9,7 @@ $message_type = '';
 // Handle actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
-    
+
     if ($action === 'delete') {
         $id = intval($_POST['id'] ?? 0);
         try {
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute(['id' => $id]);
             $message = 'Data absensi berhasil dihapus!';
             $message_type = 'success';
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
         }
@@ -78,6 +78,7 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -112,7 +113,7 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
             background: white;
             padding: 1.25rem;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
             transition: 0.3s;
         }
 
@@ -140,7 +141,7 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
             background: white;
             padding: 0.5rem;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .filter-tab {
@@ -217,17 +218,17 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
         }
 
         .status-badge.masuk {
-            background: rgba(16,185,129,0.15);
+            background: rgba(16, 185, 129, 0.15);
             color: #047857;
         }
 
         .status-badge.keluar {
-            background: rgba(239,68,68,0.15);
+            background: rgba(239, 68, 68, 0.15);
             color: #991b1b;
         }
 
         .status-badge.lengkap {
-            background: rgba(59,130,246,0.15);
+            background: rgba(59, 130, 246, 0.15);
             color: #1e40af;
         }
 
@@ -340,9 +341,11 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
         }
     </style>
 </head>
+
 <body>
-    <?php $active_page = 'absensi'; include __DIR__ . '/partials/sidebar.php'; ?>
-    
+    <?php $active_page = 'absensi';
+    include __DIR__ . '/partials/sidebar.php'; ?>
+
     <main class="content">
         <div class="content-inner">
             <div class="content-header">
@@ -453,7 +456,7 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                                         <?php
                                         $has_masuk = !empty($abs['waktu_datang']);
                                         $has_keluar = !empty($abs['waktu_pulang']);
-                                        
+
                                         if ($has_masuk && $has_keluar) {
                                             echo '<span class="status-badge lengkap"><i class="ri-check-double-line"></i> Lengkap</span>';
                                         } elseif ($has_masuk) {
@@ -475,7 +478,9 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this attendance data?');" class="d-inline">
+                                        <form method="POST"
+                                            onsubmit="return confirm('Are you sure you want to delete this attendance data?');"
+                                            class="d-inline">
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="id" value="<?= $abs['id_absensi']; ?>">
                                             <button type="submit" class="btn-action btn-delete">
@@ -497,18 +502,18 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                         <?php else: ?>
                             <span class="disabled">&laquo; Previous</span>
                         <?php endif; ?>
-                        
+
                         <?php
                         $start_page = max(1, $current_page - 2);
                         $end_page = min($total_pages, $current_page + 2);
-                        
+
                         if ($start_page > 1): ?>
                             <a href="?page=1&filter=<?= $filter; ?>">1</a>
                             <?php if ($start_page > 2): ?>
                                 <span>...</span>
                             <?php endif; ?>
                         <?php endif; ?>
-                        
+
                         <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
                             <?php if ($i == $current_page): ?>
                                 <span class="active"><?= $i; ?></span>
@@ -516,14 +521,14 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                                 <a href="?page=<?= $i; ?>&filter=<?= $filter; ?>"><?= $i; ?></a>
                             <?php endif; ?>
                         <?php endfor; ?>
-                        
+
                         <?php if ($end_page < $total_pages): ?>
                             <?php if ($end_page < $total_pages - 1): ?>
                                 <span>...</span>
                             <?php endif; ?>
                             <a href="?page=<?= $total_pages; ?>&filter=<?= $filter; ?>"><?= $total_pages; ?></a>
                         <?php endif; ?>
-                        
+
                         <?php if ($current_page < $total_pages): ?>
                             <a href="?page=<?= $current_page + 1; ?>&filter=<?= $filter; ?>">Next &raquo;</a>
                         <?php else: ?>
@@ -531,12 +536,13 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                         <?php endif; ?>
                     </div>
                     <div class="text-center muted-gray mt-3">
-                        Showing <?= ($offset + 1); ?> - <?= min($offset + $items_per_page, $total_items); ?> of <?= $total_items; ?> attendance records
+                        Showing <?= ($offset + 1); ?> - <?= min($offset + $items_per_page, $total_items); ?> of
+                        <?= $total_items; ?> attendance records
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
         </div>
     </main>
 </body>
-</html>
 
+</html>

@@ -27,7 +27,7 @@ try {
             ON alat.id_alat_lab = pj.id_alat
         WHERE pj.status = 'dipinjam'";
     $conn->exec($view_dipinjam_sql);
-} catch(PDOException $e) {
+} catch (PDOException $e) {
     // View mungkin sudah ada atau ada error, ignore
 }
 
@@ -49,7 +49,7 @@ try {
             GROUP BY id_alat
         ) pj ON pj.id_alat = alat.id_alat_lab";
     $conn->exec($view_tersedia_sql);
-} catch(PDOException $e) {
+} catch (PDOException $e) {
     // View mungkin sudah ada atau ada error, ignore
 }
 
@@ -58,12 +58,12 @@ try {
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
-    
+
     if ($action === 'add_alat') {
         $nama_alat = trim($_POST['nama_alat'] ?? '');
         $deskripsi = trim($_POST['deskripsi'] ?? '');
         $stock = intval($_POST['stock'] ?? 0);
-        
+
         if (empty($nama_alat)) {
             $message = 'Nama alat harus diisi!';
             $message_type = 'error';
@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 $message = 'Lab tool successfully added!';
                 $message_type = 'success';
-            } catch(PDOException $e) {
+            } catch (PDOException $e) {
                 $message = 'Error: ' . $e->getMessage();
                 $message_type = 'error';
             }
@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nama_alat = trim($_POST['nama_alat'] ?? '');
         $deskripsi = trim($_POST['deskripsi'] ?? '');
         $stock = intval($_POST['stock'] ?? 0);
-        
+
         if (empty($nama_alat)) {
             $message = 'Nama alat harus diisi!';
             $message_type = 'error';
@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 $message = 'Lab tool successfully updated!';
                 $message_type = 'success';
-            } catch(PDOException $e) {
+            } catch (PDOException $e) {
                 $message = 'Error: ' . $e->getMessage();
                 $message_type = 'error';
             }
@@ -124,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = 'Lab tool successfully deleted!';
                 $message_type = 'success';
             }
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
         }
@@ -160,6 +160,7 @@ if (isset($_GET['edit'])) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -173,21 +174,25 @@ if (isset($_GET['edit'])) {
             margin: 0 auto;
             padding-bottom: 4rem;
         }
+
         .message {
             padding: 1rem;
             border-radius: 10px;
             margin-bottom: 2rem;
         }
+
         .message.success {
             background: #d1fae5;
             color: #065f46;
             border-left: 4px solid #10b981;
         }
+
         .message.error {
             background: #fee2e2;
             color: #991b1b;
             border-left: 4px solid #ef4444;
         }
+
         .form-section {
             background: white;
             padding: 2rem;
@@ -195,19 +200,23 @@ if (isset($_GET['edit'])) {
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
             margin-bottom: 2rem;
         }
+
         .form-section h2 {
             color: var(--primary);
             margin-bottom: 1.5rem;
         }
+
         .form-group {
             margin-bottom: 1.5rem;
         }
+
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
             color: var(--dark);
             font-weight: 500;
         }
+
         .form-group input,
         .form-group textarea {
             width: 100%;
@@ -218,15 +227,18 @@ if (isset($_GET['edit'])) {
             font-family: inherit;
             transition: border-color 0.3s;
         }
+
         .form-group input:focus,
         .form-group textarea:focus {
             outline: none;
             border-color: var(--primary);
         }
+
         .form-group textarea {
             min-height: 100px;
             resize: vertical;
         }
+
         .btn-submit {
             background: var(--primary);
             color: white;
@@ -238,10 +250,12 @@ if (isset($_GET['edit'])) {
             cursor: pointer;
             transition: all 0.3s;
         }
+
         .btn-submit:hover {
             background: var(--primary-dark);
             transform: translateY(-2px);
         }
+
         .data-section {
             background: white;
             padding: 2rem;
@@ -249,48 +263,60 @@ if (isset($_GET['edit'])) {
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
             margin-bottom: 2rem;
         }
+
         .data-section h2 {
             color: var(--primary);
             margin-bottom: 1.5rem;
         }
+
         .table-container {
             overflow-x: auto;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
         }
-        th, td {
+
+        th,
+        td {
             padding: 1rem;
             text-align: left;
             border-bottom: 1px solid #e2e8f0;
         }
+
         th {
             background: var(--light);
             color: var(--primary);
             font-weight: 600;
         }
+
         tr:hover {
             background: var(--light);
         }
+
         .stock-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 600;
         }
+
         .stock-available {
             background: #d1fae5;
             color: #065f46;
         }
+
         .stock-low {
             background: #fef3c7;
             color: #92400e;
         }
+
         .stock-empty {
             background: #fee2e2;
             color: #991b1b;
         }
+
         .btn-delete {
             background: #ef4444;
             color: white;
@@ -301,9 +327,11 @@ if (isset($_GET['edit'])) {
             font-size: 0.9rem;
             transition: all 0.3s;
         }
+
         .btn-delete:hover {
             background: #dc2626;
         }
+
         .btn-edit {
             background: #3b82f6;
             color: white;
@@ -317,15 +345,19 @@ if (isset($_GET['edit'])) {
             display: inline-block;
             margin-right: 0.5rem;
         }
+
         .btn-edit:hover {
             background: #2563eb;
         }
+
         .edit-form-section {
             display: none;
         }
+
         .edit-form-section.active {
             display: block;
         }
+
         .btn-cancel {
             background: #6b7280;
             color: white;
@@ -336,14 +368,17 @@ if (isset($_GET['edit'])) {
             font-size: 0.9rem;
             margin-left: 0.5rem;
         }
+
         .btn-cancel:hover {
             background: #4b5563;
         }
     </style>
 </head>
+
 <body>
-    <?php $active_page = 'alat_lab'; include __DIR__ . '/partials/sidebar.php'; ?>
-    
+    <?php $active_page = 'alat_lab';
+    include __DIR__ . '/partials/sidebar.php'; ?>
+
     <main class="content">
         <div class="content-inner">
             <div class="cms-content">
@@ -359,30 +394,30 @@ if (isset($_GET['edit'])) {
                 <div class="form-section <?php echo $edit_alat ? 'edit-form-section active' : ''; ?>">
                     <h2><?php echo $edit_alat ? 'Edit Lab Tool' : 'Add New Lab Tool'; ?></h2>
                     <form method="POST">
-                        <input type="hidden" name="action" value="<?php echo $edit_alat ? 'update_alat' : 'add_alat'; ?>">
+                        <input type="hidden" name="action"
+                            value="<?php echo $edit_alat ? 'update_alat' : 'add_alat'; ?>">
                         <?php if ($edit_alat): ?>
                             <input type="hidden" name="id" value="<?php echo $edit_alat['id_alat_lab']; ?>">
                         <?php endif; ?>
-                        
+
                         <div class="form-group">
                             <label for="nama_alat">Tool Name *</label>
-                            <input type="text" id="nama_alat" name="nama_alat" 
-                                   value="<?php echo htmlspecialchars($edit_alat['nama_alat'] ?? ''); ?>" required>
+                            <input type="text" id="nama_alat" name="nama_alat"
+                                value="<?php echo htmlspecialchars($edit_alat['nama_alat'] ?? ''); ?>" required>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="deskripsi">Description</label>
-                            <textarea id="deskripsi" name="deskripsi" 
-                                      placeholder="Lab tool description"><?php echo htmlspecialchars($edit_alat['deskripsi'] ?? ''); ?></textarea>
+                            <textarea id="deskripsi" name="deskripsi"
+                                placeholder="Lab tool description"><?php echo htmlspecialchars($edit_alat['deskripsi'] ?? ''); ?></textarea>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="stock">Stock *</label>
-                            <input type="number" id="stock" name="stock" 
-                                   value="<?php echo htmlspecialchars($edit_alat['stock'] ?? 0); ?>" 
-                                   min="0" required>
+                            <input type="number" id="stock" name="stock"
+                                value="<?php echo htmlspecialchars($edit_alat['stock'] ?? 0); ?>" min="0" required>
                         </div>
-                        
+
                         <button type="submit" class="btn-submit">
                             <?php echo $edit_alat ? 'Update Lab Tool' : 'Add Lab Tool'; ?>
                         </button>
@@ -395,7 +430,7 @@ if (isset($_GET['edit'])) {
                 <!-- Data List -->
                 <div class="data-section">
                     <h2>Lab Tools List (<?php echo count($alat_list); ?>)</h2>
-                    
+
                     <?php if (empty($alat_list)): ?>
                         <p class="muted-gray">No lab tools registered yet.</p>
                     <?php else: ?>
@@ -420,12 +455,13 @@ if (isset($_GET['edit'])) {
                                             <td><?php echo $alat['stock']; ?> unit</td>
                                             <td>
                                                 <span class="stock-badge <?php
-                                                    $stok_tersedia = $alat['stok_tersedia'] ?? 0;
-                                                    echo $stok_tersedia > 5 ? 'stock-available' : ($stok_tersedia > 0 ? 'stock-low' : 'stock-empty');
+                                                $stok_tersedia = $alat['stok_tersedia'] ?? 0;
+                                                echo $stok_tersedia > 5 ? 'stock-available' : ($stok_tersedia > 0 ? 'stock-low' : 'stock-empty');
                                                 ?>">
                                                     <?php echo $stok_tersedia; ?> units available
                                                     <?php if (isset($alat['jumlah_dipinjam']) && $alat['jumlah_dipinjam'] > 0): ?>
-                                                        <br><small class="small text-muted">(<?php echo $alat['jumlah_dipinjam']; ?> borrowed)</small>
+                                                        <br><small class="small text-muted">(<?php echo $alat['jumlah_dipinjam']; ?>
+                                                            borrowed)</small>
                                                     <?php endif; ?>
                                                 </span>
                                             </td>
@@ -433,7 +469,8 @@ if (isset($_GET['edit'])) {
                                                 <a href="?edit=<?php echo $alat['id_alat_lab']; ?>" class="btn-edit">
                                                     <i class="ri-edit-line"></i> Edit
                                                 </a>
-                                                <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this tool?');">
+                                                <form method="POST" class="d-inline"
+                                                    onsubmit="return confirm('Are you sure you want to delete this tool?');">
                                                     <input type="hidden" name="action" value="delete_alat">
                                                     <input type="hidden" name="id" value="<?php echo $alat['id_alat_lab']; ?>">
                                                     <button type="submit" class="btn-delete">
@@ -452,5 +489,5 @@ if (isset($_GET['edit'])) {
         </div>
     </main>
 </body>
-</html>
 
+</html>

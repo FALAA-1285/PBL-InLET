@@ -13,7 +13,7 @@ $service_base = $is_service_page ? '' : 'service/';
 <header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top shadow-sm">
         <div class="container">
-                <a href="<?= $root_base ?>index.php" class="navbar-brand">
+            <a href="<?= $root_base ?>index.php" class="navbar-brand">
                 <img src="<?= $root_base ?>assets/logo.png" alt="Logo" class="logo-img">
             </a>
 

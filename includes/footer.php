@@ -23,9 +23,12 @@ $root_base = $is_service_page ? '../' : '';
                         <li class="list-inline-item mx-3"><a href="<?= $root_base ?>news.php">News</a></li>
                     </ul>
                     <ul class="list-inline mb-0 footer-links">
-                        <li class="list-inline-item mx-3"><a href="<?= $root_base ?>service/peminjaman.php">Tool Loan</a></li>
-                        <li class="list-inline-item mx-3"><a href="<?= $root_base ?>service/absen.php">Attendance</a></li>
-                        <li class="list-inline-item mx-3"><a href="<?= $root_base ?>service/buku_tamu.php">Guestbook</a></li>
+                        <li class="list-inline-item mx-3"><a href="<?= $root_base ?>service/peminjaman.php">Tool
+                                Loan</a></li>
+                        <li class="list-inline-item mx-3"><a href="<?= $root_base ?>service/absen.php">Attendance</a>
+                        </li>
+                        <li class="list-inline-item mx-3"><a href="<?= $root_base ?>service/buku_tamu.php">Guestbook</a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -128,7 +131,7 @@ $root_base = $is_service_page ? '../' : '';
                 padding-left: 2rem;
                 padding-right: 2rem;
             }
-            
+
             .footer-links .list-inline-item {
                 margin: 0.3rem 0.5rem;
             }
@@ -138,39 +141,39 @@ $root_base = $is_service_page ? '../' : '';
             .footer {
                 padding: 3rem 0;
             }
-            
+
             .container-fluid {
                 padding-left: 1.5rem;
                 padding-right: 1.5rem;
             }
-            
+
             .footer-links .list-inline-item {
                 margin: 0.2rem 0.4rem;
                 display: inline-block;
             }
-            
+
             .footer-links .list-inline-item a {
                 padding: 0.3rem 0.5rem;
                 font-size: 0.9rem;
             }
-            
+
             .text-center.text-md-start,
             .text-center.text-md-end {
                 text-align: center !important;
             }
-            
+
             .contact-info {
                 justify-content: center;
             }
-            
+
             .row.align-items-center {
                 text-align: center;
             }
-            
+
             .col-lg-4 {
                 margin-bottom: 1.5rem;
             }
-            
+
             .col-lg-4:last-child {
                 margin-bottom: 0;
             }
@@ -181,25 +184,25 @@ $root_base = $is_service_page ? '../' : '';
                 padding-left: 1rem;
                 padding-right: 1rem;
             }
-            
+
             .footer {
                 padding: 2.5rem 0;
             }
-            
+
             .footer-links .list-inline-item {
                 display: block;
                 margin: 0.4rem 0;
             }
-            
+
             .footer-links .list-inline-item a {
                 display: inline-block;
                 padding: 0.4rem 0.8rem;
             }
-            
+
             .contact-info {
                 font-size: 0.9rem;
             }
-            
+
             .text-light-soft {
                 font-size: 0.9rem;
             }

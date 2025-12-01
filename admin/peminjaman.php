@@ -12,7 +12,7 @@ try {
     $stmt = $conn->prepare("SELECT column_name FROM information_schema.columns WHERE table_name = 'peminjaman' AND column_name = 'id_ruang'");
     $stmt->execute();
     $hasRuangColumn = $stmt->fetch() !== false;
-} catch(PDOException $e) {
+} catch (PDOException $e) {
     // If schema check fails, assume column doesn't exist
     $hasRuangColumn = false;
 }
@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 $message = 'Borrowing record updated successfully!';
                 $message_type = 'success';
-            } catch(PDOException $e) {
+            } catch (PDOException $e) {
                 $message = 'Error: ' . $e->getMessage();
                 $message_type = 'error';
             }
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute(['id' => $id]);
             $message = 'Borrowing record deleted successfully!';
             $message_type = 'success';
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
         }
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
             $message = 'Item returned successfully!';
             $message_type = 'success';
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
         }
@@ -167,6 +167,7 @@ if (isset($_GET['edit'])) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -180,21 +181,25 @@ if (isset($_GET['edit'])) {
             margin: 0 auto;
             padding-bottom: 4rem;
         }
+
         .message {
             padding: 1rem;
             border-radius: 10px;
             margin-bottom: 2rem;
         }
+
         .message.success {
             background: #d1fae5;
             color: #065f46;
             border-left: 4px solid #10b981;
         }
+
         .message.error {
             background: #fee2e2;
             color: #991b1b;
             border-left: 4px solid #ef4444;
         }
+
         .filters {
             background: white;
             padding: 1.5rem;
@@ -202,6 +207,7 @@ if (isset($_GET['edit'])) {
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
             margin-bottom: 2rem;
         }
+
         .form-section {
             background: white;
             padding: 2rem;
@@ -209,19 +215,23 @@ if (isset($_GET['edit'])) {
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
             margin-bottom: 2rem;
         }
+
         .form-section h2 {
             color: var(--primary);
             margin-bottom: 1.5rem;
         }
+
         .form-group {
             margin-bottom: 1.5rem;
         }
+
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
             color: var(--dark);
             font-weight: 500;
         }
+
         .form-group input,
         .form-group select,
         .form-group textarea {
@@ -233,16 +243,19 @@ if (isset($_GET['edit'])) {
             font-family: inherit;
             transition: border-color 0.3s;
         }
+
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
             border-color: var(--primary);
         }
+
         .form-group textarea {
             min-height: 100px;
             resize: vertical;
         }
+
         .btn-submit {
             background: var(--primary);
             color: white;
@@ -254,10 +267,12 @@ if (isset($_GET['edit'])) {
             cursor: pointer;
             transition: all 0.3s;
         }
+
         .btn-submit:hover {
             background: var(--primary-dark);
             transform: translateY(-2px);
         }
+
         .data-section {
             background: white;
             padding: 2rem;
@@ -265,58 +280,72 @@ if (isset($_GET['edit'])) {
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
             margin-bottom: 2rem;
         }
+
         .data-section h2 {
             color: var(--primary);
             margin-bottom: 1.5rem;
         }
+
         .table-container {
             overflow-x: auto;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
         }
-        th, td {
+
+        th,
+        td {
             padding: 1rem;
             text-align: left;
             border-bottom: 1px solid #e2e8f0;
         }
+
         th {
             background: var(--light);
             color: var(--primary);
             font-weight: 600;
         }
+
         tr:hover {
             background: var(--light);
         }
+
         .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 600;
         }
+
         .status-dipinjam {
             background: #fef3c7;
             color: #92400e;
         }
+
         .status-dikembalikan {
             background: #d1fae5;
             color: #065f46;
         }
+
         .type-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 600;
         }
+
         .type-alat {
             background: #dbeafe;
             color: #1e40af;
         }
+
         .type-ruang {
             background: #fce7f3;
             color: #be185d;
         }
+
         .btn-delete {
             background: #ef4444;
             color: white;
@@ -327,9 +356,11 @@ if (isset($_GET['edit'])) {
             font-size: 0.9rem;
             transition: all 0.3s;
         }
+
         .btn-delete:hover {
             background: #dc2626;
         }
+
         .btn-edit {
             background: #3b82f6;
             color: white;
@@ -343,9 +374,11 @@ if (isset($_GET['edit'])) {
             display: inline-block;
             margin-right: 0.5rem;
         }
+
         .btn-edit:hover {
             background: #2563eb;
         }
+
         .btn-return {
             background: #10b981;
             color: white;
@@ -359,15 +392,19 @@ if (isset($_GET['edit'])) {
             display: inline-block;
             margin-right: 0.5rem;
         }
+
         .btn-return:hover {
             background: #059669;
         }
+
         .edit-form-section {
             display: none;
         }
+
         .edit-form-section.active {
             display: block;
         }
+
         .btn-cancel {
             background: #6b7280;
             color: white;
@@ -378,9 +415,11 @@ if (isset($_GET['edit'])) {
             font-size: 0.9rem;
             margin-left: 0.5rem;
         }
+
         .btn-cancel:hover {
             background: #4b5563;
         }
+
         .filter-btn {
             background: var(--primary);
             color: white;
@@ -391,9 +430,11 @@ if (isset($_GET['edit'])) {
             font-size: 0.9rem;
             margin-right: 0.5rem;
         }
+
         .filter-btn:hover {
             background: var(--primary-dark);
         }
+
         .clear-filter {
             background: #6b7280;
             color: white;
@@ -404,13 +445,16 @@ if (isset($_GET['edit'])) {
             font-size: 0.9rem;
             text-decoration: none;
         }
+
         .clear-filter:hover {
             background: #4b5563;
         }
     </style>
 </head>
+
 <body>
-    <?php $active_page = 'peminjaman'; include __DIR__ . '/partials/sidebar.php'; ?>
+    <?php $active_page = 'peminjaman';
+    include __DIR__ . '/partials/sidebar.php'; ?>
 
     <main class="content">
         <div class="content-inner">
@@ -429,7 +473,8 @@ if (isset($_GET['edit'])) {
                     <form method="GET" class="d-inline">
                         <select name="status" onchange="this.form.submit()">
                             <option value="">All Status</option>
-                            <option value="dipinjam" <?php echo $status_filter === 'dipinjam' ? 'selected' : ''; ?>>Borrowed</option>
+                            <option value="dipinjam" <?php echo $status_filter === 'dipinjam' ? 'selected' : ''; ?>>
+                                Borrowed</option>
                             <option value="dikembalikan" <?php echo $status_filter === 'dikembalikan' ? 'selected' : ''; ?>>Returned</option>
                         </select>
                         <select name="type" onchange="this.form.submit()">
@@ -455,19 +500,21 @@ if (isset($_GET['edit'])) {
                         <div class="form-group">
                             <label for="nama_peminjam">Borrower Name *</label>
                             <input type="text" id="nama_peminjam" name="nama_peminjam"
-                                   value="<?php echo htmlspecialchars($edit_peminjaman['nama_peminjam'] ?? ''); ?>" required>
+                                value="<?php echo htmlspecialchars($edit_peminjaman['nama_peminjam'] ?? ''); ?>"
+                                required>
                         </div>
 
                         <div class="form-group">
                             <label for="tanggal_pinjam">Borrow Date *</label>
                             <input type="date" id="tanggal_pinjam" name="tanggal_pinjam"
-                                   value="<?php echo htmlspecialchars($edit_peminjaman['tanggal_pinjam'] ?? ''); ?>" required>
+                                value="<?php echo htmlspecialchars($edit_peminjaman['tanggal_pinjam'] ?? ''); ?>"
+                                required>
                         </div>
 
                         <div class="form-group">
                             <label for="tanggal_kembali">Return Date</label>
                             <input type="date" id="tanggal_kembali" name="tanggal_kembali"
-                                   value="<?php echo htmlspecialchars($edit_peminjaman['tanggal_kembali'] ?? ''); ?>">
+                                value="<?php echo htmlspecialchars($edit_peminjaman['tanggal_kembali'] ?? ''); ?>">
                         </div>
 
                         <div class="form-group">
@@ -481,7 +528,7 @@ if (isset($_GET['edit'])) {
                         <div class="form-group">
                             <label for="keterangan">Notes</label>
                             <textarea id="keterangan" name="keterangan"
-                                      placeholder="Additional notes"><?php echo htmlspecialchars($edit_peminjaman['keterangan'] ?? ''); ?></textarea>
+                                placeholder="Additional notes"><?php echo htmlspecialchars($edit_peminjaman['keterangan'] ?? ''); ?></textarea>
                         </div>
 
                         <button type="submit" class="btn-submit">
@@ -527,10 +574,12 @@ if (isset($_GET['edit'])) {
                                             <td><?php echo htmlspecialchars($peminjaman['nama_peminjam']); ?></td>
                                             <td><?php echo date('d M Y', strtotime($peminjaman['tanggal_pinjam'])); ?>
                                                 <?php if ($peminjaman['waktu_pinjam']): ?>
-                                                    <br><small><?php echo substr($peminjaman['waktu_pinjam'], 0, 5); ?> - <?php echo substr($peminjaman['waktu_kembali'], 0, 5); ?></small>
+                                                    <br><small><?php echo substr($peminjaman['waktu_pinjam'], 0, 5); ?> -
+                                                        <?php echo substr($peminjaman['waktu_kembali'], 0, 5); ?></small>
                                                 <?php endif; ?>
                                             </td>
-                                            <td><?php echo $peminjaman['tanggal_kembali'] ? date('d M Y', strtotime($peminjaman['tanggal_kembali'])) : '-'; ?></td>
+                                            <td><?php echo $peminjaman['tanggal_kembali'] ? date('d M Y', strtotime($peminjaman['tanggal_kembali'])) : '-'; ?>
+                                            </td>
                                             <td>
                                                 <span class="status-badge status-<?php echo $peminjaman['status']; ?>">
                                                     <?php echo ucfirst($peminjaman['status']); ?>
@@ -541,18 +590,23 @@ if (isset($_GET['edit'])) {
                                                     <i class="ri-edit-line"></i> Edit
                                                 </a>
                                                 <?php if ($peminjaman['status'] === 'dipinjam'): ?>
-                                                    <form method="POST" class="d-inline" onsubmit="return confirm('Mark this item as returned?');">
+                                                    <form method="POST" class="d-inline"
+                                                        onsubmit="return confirm('Mark this item as returned?');">
                                                         <input type="hidden" name="action" value="return_item">
-                                                        <input type="hidden" name="id" value="<?php echo $peminjaman['id_peminjaman']; ?>">
-                                                        <input type="hidden" name="tanggal_kembali" value="<?php echo date('Y-m-d'); ?>">
+                                                        <input type="hidden" name="id"
+                                                            value="<?php echo $peminjaman['id_peminjaman']; ?>">
+                                                        <input type="hidden" name="tanggal_kembali"
+                                                            value="<?php echo date('Y-m-d'); ?>">
                                                         <button type="submit" class="btn-return">
                                                             <i class="ri-check-line"></i> Return
                                                         </button>
                                                     </form>
                                                 <?php endif; ?>
-                                                <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this record?');">
+                                                <form method="POST" class="d-inline"
+                                                    onsubmit="return confirm('Are you sure you want to delete this record?');">
                                                     <input type="hidden" name="action" value="delete_peminjaman">
-                                                    <input type="hidden" name="id" value="<?php echo $peminjaman['id_peminjaman']; ?>">
+                                                    <input type="hidden" name="id"
+                                                        value="<?php echo $peminjaman['id_peminjaman']; ?>">
                                                     <button type="submit" class="btn-delete">
                                                         <i class="ri-delete-bin-line"></i> Delete
                                                     </button>
@@ -569,4 +623,5 @@ if (isset($_GET['edit'])) {
         </div>
     </main>
 </body>
+
 </html>
