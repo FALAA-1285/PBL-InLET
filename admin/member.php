@@ -36,22 +36,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $bidang_keahlian = $_POST['bidang_keahlian'] ?? '';
                 $admin_id = $_SESSION['id_admin'] ?? null;
                 
-                // Menggunakan stored procedure tambah_member
-                $stmt = $conn->prepare("SELECT tambah_member(:nama, :email, :jabatan, :foto, :keahlian, :notlp, :deskripsi, :alamat, :id_admin)");
+                $stmt = $conn->prepare("INSERT INTO member (nama, email, jabatan, foto, bidang_keahlian, alamat, notlp, deskripsi) VALUES (:nama, :email, :jabatan, :foto, :keahlian, :alamat, :notlp, :deskripsi)");
                 $stmt->execute([
                     'nama' => $nama,
                     'email' => $email ?: null,
                     'jabatan' => $jabatan ?: null,
                     'foto' => $foto ?: null,
                     'keahlian' => $bidang_keahlian ?: null,
-                    'notlp' => $no_tlp ?: null,
-                    'deskripsi' => $deskripsi ?: null,
                     'alamat' => $alamat ?: null,
-                    'id_admin' => $admin_id
+                    'notlp' => $no_tlp ?: null,
+                    'deskripsi' => $deskripsi ?: null
                 ]);
-                $stmt->fetch(); // Execute function yang returns VOID
                 
-                $message = 'Member berhasil ditambahkan!';
+                $message = 'Member successfully added!';
                 $message_type = 'success';
             } catch(PDOException $e) {
                 $message = 'Error: ' . $e->getMessage();
@@ -94,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'deskripsi' => $deskripsi ?: null
                 ]);
                 
-                $message = 'Member berhasil diupdate!';
+                $message = 'Member successfully updated!';
                 $message_type = 'success';
             } catch(PDOException $e) {
                 $message = 'Error: ' . $e->getMessage();
@@ -106,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $conn->prepare("DELETE FROM member WHERE id_member = :id");
             $stmt->execute(['id' => $id]);
-            $message = 'Member berhasil dihapus!';
+            $message = 'Member successfully deleted!';
             $message_type = 'success';
         } catch(PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
@@ -140,7 +137,7 @@ $members = $stmt->fetchAll();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Member - CMS InLET</title>
+    <title>Manage Members - CMS InLET</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="admin.css">
@@ -365,7 +362,7 @@ $members = $stmt->fetchAll();
     <?php $active_page = 'member'; include __DIR__ . '/partials/sidebar.php'; ?>
     <main class="content">
         <div class="content-inner">
-            <h1 style="color: var(--primary); margin-bottom: 2rem;"><i class="ri-team-line"></i> Kelola Data Member</h1>
+            <h1 class="text-primary mb-4"><i class="ri-team-line"></i> Manage Members</h1>
 
             <div class="cms-content">
         <?php if ($message): ?>
@@ -381,7 +378,7 @@ $members = $stmt->fetchAll();
                 <input type="hidden" name="action" value="update_member">
                 <input type="hidden" name="id" id="edit_id">
                 <div class="form-group">
-                    <label>Nama *</label>
+                    <label>Name *</label>
                     <input type="text" name="nama" id="edit_nama" required>
                 </div>
                 <div class="form-group">
@@ -389,47 +386,47 @@ $members = $stmt->fetchAll();
                     <input type="email" name="email" id="edit_email">
                 </div>
                 <div class="form-group">
-                    <label>Jabatan</label>
+                    <label>Position</label>
                     <input type="text" name="jabatan" id="edit_jabatan">
                 </div>
                 <div class="form-group">
-                    <label>Bidang Keahlian</label>
-                    <input type="text" name="bidang_keahlian" id="edit_bidang_keahlian" placeholder="Bidang keahlian (opsional)">
+                    <label>Area of Expertise</label>
+                    <input type="text" name="bidang_keahlian" id="edit_bidang_keahlian" placeholder="Area of expertise (optional)">
                 </div>
                 <div class="form-group">
                     <label>Upload Foto (File)</label>
                     <input type="file" name="foto_file" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
-                    <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Maksimal 5MB. Format: JPG, PNG, GIF, WEBP</small>
+                    <small class="d-block mt-2 text-muted small">Maksimal 5MB. Format: JPG, PNG, GIF, WEBP</small>
                 </div>
                 <div class="form-group">
-                    <label>Atau Masukkan URL Foto</label>
+                    <label>Or Enter Photo URL</label>
                     <input type="text" name="foto" id="edit_foto" placeholder="https://example.com/foto.jpg">
-                    <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Jika upload file, URL akan diabaikan</small>
+                    <small class="d-block mt-2 text-muted small">If file upload is used, URL will be ignored</small>
                 </div>
-                <h3 style="color: var(--primary); margin-top: 2rem; margin-bottom: 1rem;">Profil Detail (Opsional)</h3>
+                <h3 class="text-primary mt-4 mb-3">Detailed Profile (Optional)</h3>
                 <div class="form-group">
-                    <label>Alamat</label>
+                    <label>Address</label>
                     <textarea name="alamat" id="edit_alamat"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>No. Telepon</label>
+                    <label>Phone Number</label>
                     <input type="text" name="no_tlp" id="edit_no_tlp">
                 </div>
                 <div class="form-group">
-                    <label>Deskripsi</label>
+                    <label>Description</label>
                     <textarea name="deskripsi" id="edit_deskripsi"></textarea>
                 </div>
                 <button type="submit" class="btn-submit">Update Member</button>
-                <button type="button" class="btn-cancel" onclick="cancelEdit()">Batal</button>
+                <button type="button" class="btn-cancel" onclick="cancelEdit()">Cancel</button>
             </form>
         </div>
 
         <div class="form-section">
-            <h2>Tambah Member Baru</h2>
+            <h2>Add New Member</h2>
             <form method="POST" action="" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="add_member">
                 <div class="form-group">
-                    <label>Nama *</label>
+                    <label>Name *</label>
                     <input type="text" name="nama" required>
                 </div>
                 <div class="form-group">
@@ -437,55 +434,55 @@ $members = $stmt->fetchAll();
                     <input type="email" name="email">
                 </div>
                 <div class="form-group">
-                    <label>Jabatan</label>
+                    <label>Position</label>
                     <input type="text" name="jabatan">
                 </div>
                 <div class="form-group">
-                    <label>Bidang Keahlian</label>
-                    <input type="text" name="bidang_keahlian" placeholder="Bidang keahlian (opsional)">
+                    <label>Area of Expertise</label>
+                    <input type="text" name="bidang_keahlian" placeholder="Area of expertise (optional)">
                 </div>
                 <div class="form-group">
-                    <label>Upload Foto (File)</label>
+                    <label>Upload Photo (File)</label>
                     <input type="file" name="foto_file" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
-                    <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Maksimal 5MB. Format: JPG, PNG, GIF, WEBP</small>
+                    <small class="d-block mt-2 text-muted small">Max 5MB. Format: JPG, PNG, GIF, WEBP</small>
                 </div>
                 <div class="form-group">
-                    <label>Atau Masukkan URL Foto</label>
+                    <label>Or Enter Photo URL</label>
                     <input type="text" name="foto" placeholder="https://example.com/foto.jpg">
-                    <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Jika upload file, URL akan diabaikan</small>
+                    <small class="d-block mt-2 text-muted small">If file upload is used, URL will be ignored</small>
                 </div>
-                <h3 style="color: var(--primary); margin-top: 2rem; margin-bottom: 1rem;">Profil Detail (Opsional)</h3>
+                <h3 class="text-primary mt-4 mb-3">Detailed Profile (Optional)</h3>
                 <div class="form-group">
-                    <label>Alamat</label>
+                    <label>Address</label>
                     <textarea name="alamat"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>No. Telepon</label>
+                    <label>Phone Number</label>
                     <input type="text" name="no_tlp">
                 </div>
                 <div class="form-group">
-                    <label>Deskripsi</label>
+                    <label>Description</label>
                     <textarea name="deskripsi"></textarea>
                 </div>
-                <button type="submit" class="btn-submit">Tambah Member</button>
+                <button type="submit" class="btn-submit">Add Member</button>
             </form>
         </div>
 
         <div class="data-section">
-            <h2>Daftar Member (<?php echo count($members); ?>)</h2>
-            <?php if (empty($members)): ?>
-                <p style="color: var(--gray); text-align: center; padding: 2rem;">Belum ada member</p>
+            <h2>Member List (<?php echo count($members); ?>)</h2>
+                <?php if (empty($members)): ?>
+                    <p class="text-center p-4 muted-gray">No members yet</p>
             <?php else: ?>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Nama</th>
+                                <th>Name</th>
                                 <th>Email</th>
-                                <th>Jabatan</th>
-                                <th>No. Telp</th>
-                                <th>Aksi</th>
+                                <th>Position</th>
+                                <th>Phone</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -500,11 +497,11 @@ $members = $stmt->fetchAll();
                                         <button type="button" class="btn-edit" onclick="editMember(<?php echo htmlspecialchars(json_encode($member)); ?>)">
                                             <i class="ri-edit-line"></i> Edit
                                         </button>
-                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus member ini?');">
+                                        <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this member?');">
                                             <input type="hidden" name="action" value="delete_member">
                                             <input type="hidden" name="id" value="<?php echo $member['id_member']; ?>">
                                             <button type="submit" class="btn-delete">
-                                                <i class="ri-delete-bin-line"></i> Hapus
+                                                <i class="ri-delete-bin-line"></i> Delete
                                             </button>
                                         </form>
                                     </td>
@@ -557,7 +554,7 @@ $members = $stmt->fetchAll();
                     <?php endif; ?>
                 </div>
                 <div class="pagination-info">
-                    Menampilkan <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> dari <?php echo $total_items; ?> member
+                    Showing <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> of <?php echo $total_items; ?> members
                 </div>
             <?php endif; ?>
         </div>

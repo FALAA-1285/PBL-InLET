@@ -22,7 +22,7 @@ function uploadImage($file, $subfolder = '') {
     if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) {
         return [
             'success' => false,
-            'message' => 'File tidak berhasil diupload. Error: ' . ($file['error'] ?? 'Unknown error')
+            'message' => 'File upload failed. Error: ' . ($file['error'] ?? 'Unknown error')
         ];
     }
     
@@ -30,7 +30,7 @@ function uploadImage($file, $subfolder = '') {
     if ($file['size'] > MAX_FILE_SIZE) {
         return [
             'success' => false,
-            'message' => 'File terlalu besar. Maksimal 5MB.'
+            'message' => 'File is too large. Maximum 5MB.'
         ];
     }
     
@@ -42,7 +42,7 @@ function uploadImage($file, $subfolder = '') {
     if (!in_array($mimeType, ALLOWED_IMAGE_TYPES)) {
         return [
             'success' => false,
-            'message' => 'Tipe file tidak diizinkan. Hanya JPG, PNG, GIF, dan WEBP.'
+            'message' => 'File type not allowed. Only JPG, PNG, GIF, and WEBP.'
         ];
     }
     
@@ -62,14 +62,14 @@ function uploadImage($file, $subfolder = '') {
         $relativePath = UPLOAD_URL . $subfolder . $filename;
         return [
             'success' => true,
-            'message' => 'File berhasil diupload.',
+            'message' => 'File uploaded successfully.',
             'path' => $relativePath,
             'filename' => $filename
         ];
     } else {
         return [
             'success' => false,
-            'message' => 'Gagal memindahkan file ke folder uploads.'
+            'message' => 'Failed to move file to uploads folder.'
         ];
     }
 }

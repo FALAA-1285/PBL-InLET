@@ -1,46 +1,49 @@
-<footer class="footer bg-dark text-white py-5 mt-5"
-    style="width: 100%; display: block; position: relative; z-index: 1;">
+<?php
+$is_service_page = str_contains($_SERVER['PHP_SELF'], '/service/');
+$root_base = $is_service_page ? '../' : '';
+?>
+<footer class="footer bg-dark text-white py-5 mt-5">
     <div class="container-fluid px-5">
-        <div class="row align-items-center gy-3">
+        <div class="row align-items-center gy-4">
 
-            <!-- Logo dan Deskripsi -->
             <div class="col-lg-4 col-md-6 text-center text-md-start">
-                <a href="#" class="d-inline-flex align-items-center mb-2">
-                    <img src="assets/logoPutih.png" alt="Logo" width="120" class="me-1">
+                <a href="#" class="d-inline-flex align-items-center mb-3">
+                    <img src="<?= $root_base ?>assets/logoPutih.png" alt="InLET Logo" width="130" class="me-2">
                 </a>
-                <p class="text-secondary small mb-0">Information and Learning Engineering Technology</p>
+                <p class="text-light-soft mb-0">Information and Learning Engineering Technology</p>
+                <p class="text-light-soft mb-0">State Polytechnic of Malang</p>
             </div>
 
-            <!-- Quick Links -->
             <div class="col-lg-4 col-md-6 text-center">
-                <ul class="list-inline mb-2 footer-links">
-                    <li class="list-inline-item mx-2"><a href="index.php">Home</a></li>
-                    <li class="list-inline-item mx-2"><a href="research.php">Research</a></li>
-                    <li class="list-inline-item mx-2"><a href="member.php">Member</a></li>
-                    <li class="list-inline-item mx-2"><a href="news.php">News</a></li>
-                </ul>
+                <div class="footer-menu-section">
+                    <ul class="list-inline mb-3 footer-links">
+                        <li class="list-inline-item mx-3"><a href="<?= $root_base ?>index.php">Home</a></li>
+                        <li class="list-inline-item mx-3"><a href="<?= $root_base ?>research.php">Research</a></li>
+                        <li class="list-inline-item mx-3"><a href="<?= $root_base ?>member.php">Members</a></li>
+                        <li class="list-inline-item mx-3"><a href="<?= $root_base ?>news.php">News</a></li>
+                    </ul>
+                    <ul class="list-inline mb-0 footer-links">
+                        <li class="list-inline-item mx-3"><a href="<?= $root_base ?>service/peminjaman.php">Tool Loan</a></li>
+                        <li class="list-inline-item mx-3"><a href="<?= $root_base ?>service/absen.php">Attendance</a></li>
+                        <li class="list-inline-item mx-3"><a href="<?= $root_base ?>service/buku_tamu.php">Guestbook</a></li>
+                    </ul>
+                </div>
             </div>
 
-            <!-- Kontak -->
-            <div class="col-lg-4 col-md-12 text-center text-md-end small text-secondary">
-                <p class="mb-1"><i class="bi bi-envelope-fill me-2"></i>info@inlet.edu</p>
-                <p class="mb-1"><i class="bi bi-phone-fill me-2"></i>(+62) 823 328 645</p>
-                <p class="mb-0"><i class="bi bi-geo-alt-fill me-2"></i>Malang, East Java</p>
+            <div class="col-lg-4 col-md-12 text-center text-md-end">
+                <p class="mb-2 contact-info"><i class="bi bi-envelope-fill me-2"></i>info@inlet.edu</p>
+                <p class="mb-2 contact-info"><i class="bi bi-phone-fill me-2"></i>+62 823 328 645</p>
+                <p class="mb-0 contact-info"><i class="bi bi-geo-alt-fill me-2"></i>Malang, East Java</p>
             </div>
         </div>
 
-        <hr class="border-secondary my-3">
+        <hr class="border-light-soft my-4">
 
-        <!-- Copyright -->
-        <div class="text-center small text-secondary">
-            &copy; 2025 InLET - Information and Learning Engineering Technology
+        <div class="text-center">
+            <p class="text-light-soft mb-0">&copy; 2025 InLET - Information and Learning Engineering Technology</p>
         </div>
     </div>
     <style>
-        html {
-            height: 100%;
-        }
-
         body {
             min-height: 100vh;
             display: flex;
@@ -50,79 +53,156 @@
         }
 
         main {
-            flex: 1 0 auto;
-            min-height: 0;
+            flex: 1;
         }
 
-        footer {
-            flex-shrink: 0;
+        .footer {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
             margin-top: auto;
             width: 100%;
+        }
+
+        .text-light-soft {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        .footer-links {
+            margin-bottom: 0;
+        }
+
+        .footer-links .list-inline-item a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
             position: relative;
         }
 
-        .min-vh-100 {
-            min-height: 100vh !important;
-        }
-
-        .flex-grow-1 {
-            flex-grow: 1 !important;
-        }
-
-        .d-flex {
-            display: flex !important;
-        }
-
-        .flex-column {
-            flex-direction: column !important;
-        }
-
-        .site-footer {
-            background: #0d1720;
-            color: #cfd8e3;
-        }
-
-        .site-footer a {
-            color: #cbd5e1;
-            text-decoration: none;
-            transition: color 160ms ease-in-out, opacity 160ms ease-in-out;
-        }
-
-        .site-footer a:hover {
+        .footer-links .list-inline-item a:hover {
             color: #ffffff;
-            text-decoration: none;
+            background-color: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
         }
 
-        .site-footer .footer-tagline {
-            color: #9aa4b2;
+        .footer-links .list-inline-item a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
         }
 
-        .site-footer .footer-links a {
-            color: #aeb8c3;
-            font-weight: 600;
-            padding: 4px 6px;
+        .footer-links .list-inline-item a:hover::after {
+            width: 80%;
         }
 
-        .site-footer .footer-links .list-inline-item {
-            display: inline-block;
+        .contact-info {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.5rem;
         }
 
-        .site-footer .socials a {
-            font-size: 1.05rem;
-            opacity: 0.92;
+        .contact-info i {
+            color: #3b82f6;
+            font-size: 1rem;
         }
 
-        .site-footer hr {
-            border-color: rgba(255, 255, 255, 0.06);
+        .border-light-soft {
+            border-color: rgba(148, 163, 184, 0.15) !important;
+        }
+
+        @media (max-width: 992px) {
+            .container-fluid {
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
+            
+            .footer-links .list-inline-item {
+                margin: 0.3rem 0.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .footer {
+                padding: 3rem 0;
+            }
+            
+            .container-fluid {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+            
+            .footer-links .list-inline-item {
+                margin: 0.2rem 0.4rem;
+                display: inline-block;
+            }
+            
+            .footer-links .list-inline-item a {
+                padding: 0.3rem 0.5rem;
+                font-size: 0.9rem;
+            }
+            
+            .text-center.text-md-start,
+            .text-center.text-md-end {
+                text-align: center !important;
+            }
+            
+            .contact-info {
+                justify-content: center;
+            }
+            
+            .row.align-items-center {
+                text-align: center;
+            }
+            
+            .col-lg-4 {
+                margin-bottom: 1.5rem;
+            }
+            
+            .col-lg-4:last-child {
+                margin-bottom: 0;
+            }
         }
 
         @media (max-width: 576px) {
-            .site-footer .footer-links {
-                margin-top: 8px;
+            .container-fluid {
+                padding-left: 1rem;
+                padding-right: 1rem;
             }
-
-            .site-footer .d-flex {
-                gap: 8px;
+            
+            .footer {
+                padding: 2.5rem 0;
+            }
+            
+            .footer-links .list-inline-item {
+                display: block;
+                margin: 0.4rem 0;
+            }
+            
+            .footer-links .list-inline-item a {
+                display: inline-block;
+                padding: 0.4rem 0.8rem;
+            }
+            
+            .contact-info {
+                font-size: 0.9rem;
+            }
+            
+            .text-light-soft {
+                font-size: 0.9rem;
             }
         }
     </style>
+</footer>

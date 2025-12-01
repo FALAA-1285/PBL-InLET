@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $conn->prepare("UPDATE buku_tamu SET is_read = true WHERE id_buku_tamu = :id");
             $stmt->execute(['id' => $id]);
-            $message = 'Pesan ditandai sebagai sudah dibaca!';
+            $message = 'Message marked as read successfully!';
             $message_type = 'success';
             $ajax_response = ['success' => true, 'status' => 'read'];
         } catch(PDOException $e) {
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $conn->prepare("UPDATE buku_tamu SET is_read = false WHERE id_buku_tamu = :id");
             $stmt->execute(['id' => $id]);
-            $message = 'Pesan ditandai sebagai belum dibaca!';
+            $message = 'Message marked as unread successfully!';
             $message_type = 'success';
             $ajax_response = ['success' => true, 'status' => 'unread'];
         } catch(PDOException $e) {
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $conn->prepare("DELETE FROM buku_tamu WHERE id_buku_tamu = :id");
             $stmt->execute(['id' => $id]);
-            $message = 'Pesan berhasil dihapus!';
+            $message = 'Message successfully deleted!';
             $message_type = 'success';
             $ajax_response = ['success' => true, 'status' => 'deleted'];
         } catch(PDOException $e) {
@@ -61,46 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Create table if not exists and update structure
-try {
-    // Try to alter table if exists to make pesan nullable
-    try {
-        $conn->exec("ALTER TABLE buku_tamu ALTER COLUMN pesan DROP NOT NULL");
-    } catch (PDOException $e) {
-        // Column might already be nullable or table doesn't exist yet
-    }
-    
-    // Try to alter institusi and no_hp to NOT NULL if table exists
-    try {
-        $conn->exec("ALTER TABLE buku_tamu ALTER COLUMN institusi SET NOT NULL");
-    } catch (PDOException $e) {
-        // Column might already be NOT NULL or table doesn't exist yet
-    }
-    
-    try {
-        $conn->exec("ALTER TABLE buku_tamu ALTER COLUMN no_hp SET NOT NULL");
-    } catch (PDOException $e) {
-        // Column might already be NOT NULL or table doesn't exist yet
-    }
-    
-    $conn->exec("CREATE TABLE IF NOT EXISTS buku_tamu (
-        id_buku_tamu SERIAL PRIMARY KEY,
-        nama VARCHAR(150) NOT NULL,
-        email VARCHAR(150) NOT NULL,
-        institusi VARCHAR(200) NOT NULL,
-        no_hp VARCHAR(50) NOT NULL,
-        pesan VARCHAR(2000),
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-        is_read BOOLEAN DEFAULT false,
-        admin_response VARCHAR(2000)
-    )");
-    
-    $conn->exec("CREATE INDEX IF NOT EXISTS idx_buku_tamu_created_at ON buku_tamu(created_at DESC)");
-    $conn->exec("CREATE INDEX IF NOT EXISTS idx_buku_tamu_is_read ON buku_tamu(is_read)");
-    $conn->exec("CREATE INDEX IF NOT EXISTS idx_buku_tamu_email ON buku_tamu(email)");
-} catch (PDOException $e) {
-    // Table might already exist
-}
+// Buku tamu table creation moved to inlet_pbl_clean.sql
 
 // Pagination setup
 $items_per_page = 10;
@@ -145,7 +106,7 @@ $unread_count = $stmt->fetchColumn();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buku Tamu - CMS InLET</title>
+    <title>Manage Guestbook - CMS InLET</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="admin.css">
@@ -396,19 +357,19 @@ $unread_count = $stmt->fetchColumn();
     <main class="content">
         <div class="content-inner">
             <div class="content-header">
-                <h1><i class="ri-book-open-line"></i> Buku Tamu</h1>
+                <h1><i class="ri-book-open-line"></i> Guestbook</h1>
                 <div class="filter-tabs">
                     <a href="?filter=all" class="filter-tab <?= $filter === 'all' ? 'active' : ''; ?>">
-                        Semua
+                        All
                     </a>
                     <a href="?filter=unread" class="filter-tab <?= $filter === 'unread' ? 'active' : ''; ?>">
-                        Belum Dibaca
+                        Unread
                         <?php if ($unread_count > 0): ?>
                             <span class="badge-unread" id="unread-counter"><?= $unread_count; ?></span>
                         <?php endif; ?>
                     </a>
                     <a href="?filter=read" class="filter-tab <?= $filter === 'read' ? 'active' : ''; ?>">
-                        Sudah Dibaca
+                        Read
                     </a>
                 </div>
             </div>
@@ -422,8 +383,8 @@ $unread_count = $stmt->fetchColumn();
             <?php if (empty($messages)): ?>
                 <div class="empty-state">
                     <i class="ri-inbox-line"></i>
-                    <h3>Tidak ada pesan</h3>
-                    <p>Belum ada pesan dari pengunjung.</p>
+                    <h3>No messages</h3>
+                    <p>No messages from visitors yet.</p>
                 </div>
             <?php else: ?>
                 <div class="table-wrapper">
@@ -431,10 +392,10 @@ $unread_count = $stmt->fetchColumn();
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Data Pengunjung</th>
-                                <th>Pesan</th>
-                                <th>Status & Waktu</th>
-                                <th>Aksi</th>
+                                <th>Visitor Information</th>
+                                <th>Message</th>
+                                <th>Status & Time</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -445,7 +406,7 @@ $unread_count = $stmt->fetchColumn();
                                         <div class="guest-info">
                                             <?= htmlspecialchars($msg['nama']); ?>
                                             <?php if (!$msg['is_read']): ?>
-                                                <span class="badge-unread" id="badge-new-<?= $msg['id_buku_tamu']; ?>">Baru</span>
+                                                <span class="badge-unread" id="badge-new-<?= $msg['id_buku_tamu']; ?>">New</span>
                                             <?php endif; ?>
                                         </div>
                                         <div class="guest-meta">
@@ -459,7 +420,7 @@ $unread_count = $stmt->fetchColumn();
                                             <button type="button"
                                                     class="btn-action btn-view"
                                                     onclick="toggleMessage(<?= $msg['id_buku_tamu']; ?>)">
-                                                <i class="ri-eye-line"></i> Baca Pesan
+                                                <i class="ri-eye-line"></i> View Message
                                             </button>
                                             <div id="message-<?= $msg['id_buku_tamu']; ?>" class="message-panel">
                                                 <div class="message-text">
@@ -468,25 +429,25 @@ $unread_count = $stmt->fetchColumn();
                                             </div>
                                         <?php else: ?>
                                             <div class="message-text empty">
-                                                <i class="ri-user-line"></i> Daftar hadir - Tidak ada pesan
+                                                <i class="ri-user-line"></i> Attendance only - No message
                                             </div>
                                         <?php endif; ?>
                                     </td>
                                     <td class="status-cell">
-                                        <span class="status-badge <?= $msg['is_read'] ? 'read' : 'unread'; ?>" id="status-badge-<?= $msg['id_buku_tamu']; ?>">
+                                            <span class="status-badge <?= $msg['is_read'] ? 'read' : 'unread'; ?>" id="status-badge-<?= $msg['id_buku_tamu']; ?>">
                                             <i class="<?= $msg['is_read'] ? 'ri-check-line' : 'ri-time-line'; ?>"></i>
-                                            <span><?= $msg['is_read'] ? 'Sudah dibaca' : 'Belum dibaca'; ?></span>
+                                            <span><?= $msg['is_read'] ? 'Read' : 'Unread'; ?></span>
                                         </span>
                                         <div class="status-time" id="status-time-<?= $msg['id_buku_tamu']; ?>">
                                             <?= date('d M Y, H:i', strtotime($msg['created_at'])); ?>
                                         </div>
                                     </td>
                                     <td class="actions-cell">
-                                        <form method="POST" onsubmit="return confirm('Yakin hapus pesan ini?');">
+                                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete this message?');">
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="id" value="<?= $msg['id_buku_tamu']; ?>">
                                             <button type="submit" class="btn-action btn-delete">
-                                                <i class="ri-delete-bin-line"></i> Hapus
+                                                <i class="ri-delete-bin-line"></i> Delete
                                             </button>
                                         </form>
                                     </td>
@@ -498,11 +459,11 @@ $unread_count = $stmt->fetchColumn();
 
                 <!-- Pagination -->
                 <?php if ($total_pages > 1): ?>
-                    <div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 2rem; padding: 1rem;">
+                    <div class="pagination d-flex justify-content-center align-items-center gap-2 mt-4 p-3">
                         <?php if ($current_page > 1): ?>
-                            <a href="?page=<?= $current_page - 1; ?>&filter=<?= $filter; ?>" style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; text-decoration: none; color: var(--dark); transition: all 0.3s;">&laquo; Previous</a>
+                            <a href="?page=<?= $current_page - 1; ?>&filter=<?= $filter; ?>" class="page-pill">&laquo; Previous</a>
                         <?php else: ?>
-                            <span style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; opacity: 0.5; cursor: not-allowed;">&laquo; Previous</span>
+                            <span class="page-pill disabled">&laquo; Previous</span>
                         <?php endif; ?>
                         
                         <?php
@@ -510,7 +471,7 @@ $unread_count = $stmt->fetchColumn();
                         $end_page = min($total_pages, $current_page + 2);
                         
                         if ($start_page > 1): ?>
-                            <a href="?page=1&filter=<?= $filter; ?>" style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; text-decoration: none; color: var(--dark);">1</a>
+                            <a href="?page=1&filter=<?= $filter; ?>" class="page-pill">1</a>
                             <?php if ($start_page > 2): ?>
                                 <span>...</span>
                             <?php endif; ?>
@@ -518,9 +479,9 @@ $unread_count = $stmt->fetchColumn();
                         
                         <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
                             <?php if ($i == $current_page): ?>
-                                <span style="padding: 0.5rem 1rem; background: var(--primary); color: white; border-radius: 8px;"><?= $i; ?></span>
+                                <span class="page-pill active"><?= $i; ?></span>
                             <?php else: ?>
-                                <a href="?page=<?= $i; ?>&filter=<?= $filter; ?>" style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; text-decoration: none; color: var(--dark); transition: all 0.3s;"><?= $i; ?></a>
+                                <a href="?page=<?= $i; ?>&filter=<?= $filter; ?>" class="page-pill"><?= $i; ?></a>
                             <?php endif; ?>
                         <?php endfor; ?>
                         
@@ -528,17 +489,17 @@ $unread_count = $stmt->fetchColumn();
                             <?php if ($end_page < $total_pages - 1): ?>
                                 <span>...</span>
                             <?php endif; ?>
-                            <a href="?page=<?= $total_pages; ?>&filter=<?= $filter; ?>" style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; text-decoration: none; color: var(--dark);"><?= $total_pages; ?></a>
+                            <a href="?page=<?= $total_pages; ?>&filter=<?= $filter; ?>" class="page-pill"><?= $total_pages; ?></a>
                         <?php endif; ?>
                         
                         <?php if ($current_page < $total_pages): ?>
-                            <a href="?page=<?= $current_page + 1; ?>&filter=<?= $filter; ?>" style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; text-decoration: none; color: var(--dark); transition: all 0.3s;">Next &raquo;</a>
+                            <a href="?page=<?= $current_page + 1; ?>&filter=<?= $filter; ?>" class="page-pill">Next &raquo;</a>
                         <?php else: ?>
-                            <span style="padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 8px; opacity: 0.5; cursor: not-allowed;">Next &raquo;</span>
+                            <span class="page-pill disabled">Next &raquo;</span>
                         <?php endif; ?>
                     </div>
-                    <div style="text-align: center; color: var(--gray); margin-top: 1rem;">
-                        Menampilkan <?= ($offset + 1); ?> - <?= min($offset + $items_per_page, $total_items); ?> dari <?= $total_items; ?> pesan
+                    <div class="text-center muted-gray mt-3">
+                        Showing <?= ($offset + 1); ?> - <?= min($offset + $items_per_page, $total_items); ?> of <?= $total_items; ?> messages
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
@@ -591,7 +552,7 @@ $unread_count = $stmt->fetchColumn();
                 }
                 const text = badge.querySelector('span');
                 if (text) {
-                    text.textContent = 'Sudah dibaca';
+                    text.textContent = 'Read';
                 }
             }
         }

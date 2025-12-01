@@ -16,15 +16,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $konten = $_POST['konten'] ?? '';
         
         try {
-            // Menggunakan stored procedure tambah_artikel
-            $stmt = $conn->prepare("SELECT tambah_artikel(:judul, :tahun, :konten)");
+            $stmt = $conn->prepare("INSERT INTO artikel (judul, tahun, konten) VALUES (:judul, :tahun, :konten)");
             $stmt->execute([
-                'judul' => $judul, 
-                'tahun' => $tahun ?: null, 
+                'judul' => $judul,
+                'tahun' => $tahun ?: null,
                 'konten' => $konten
             ]);
-            $stmt->fetch(); // Execute function yang returns VOID
-            $message = 'Artikel berhasil ditambahkan!';
+            $message = 'Article successfully added!';
             $message_type = 'success';
         } catch(PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
@@ -43,20 +41,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tgl_selesai = $_POST['tgl_selesai'] ?? null;
         
         try {
-            $stmt = $conn->prepare("INSERT INTO penelitian (judul, tahun, deskripsi, id_artikel, id_mahasiswa, id_member, id_produk, id_mitra, tgl_mulai, tgl_selesai) VALUES (:judul, :tahun, :deskripsi, :id_artikel, :id_mahasiswa, :id_member, :id_produk, :id_mitra, :tgl_mulai, :tgl_selesai)");
+            $stmt = $conn->prepare("INSERT INTO penelitian (judul, tahun, deskripsi, id_artikel, id_mhs, id_member, id_produk, id_mitra, tgl_mulai, tgl_selesai) VALUES (:judul, :tahun, :deskripsi, :id_artikel, :id_mhs, :id_member, :id_produk, :id_mitra, :tgl_mulai, :tgl_selesai)");
             $stmt->execute([
                 'judul' => $judul,
                 'tahun' => $tahun ?: null,
                 'deskripsi' => $deskripsi ?: null,
                 'id_artikel' => $id_artikel ?: null,
-                'id_mahasiswa' => $id_mahasiswa ?: null,
+                'id_mhs' => $id_mahasiswa ?: null,
                 'id_member' => $id_member ?: null,
                 'id_produk' => $id_produk ?: null,
                 'id_mitra' => $id_mitra ?: null,
                 'tgl_mulai' => $tgl_mulai ?: null,
                 'tgl_selesai' => $tgl_selesai ?: null
             ]);
-            $message = 'Penelitian berhasil ditambahkan!';
+            $message = 'Research successfully added!';
             $message_type = 'success';
         } catch(PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
@@ -76,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'tahun' => $tahun ?: null,
                 'konten' => $konten
             ]);
-            $message = 'Artikel berhasil diupdate!';
+            $message = 'Article successfully updated!';
             $message_type = 'success';
         } catch(PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
@@ -96,21 +94,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tgl_selesai = $_POST['tgl_selesai'] ?? null;
         
         try {
-            $stmt = $conn->prepare("UPDATE penelitian SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, id_artikel = :id_artikel, id_mahasiswa = :id_mahasiswa, id_member = :id_member, id_produk = :id_produk, id_mitra = :id_mitra, tgl_mulai = :tgl_mulai, tgl_selesai = :tgl_selesai WHERE id_penelitian = :id");
+            $stmt = $conn->prepare("UPDATE penelitian SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, id_artikel = :id_artikel, id_mhs = :id_mhs, id_member = :id_member, id_produk = :id_produk, id_mitra = :id_mitra, tgl_mulai = :tgl_mulai, tgl_selesai = :tgl_selesai WHERE id_penelitian = :id");
             $stmt->execute([
                 'id' => $id,
                 'judul' => $judul,
                 'tahun' => $tahun ?: null,
                 'deskripsi' => $deskripsi ?: null,
                 'id_artikel' => $id_artikel ?: null,
-                'id_mahasiswwa' => $id_mahasiswa ?: null,
+                'id_mhs' => $id_mahasiswa ?: null,
                 'id_member' => $id_member ?: null,
                 'id_produk' => $id_produk ?: null,
                 'id_mitra' => $id_mitra ?: null,
                 'tgl_mulai' => $tgl_mulai ?: null,
                 'tgl_selesai' => $tgl_selesai ?: null
             ]);
-            $message = 'Penelitian berhasil diupdate!';
+            $message = 'Research successfully updated!';
             $message_type = 'success';
         } catch(PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
@@ -186,10 +184,10 @@ $offset_progress = ($current_page_progress - 1) * $items_per_page;
 
 // Get penelitian with pagination
 $stmt = $conn->prepare("SELECT p.*, a.judul as artikel_judul, m.nama as mahasiswa_nama, mem.nama as member_nama, pr.nama_produk, mt.nama_institusi as mitra_nama
-                      FROM penelitian p 
-                      LEFT JOIN artikel a ON p.id_artikel = a.id_artikel 
-                      LEFT JOIN mahasiswa m ON p.id_mahasiswa = m.id_mahasiswa 
-                      LEFT JOIN member mem ON p.id_member = mem.id_member 
+                      FROM penelitian p
+                      LEFT JOIN artikel a ON p.id_artikel = a.id_artikel
+                      LEFT JOIN mahasiswa m ON p.id_mhs = m.id_mahasiswa
+                      LEFT JOIN member mem ON p.id_member = mem.id_member
                       LEFT JOIN produk pr ON p.id_produk = pr.id_produk
                       LEFT JOIN mitra mt ON p.id_mitra = mt.id_mitra
                       ORDER BY p.created_at DESC
@@ -211,7 +209,7 @@ $member_list = $stmt->fetchAll();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Research - CMS InLET</title>
+    <title>Manage Research - CMS InLET</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="admin.css">
@@ -465,7 +463,7 @@ $member_list = $stmt->fetchAll();
     <?php $active_page = 'research'; include __DIR__ . '/partials/sidebar.php'; ?>
     <main class="content">
         <div class="content-inner">
-            <h1 style="color: var(--primary); margin-bottom: 2rem;"><i class="ri-flask-line"></i> Kelola Data Member</h1>
+            <h1 class="text-primary mb-4"><i class="ri-flask-line"></i> Kelola Data Member</h1>
 
             <div class="cms-content">
         <?php if ($message): ?>
@@ -539,7 +537,7 @@ $member_list = $stmt->fetchAll();
                     <tbody>
                         <?php if (empty($artikels)): ?>
                             <tr>
-                                <td colspan="5" style="text-align: center; color: var(--gray);">Belum ada artikel</td>
+                                <td colspan="5" class="text-center muted-gray">Belum ada artikel</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($artikels as $artikel): ?>
@@ -552,7 +550,7 @@ $member_list = $stmt->fetchAll();
                                         <button type="button" class="btn-edit" onclick="editArtikel(<?php echo htmlspecialchars(json_encode($artikel)); ?>)">
                                             <i class="ri-edit-line"></i> Edit
                                         </button>
-                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus artikel ini?');">
+                                        <form method="POST" class="d-inline" onsubmit="return confirm('Yakin hapus artikel ini?');">
                                             <input type="hidden" name="action" value="delete_artikel">
                                             <input type="hidden" name="id" value="<?php echo $artikel['id_artikel']; ?>">
                                             <button type="submit" class="btn-delete">
@@ -821,7 +819,7 @@ $member_list = $stmt->fetchAll();
                     <tbody>
                         <?php if (empty($progress_list)): ?>
                             <tr>
-                                <td colspan="10" style="text-align: center; color: var(--gray);">Belum ada penelitian</td>
+                                <td colspan="10" class="text-center muted-gray">Belum ada penelitian</td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($progress_list as $penelitian): ?>
@@ -839,7 +837,7 @@ $member_list = $stmt->fetchAll();
                                         <button type="button" class="btn-edit" onclick="editPenelitian(<?php echo htmlspecialchars(json_encode($penelitian)); ?>)">
                                             <i class="ri-edit-line"></i> Edit
                                         </button>
-                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus penelitian ini?');">
+                                        <form method="POST" class="d-inline" onsubmit="return confirm('Yakin hapus penelitian ini?');">
                                             <input type="hidden" name="action" value="delete_penelitian">
                                             <input type="hidden" name="id" value="<?php echo $penelitian['id_penelitian']; ?>">
                                             <button type="submit" class="btn-delete">

@@ -115,7 +115,7 @@ $total_pages_progress = ceil($total_items_progress / $items_per_page);
 $stmt = $conn->prepare("SELECT p.*, a.judul as artikel_judul, m.nama as mahasiswa_nama, mem.nama as member_nama 
                       FROM penelitian p 
                       LEFT JOIN artikel a ON p.id_artikel = a.id_artikel 
-                      LEFT JOIN mahasiswa m ON p.id_mhs = m.id_mhs
+                      LEFT JOIN mahasiswa m ON p.id_mhs = m.id_mahasiswa
                       LEFT JOIN member mem ON p.id_member = mem.id_member 
                       ORDER BY p.created_at DESC
                       LIMIT :limit OFFSET :offset");
@@ -139,7 +139,7 @@ $progress_list = $stmt->fetchAll();
 <body>
     <?php include 'includes/header.php'; ?>
 
-    <main class="flex-grow-1" style="flex: 1 0 auto; min-height: 0;">
+    <main class="page-main">
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
                 <h1 class="display-4 fw-bold">Research - Information And Learning Engineering Technology</h1>
@@ -147,11 +147,11 @@ $progress_list = $stmt->fetchAll();
             </div>
         </section>
 
-        <section class="research" id="focus-areas" style="padding: 6rem 0;">
+        <section class="research" id="focus-areas">
         <div class="research-container">
             <div class="section-title">
-                <h2 style="font-size: 2.5rem;">Core Research Focus Areas</h2>
-                <p style="font-size: 1.1rem;">A deep dive into the six pillars of our innovation.</p>
+                <h2>Core Research Focus Areas</h2>
+                <p>A deep dive into the six pillars of our innovation.</p>
             </div>
             
             <!-- Search Box by Year -->
@@ -159,30 +159,31 @@ $progress_list = $stmt->fetchAll();
                 <div class="col-md-6">
                     <form method="GET" action="" class="d-flex gap-2">
                         <select name="year" class="form-select">
-                            <option value="">Cari berdasarkan tahun...</option>
+                            <option value="">Search by year...</option>
                             <?php foreach ($years_list as $year): ?>
                                 <option value="<?= $year ?>" <?= $search_year == $year ? 'selected' : '' ?>>
                                     <?= $year ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <button type="submit" class="btn btn-primary">Cari</button>
+                        <button type="submit" class="btn btn-primary">Search</button>
                         <?php if (!empty($search_year)): ?>
                             <a href="research.php" class="btn btn-secondary">Reset</a>
                         <?php endif; ?>
                     </form>
                     <?php if (!empty($search_year)): ?>
                         <p class="mt-2 text-muted">
-                            Menampilkan <?php echo $total_items_artikel; ?> artikel untuk tahun <?php echo htmlspecialchars($search_year); ?>
+                            Showing <?php echo $total_items_artikel; ?> articles for year <?php echo htmlspecialchars($search_year); ?>
                         </p>
                     <?php endif; ?>
                 </div>
             </div>
             
             <?php if (empty($artikels)): ?>
-                <div class="research-empty text-center">
-                    <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">Belum ada artikel penelitian yang dipublikasikan.</p>
-                    <p style="font-size: 0.95rem;">Silakan login sebagai admin untuk menambahkan artikel melalui CMS.</p>
+                <div class="empty-data-alert" role="alert">
+                    <i class="fas fa-book fa-3x mb-3 text-muted"></i>
+                    <p class="mb-1">No research articles published yet.</p>
+                    <p class="small text-muted">Please log in as an admin to add articles via the CMS.</p>
                 </div>
             <?php else: ?>
                 <div class="row g-4 justify-content-center">
@@ -192,7 +193,7 @@ $progress_list = $stmt->fetchAll();
                                 <div>
                                     <h4><?php echo htmlspecialchars($artikel['judul']); ?></h4>
                                     <?php if ($artikel['tahun']): ?>
-                                        <div class="research-meta">Tahun: <?php echo $artikel['tahun']; ?></div>
+                                        <div class="research-meta">Year: <?php echo $artikel['tahun']; ?></div>
                                     <?php endif; ?>
                                 </div>
                                 <p><?php echo htmlspecialchars($artikel['konten']); ?></p>
@@ -204,8 +205,8 @@ $progress_list = $stmt->fetchAll();
             
             <!-- Pagination for Articles -->
             <?php if ($total_pages_artikel > 1): ?>
-                <nav aria-label="Articles pagination" style="margin-top: 3rem;">
-                    <ul class="pagination justify-content-center" style="gap: 0.5rem;">
+                <nav aria-label="Articles pagination" class="mt-5">
+                    <ul class="pagination justify-content-center pagination-gap">
                         <?php 
                         $page_url = "?";
                         if (!empty($search_year)) {
@@ -276,7 +277,7 @@ $progress_list = $stmt->fetchAll();
     </section>
 
     <?php if (!empty($progress_list)): ?>
-    <section id="progress" class="research" style="background: white; padding: 6rem 2rem;">
+    <section id="progress" class="research progress-white">
         <div class="research-container">
             <div class="section-title">
                 <h2>Research Progress</h2>
@@ -289,7 +290,7 @@ $progress_list = $stmt->fetchAll();
                             <div>
                                 <h4><?php echo htmlspecialchars($progress['judul']); ?></h4>
                                 <?php if ($progress['tahun']): ?>
-                                    <div class="research-meta">Tahun: <?php echo $progress['tahun']; ?></div>
+                                    <div class="research-meta">Year: <?php echo $progress['tahun']; ?></div>
                                 <?php endif; ?>
                             </div>
                             <?php if ($progress['deskripsi']): ?>
@@ -304,16 +305,16 @@ $progress_list = $stmt->fetchAll();
                                 </div>
                             <?php endif; ?>
                             <?php if ($progress['artikel_judul'] || $progress['mahasiswa_nama'] || $progress['member_nama']): ?>
-                                <div style="margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.9rem; color: var(--gray);">
-                                    <?php if ($progress['artikel_judul']): ?>
-                                        <p><strong>Artikel:</strong> <?php echo htmlspecialchars($progress['artikel_judul']); ?></p>
-                                    <?php endif; ?>
-                                    <?php if ($progress['mahasiswa_nama']): ?>
-                                        <p><strong>Mahasiswa:</strong> <?php echo htmlspecialchars($progress['mahasiswa_nama']); ?></p>
-                                    <?php endif; ?>
-                                    <?php if ($progress['member_nama']): ?>
-                                        <p><strong>Member:</strong> <?php echo htmlspecialchars($progress['member_nama']); ?></p>
-                                    <?php endif; ?>
+                                <div class="mt-2 pt-3 border-top small text-muted">
+                                            <?php if ($progress['artikel_judul']): ?>
+                                                <p><strong>Article:</strong> <?php echo htmlspecialchars($progress['artikel_judul']); ?></p>
+                                            <?php endif; ?>
+                                            <?php if ($progress['mahasiswa_nama']): ?>
+                                                <p><strong>Student:</strong> <?php echo htmlspecialchars($progress['mahasiswa_nama']); ?></p>
+                                            <?php endif; ?>
+                                            <?php if ($progress['member_nama']): ?>
+                                                <p><strong>Member:</strong> <?php echo htmlspecialchars($progress['member_nama']); ?></p>
+                                            <?php endif; ?>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -323,8 +324,8 @@ $progress_list = $stmt->fetchAll();
             
             <!-- Pagination for Progress -->
             <?php if ($total_pages_progress > 1): ?>
-                <nav aria-label="Progress pagination" style="margin-top: 3rem;">
-                    <ul class="pagination justify-content-center" style="gap: 0.5rem;">
+                <nav aria-label="Progress pagination" class="mt-5">
+                    <ul class="pagination justify-content-center pagination-gap">
                         <?php if ($current_page_progress > 1): ?>
                             <li class="page-item">
                                 <a class="page-link" href="?page_progress=<?php echo $current_page_progress - 1; ?>#progress" aria-label="Previous">
@@ -381,8 +382,8 @@ $progress_list = $stmt->fetchAll();
                             </li>
                         <?php endif; ?>
                     </ul>
-                    <div class="text-center mt-3" style="color: var(--gray);">
-                        Menampilkan <?php echo ($offset_progress + 1); ?> - <?php echo min($offset_progress + $items_per_page, $total_items_progress); ?> dari <?php echo $total_items_progress; ?> progress
+                    <div class="text-center mt-3 text-muted">
+                        Showing <?php echo ($offset_progress + 1); ?> - <?php echo min($offset_progress + $items_per_page, $total_items_progress); ?> of <?php echo $total_items_progress; ?> progress updates
                     </div>
                 </nav>
             <?php endif; ?>
@@ -390,13 +391,13 @@ $progress_list = $stmt->fetchAll();
     </section>
     <?php endif; ?>
 
-    <section class="research-cta" style="padding: 4rem 2rem; text-align: center; background: var(--light);">
-        <div class="research-container">
-            <div class="section-title" style="margin-bottom: 2rem;">
-                <h2 style="color: var(--primary-dark);">Join Our Mission in Innovation</h2>
+    <section class="research-cta">
+        <div class="research-container text-center">
+            <div class="section-title mb-3">
+                <h2>Join Our Mission in Innovation</h2>
                 <p>Interested in collaborating, becoming a research student, or getting more information?</p>
             </div>
-            <a href="index.php#contact" class="btn btn-secondary" style="background: var(--primary); border: 2px solid var(--primary); color: white;">Contact Our Team</a>
+            <a href="member.php" class="btn btn-primary">Contact Our Team</a>
         </div>
     </section>
 

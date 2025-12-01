@@ -4,26 +4,26 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 require_once __DIR__ . '/database.php';
 
-// Fungsi untuk login admin (langsung dari tabel admin)
+// Login admin
 function loginAdmin($username, $password) {
     $conn = getDBConnection();
-    
+
     try {
-        // Cari admin berdasarkan username
+        // Find admin by username
         $stmt = $conn->prepare("SELECT id_admin, username, password_hash, role FROM admin WHERE username = :username");
         $stmt->execute(['username' => $username]);
         $admin = $stmt->fetch();
-        
+
         if ($admin && password_verify($password, $admin['password_hash'])) {
             // Set session
             $_SESSION['id_admin'] = $admin['id_admin'];
             $_SESSION['username'] = $admin['username'];
             $_SESSION['role'] = $admin['role'];
             $_SESSION['is_admin'] = true;
-            
+
             return true;
         }
-        
+
         return false;
     } catch(PDOException $e) {
         error_log("Login error: " . $e->getMessage());
@@ -31,17 +31,17 @@ function loginAdmin($username, $password) {
     }
 }
 
-// Fungsi untuk cek apakah user sudah login
+// Check if logged in
 function isLoggedIn() {
     return isset($_SESSION['id_admin']) && isset($_SESSION['is_admin']);
 }
 
-// Fungsi untuk cek apakah user adalah admin
+// Check if admin
 function isAdmin() {
     return isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === true;
 }
 
-// Fungsi untuk require login
+// Require login
 function requireLogin() {
     if (!isLoggedIn()) {
         header('Location: ../login.php');
@@ -49,7 +49,7 @@ function requireLogin() {
     }
 }
 
-// Fungsi untuk require admin
+// Require admin
 function requireAdmin() {
     requireLogin();
     if (!isAdmin()) {
@@ -58,7 +58,7 @@ function requireAdmin() {
     }
 }
 
-// Fungsi untuk logout
+// Logout
 function logout() {
     session_unset();
     session_destroy();
@@ -66,12 +66,12 @@ function logout() {
     exit();
 }
 
-// Fungsi untuk mendapatkan admin info
+// Get admin info
 function getAdminInfo() {
     if (!isLoggedIn()) {
         return null;
     }
-    
+
     return [
         'id_admin' => $_SESSION['id_admin'],
         'username' => $_SESSION['username'],

@@ -13,7 +13,7 @@ echo "<hr>";
 
 try {
     $conn = getDBConnection();
-    echo "<p style='color: green;'>✅ <strong>Koneksi database berhasil!</strong></p>";
+    echo "<p style='color: green;'>✅ <strong>Database connection successful!</strong></p>";
     
     // Test query
     $stmt = $conn->query("SELECT version()");
@@ -69,7 +69,7 @@ try {
     }
     
 } catch(PDOException $e) {
-    echo "<p style='color: red;'>❌ <strong>Koneksi database gagal!</strong></p>";
+    echo "<p style='color: red;'>❌ <strong>Database connection failed!</strong></p>";
     echo "<p><strong>Error:</strong> " . $e->getMessage() . "</p>";
     echo "<hr>";
     echo "<h3>Kemungkinan Penyebab:</h3>";

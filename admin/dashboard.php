@@ -34,7 +34,7 @@ $view_dipinjam_sql = "CREATE OR REPLACE VIEW view_alat_dipinjam AS
         pj.keterangan,
         pj.status
     FROM peminjaman pj
-    JOIN alat_lab alat ON alat.id_alat = pj.id_alat
+    JOIN alat_lab alat ON alat.id_alat_lab = pj.id_alat
     WHERE pj.status = 'dipinjam'";
 
 $view_tersedia_sql = "CREATE OR REPLACE VIEW view_alat_tersedia AS
@@ -98,7 +98,7 @@ $recent_news = $stmt->fetchAll();
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard - CMS InLET</title>
+<title>Manage Dashboard - CMS InLET</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 <link rel="stylesheet" href="admin.css">
@@ -191,50 +191,50 @@ $recent_news = $stmt->fetchAll();
         <div class="content-inner">
 
         <div class="welcome-box">
-            <h2>Selamat Datang, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
-            <p>Kelola konten website InLET dari panel ini.</p>
+            <h2>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
+            <p>Manage InLET website content from this panel.</p>
         </div>
 
         <div class="stats-grid">
             <div class="stat-card">
-                <h3>Total Artikel</h3>
+                <h3>Total Articles</h3>
                 <div class="stat-number"><?= $stats['articles']; ?></div>
             </div>
             <div class="stat-card">
-                <h3>Total Berita</h3>
+                <h3>Total News</h3>
                 <div class="stat-number"><?= $stats['news']; ?></div>
             </div>
             <div class="stat-card">
-                <h3>Total Member</h3>
+                <h3>Total Members</h3>
                 <div class="stat-number"><?= $stats['members']; ?></div>
             </div>
             <div class="stat-card">
-                <h3>Total Penelitian</h3>
+                <h3>Total Research</h3>
                 <div class="stat-number"><?= $stats['penelitian']; ?></div>
             </div>
             <div class="stat-card">
-                <h3>Total Mahasiswa</h3>
+                <h3>Total Students</h3>
                 <div class="stat-number"><?php 
                     $stmt = $conn->query("SELECT COUNT(*) as count FROM mahasiswa");
                     echo $stmt->fetch()['count'];
                 ?></div>
             </div>
             <div class="stat-card">
-                <h3>Total Alat Lab</h3>
+                <h3>Total Lab Tools</h3>
                 <div class="stat-number"><?php 
                     $stmt = $conn->query("SELECT COUNT(*) as count FROM alat_lab");
                     echo $stmt->fetch()['count'];
                 ?></div>
             </div>
             <div class="stat-card">
-                <h3>Alat Dipinjam</h3>
+                <h3>Tools Borrowed</h3>
                 <div class="stat-number"><?php 
                     try {
                         $stmt = $conn->query("SELECT COUNT(*) as count FROM view_alat_dipinjam");
                         $result = $stmt->fetch();
                         echo $result ? $result['count'] : '0';
                     } catch(PDOException $e) {
-                        // Fallback ke query langsung jika view error
+                        // Fallback to direct query if view error
                         try {
                             $stmt = $conn->query("SELECT COUNT(*) as count FROM peminjaman WHERE status = 'dipinjam'");
                             $result = $stmt->fetch();
@@ -246,23 +246,23 @@ $recent_news = $stmt->fetchAll();
                 ?></div>
             </div>
             <div class="stat-card">
-                <h3>Total Mitra</h3>
+                <h3>Total Partners</h3>
                 <div class="stat-number"><?php 
                     $stmt = $conn->query("SELECT COUNT(*) as count FROM mitra");
                     echo $stmt->fetch()['count'];
                 ?></div>
             </div>
             <div class="stat-card">
-                <h3>Total Kunjungan</h3>
+                <h3>Total Visits</h3>
                 <div class="stat-number"><?= $stats['visitors']; ?></div>
             </div>
         </div>
 
         <div class="recent-section">
-            <h3>Berita Terbaru</h3>
+            <h3>Latest News</h3>
 
             <?php if (empty($recent_news)): ?>
-                <p style="color: var(--gray);">Belum ada berita</p>
+                <p class="muted-gray">No news yet</p>
             <?php else: ?>
                 <?php foreach ($recent_news as $news): ?>
                     <div class="recent-item">

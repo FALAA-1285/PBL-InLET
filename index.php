@@ -1,12 +1,9 @@
 <?php
-// index.php (cleaned & fixed) - replace your existing file with this
 require_once 'config/database.php';
 
 $conn = getDBConnection();
 
-// -------------------
-// Helper: safe fetch all
-// -------------------
+// Safe query helper
 function safeQueryAll($conn, $sql)
 {
     try {
@@ -17,73 +14,35 @@ function safeQueryAll($conn, $sql)
     }
 }
 
-// -------------------
-// Team (member) fetch
-// -------------------
+// Fetch team
 $team = safeQueryAll($conn, "SELECT * FROM member ORDER BY nama");
 
-// -------------------
-// Dummy data for research
-// -------------------
+// Research fields (placeholder)
 $riset = [];
-for ($i = 1; $i <= 25; $i++) {
-    $riset[] = [
-        "judul" => "Research Field #$i",
-        "deskripsi" => "A full description of research field number $i, explaining its focus and contributions."
-    ];
-}
 
-/* ------------------------------------------
-   PAGINATION for Research Fields (FIXED)
--------------------------------------------*/
-
-// Data menggunakan $riset (dummy 25 data)
+// Pagination for research fields
 $perPage = 9;
 $totalRF = count($riset);
 $totalPagesRF = ($totalRF > 0) ? ceil($totalRF / $perPage) : 1;
 
-// Halaman aktif
+// Current page
 $pageRF = isset($_GET['rf']) ? (int) $_GET['rf'] : 1;
 if ($pageRF < 1)
     $pageRF = 1;
 if ($pageRF > $totalPagesRF)
     $pageRF = $totalPagesRF;
 
-// Hitung start index
+// Start index
 $startRF = ($pageRF - 1) * $perPage;
 
-// Slice data riset sesuai halaman
+// Paginated data
 $research_fields_paginated = array_slice($riset, $startRF, $perPage);
 
-// -------------------
-// Partners (mitra) fetch
-// -------------------
+// Fetch partners
 $partners = safeQueryAll($conn, "SELECT * FROM mitra ORDER BY nama_institusi");
 
-// -------------------
-// Ensure gallery table exists (best-effort, won't break on failure)
-// -------------------
-try {
-    // using SERIAL might be DB-specific; try to use generic SQL tolerant for common DBs
-    $conn->exec("CREATE TABLE IF NOT EXISTS gallery (
-        id_gallery SERIAL PRIMARY KEY,
-        gambar VARCHAR(500) NOT NULL,
-        judul VARCHAR(255),
-        deskripsi VARCHAR(1000),
-        urutan INTEGER DEFAULT 0,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-    )");
-    $conn->exec("CREATE INDEX IF NOT EXISTS idx_gallery_urutan ON gallery(urutan)");
-    $conn->exec("CREATE INDEX IF NOT EXISTS idx_gallery_created ON gallery(created_at)");
-} catch (PDOException $e) {
-    // ignore - some DB engines may not support the exact DDL
-}
-
-// -------------------
-// Fetch gallery entries and normalize keys to 'img' & 'judul'
-// -------------------
-$raw_gallery = safeQueryAll($conn, "SELECT gambar, judul FROM gallery ORDER BY urutan ASC, created_at DESC");
+// Fetch gallery
+$raw_gallery = safeQueryAll($conn, "SELECT gambar, judul FROM gallery ORDER BY created_at DESC");
 
 $all_gallery = [];
 if (!empty($raw_gallery)) {
@@ -103,21 +62,12 @@ if (!empty($raw_gallery)) {
     }
 }
 
-// If no gallery data, fallback to dummy images (picsum)
+// If no gallery data, leave empty
 if (empty($all_gallery)) {
-    for ($i = 1; $i <= 60; $i++) {
-        $w = rand(300, 450);
-        $h = rand(250, 500);
-        $all_gallery[] = [
-            'img' => "https://picsum.photos/seed/{$i}/{$w}/{$h}",
-            'judul' => "Image #{$i}"
-        ];
-    }
+    $all_gallery = [];
 }
 
-// -------------------
-// helper: initials
-// -------------------
+// Initials helper
 function getInitials($name)
 {
     $words = preg_split('/\s+/', trim($name));
@@ -149,7 +99,7 @@ function getInitials($name)
 <body>
     <?php include 'includes/header.php'; ?>
     <main>
-        <!-- HERO -->
+        <!-- Hero section -->
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
                 <h1 class="display-4 fw-bold">InLET - Information And Learning Engineering Technology</h1>
@@ -157,7 +107,7 @@ function getInitials($name)
             </div>
         </section>
 
-        <!-- RESEARCH -->
+        <!-- Research section -->
         <section class="py-5" id="riset">
             <div class="container">
                 <div class="section-title">
@@ -188,7 +138,10 @@ function getInitials($name)
                             </div>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <p class="text-center">No Research Fields available.</p>
+                        <div class="empty-data-alert" role="alert">
+                            <i class="fas fa-flask fa-3x mb-3 text-muted"></i>
+                            <p class="mb-0">No Research Fields available.</p>
+                        </div>
                     <?php endif; ?>
                 </div>
 
@@ -220,7 +173,7 @@ function getInitials($name)
             </div>
         </section>
 
-        <!-- PARTNERS -->
+        <!-- Partners section -->
         <section class="py-5 bg-light" id="partner">
             <div class="container">
                 <div class="section-title">
@@ -229,8 +182,11 @@ function getInitials($name)
                 </div>
                 <div class="row justify-content-center g-4">
                     <?php if (empty($partners)): ?>
-                        <div class="col-12 text-center">
-                            <p class="text-muted">Belum ada mitra yang terdaftar.</p>
+                        <div class="col-12">
+                            <div class="empty-data-alert" role="alert">
+                                <i class="fas fa-handshake fa-3x mb-3 text-muted"></i>
+                                <p class="mb-0">No partners registered yet.</p>
+                            </div>
                         </div>
                     <?php else: ?>
                         <?php foreach ($partners as $p): ?>
@@ -241,8 +197,7 @@ function getInitials($name)
                                         title="<?= htmlspecialchars($p['nama_institusi']) ?>"
                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/200x100/cccccc/666666?text=' + encodeURIComponent('<?= addslashes(htmlspecialchars($p['nama_institusi'])) ?>');">
                                 <?php else: ?>
-                                    <div class="partner-logo img-fluid rounded shadow-sm d-flex align-items-center justify-content-center"
-                                        style="height: 100px; background: #f0f0f0; color: #666;">
+                                    <div class="partner-logo img-fluid rounded shadow-sm d-flex align-items-center justify-content-center partner-placeholder">
                                         <?= htmlspecialchars($p['nama_institusi']) ?>
                                     </div>
                                 <?php endif; ?>
@@ -253,16 +208,16 @@ function getInitials($name)
             </div>
         </section>
 
-        <!-- TEAM -->
+        <!-- Team section -->
         <section class="py-5" id="team">
             <div class="container">
                 <div class="section-title">
                     <h2>Expert Team</h2>
                     <p>The experts behind our innovations.</p>
                 </div>
-                <div class="swiper teamSwiper">
-                    <div class="swiper-wrapper">
-                        <?php if (!empty($team)): ?>
+                <?php if (!empty($team)): ?>
+                    <div class="swiper teamSwiper">
+                        <div class="swiper-wrapper">
                             <?php foreach ($team as $t):
                                 $foto_url = '';
                                 if (!empty($t['foto'])) {
@@ -281,7 +236,7 @@ function getInitials($name)
                                                 <img src="<?= htmlspecialchars($foto_url) ?>"
                                                     alt="<?= htmlspecialchars($t['nama']) ?>" class="member-img"
                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                                <div class="member-initials" style="display: none;">
+                                                <div class="member-initials d-none">
                                                     <?= htmlspecialchars(getInitials($t["nama"])) ?>
                                                 </div>
                                             <?php else: ?>
@@ -300,23 +255,20 @@ function getInitials($name)
                                     </div>
                                 </div>
                             <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="swiper-slide">
-                                <div class="member-card card-surface h-100 text-center">
-                                    <div class="member-info">
-                                        <p>Belum ada member yang terdaftar</p>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endif; ?>
+                        </div>
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-button-prev"></div>
                     </div>
-                    <div class="swiper-button-next"></div>
-                    <div class="swiper-button-prev"></div>
-                </div>
+                <?php else: ?>
+                    <div class="empty-data-alert" role="alert">
+                        <i class="fas fa-users fa-3x mb-3 text-muted"></i>
+                        <p class="mb-0">No members registered yet.</p>
+                    </div>
+                <?php endif; ?>
             </div>
         </section>
 
-        <!-- GALLERY (ALL IMAGES — no pagination, no loading) -->
+        <!-- Gallery section -->
         <section class="py-5" id="gallery">
             <div class="container">
                 <div class="section-title text-center mb-4">
@@ -325,28 +277,35 @@ function getInitials($name)
                 </div>
 
                 <!-- Pinterest-like grid -->
-                <div id="pinterest-grid" class="pinterest-grid">
-                    <?php foreach ($all_gallery as $g):
-                        $img_src = $g['img'] ?? null;
-                        // if empty or null, use placeholder
-                        if (empty($img_src)) {
-                            $img_src = "https://via.placeholder.com/400x300/cccccc/666666?text=Gallery";
-                        }
-                        // ensure safe attributes
-                        $judul = $g['judul'] ?? '';
-                        ?>
-                        <div class="pin-item">
-                            <div class="pin-img-wrapper">
-                                <img src="<?= htmlspecialchars($img_src) ?>"
-                                    alt="<?= htmlspecialchars($judul ?: 'Gallery Image') ?>"
-                                    onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Gallery';">
-                                <div class="pin-overlay">
-                                    <h5 class="pin-title"><?= htmlspecialchars($judul ?: 'Image') ?></h5>
+                <?php if (!empty($all_gallery)): ?>
+                    <div id="pinterest-grid" class="pinterest-grid">
+                        <?php foreach ($all_gallery as $g):
+                            $img_src = $g['img'] ?? null;
+                            // if empty or null, use placeholder
+                            if (empty($img_src)) {
+                                $img_src = "https://via.placeholder.com/400x300/cccccc/666666?text=Gallery";
+                            }
+                            // ensure safe attributes
+                            $judul = $g['judul'] ?? '';
+                            ?>
+                            <div class="pin-item">
+                                <div class="pin-img-wrapper">
+                                    <img src="<?= htmlspecialchars($img_src) ?>"
+                                        alt="<?= htmlspecialchars($judul ?: 'Gallery Image') ?>"
+                                        onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Gallery';">
+                                    <div class="pin-overlay">
+                                        <h5 class="pin-title"><?= htmlspecialchars($judul ?: 'Image') ?></h5>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="empty-data-alert" role="alert">
+                        <i class="fas fa-images fa-3x mb-3 text-muted"></i>
+                        <p class="mb-0">No gallery images available.</p>
+                    </div>
+                <?php endif; ?>
 
             </div>
         </section>
@@ -355,12 +314,12 @@ function getInitials($name)
 
     <?php include 'includes/footer.php'; ?>
 
-    <!-- JS -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <script>
-        // Swiper init
+        // Init swiper
         new Swiper(".teamSwiper", {
             slidesPerView: 3,
             spaceBetween: 30,
@@ -368,7 +327,7 @@ function getInitials($name)
             breakpoints: { 0: { slidesPerView: 1 }, 576: { slidesPerView: 2 }, 992: { slidesPerView: 3 } }
         });
 
-        // Masonry layout for pinterest-grid (all images shown at once)
+        // Masonry layout
         document.addEventListener("DOMContentLoaded", function () {
             const container = document.getElementById("pinterest-grid");
             const gap = 15;
@@ -424,7 +383,7 @@ function getInitials($name)
                 container.style.height = Math.max(...colHeights) + 'px';
             }
 
-            // Wait for all images inside grid to load (or error) before layout
+            // Wait for images to load
             const imgs = Array.from(container.querySelectorAll('img'));
             if (imgs.length === 0) {
                 masonryLayout();
@@ -447,7 +406,7 @@ function getInitials($name)
                 if (loaded === imgs.length) masonryLayout();
             }
 
-            // Re-layout on resize
+            // Resize handler
             let resizeTimeout = null;
             window.addEventListener('resize', function () {
                 clearTimeout(resizeTimeout);

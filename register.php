@@ -28,11 +28,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Validation
     if (empty($username) || empty($password) || empty($nama)) {
-        $error = 'Username, password, dan nama harus diisi!';
+        $error = 'Username, password, and name are required!';
     } elseif ($password !== $password_confirm) {
-        $error = 'Password dan konfirmasi password tidak sama!';
+        $error = 'Password and password confirmation do not match!';
     } elseif (strlen($password) < 6) {
-        $error = 'Password minimal 6 karakter!';
+        $error = 'Password must be at least 6 characters long!';
     } else {
         $conn = getDBConnection();
         
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conn->prepare("SELECT id_user FROM users WHERE username = :username");
             $stmt->execute(['username' => $username]);
             if ($stmt->fetch()) {
-                $error = 'Username sudah digunakan!';
+                $error = 'Username already in use!';
             } else {
                 // Hash password
                 $password_hash = password_hash($password, PASSWORD_DEFAULT);
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $conn->prepare("INSERT INTO visitor (id_pengunjung, visit_count, first_visit) VALUES (:id_pengunjung, 0, NOW())");
                 $stmt->execute(['id_pengunjung' => $pengunjung_id]);
                 
-                $success = 'Registrasi berhasil! Silakan login.';
+                $success = 'Registration successful! Please login.';
             }
         } catch(PDOException $e) {
             $error = 'Error: ' . $e->getMessage();
@@ -195,8 +195,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <?php if ($success): ?>
                 <div class="success-message"><?php echo htmlspecialchars($success); ?></div>
-                <div style="text-align: center; margin-top: 1rem;">
-                    <a href="login.php" class="btn-register" style="display: inline-block; text-decoration: none;">Login Sekarang</a>
+                <div class="text-center mt-3">
+                    <a href="login.php" class="btn-register d-inline-block text-decoration-none">Login Sekarang</a>
                 </div>
             <?php else: ?>
                 <form method="POST" action="">

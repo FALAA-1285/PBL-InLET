@@ -18,13 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     
     if (empty($username) || empty($password)) {
-        $error = 'Username dan password harus diisi!';
+        $error = 'Username and password are required!';
     } else {
         if (loginAdmin($username, $password)) {
             header('Location: admin/dashboard.php');
             exit();
         } else {
-            $error = 'Username atau password salah!';
+            $error = 'Invalid username or password!';
         }
     }
 }
@@ -255,7 +255,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="ri-shield-user-line"></i>
                 </div>
                 <h1>Login Admin</h1>
-                <p>Masuk ke CMS InLET Polinema</p>
+                <p>Log in to InLET Polinema CMS</p>
             </div>
             
             <?php if ($error): ?>
@@ -271,7 +271,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="input-wrapper">
                         <i class="ri-user-line"></i>
                         <input type="text" id="username" name="username" 
-                               placeholder="Masukkan username" 
+                               placeholder="Enter username" 
                                required autofocus
                                value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>">
                     </div>
@@ -282,14 +282,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="input-wrapper">
                         <i class="ri-lock-password-line"></i>
                         <input type="password" id="password" name="password" 
-                               placeholder="Masukkan password" 
+                               placeholder="Enter password" 
                                required>
                     </div>
                 </div>
                 
                 <button type="submit" class="btn-login">
                     <i class="ri-login-box-line"></i>
-                    <span>Masuk</span>
+                    <span>Login</span>
                 </button>
             </form>
             

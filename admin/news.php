@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'konten' => $konten,
                     'gambar_thumbnail' => $gambar_thumbnail ?: null
                 ]);
-                $message = 'Berita berhasil ditambahkan!';
+                $message = 'News successfully added!';
                 $message_type = 'success';
             } catch(PDOException $e) {
                 $message = 'Error: ' . $e->getMessage();
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'konten' => $konten,
                     'gambar_thumbnail' => $gambar_thumbnail ?: null
                 ]);
-                $message = 'Berita berhasil diupdate!';
+                $message = 'News successfully updated!';
                 $message_type = 'success';
             } catch(PDOException $e) {
                 $message = 'Error: ' . $e->getMessage();
@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $conn->prepare("DELETE FROM berita WHERE id_berita = :id");
             $stmt->execute(['id' => $id]);
-            $message = 'Berita berhasil dihapus!';
+            $message = 'News successfully deleted!';
             $message_type = 'success';
         } catch(PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
@@ -111,7 +111,7 @@ $news_list = $stmt->fetchAll();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola News - CMS InLET</title>
+    <title>Manage News - CMS InLET</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="admin.css">
@@ -346,7 +346,7 @@ $news_list = $stmt->fetchAll();
     <?php $active_page = 'news'; include __DIR__ . '/partials/sidebar.php'; ?>
     <main class="content">
         <div class="content-inner">
-            <h1 style="color: var(--primary); margin-bottom: 2rem;"><i class="ri-newspaper-line"></i> Kelola Data Member</h1>
+            <h1 class="text-primary mb-4"><i class="ri-newspaper-line"></i> Manage Members</h1>
 
 
             <div class="cms-content">
@@ -358,63 +358,63 @@ $news_list = $stmt->fetchAll();
 
         <!-- Edit Form Section (Hidden by default) -->
         <div id="edit-form-section" class="form-section edit-form-section">
-            <h2>Edit Berita</h2>
+            <h2>Edit News</h2>
             <form method="POST" action="" enctype="multipart/form-data" id="edit-news-form">
                 <input type="hidden" name="action" value="update_news">
                 <input type="hidden" name="id" id="edit_id">
                 <div class="form-group">
-                    <label>Judul Berita *</label>
+                    <label>News Title *</label>
                     <input type="text" name="judul" id="edit_judul" required>
                 </div>
                 <div class="form-group">
-                    <label>Konten *</label>
+                    <label>Content *</label>
                     <textarea name="konten" id="edit_konten" required></textarea>
                 </div>
                 <div class="form-group">
                     <label>Upload Gambar Thumbnail (File)</label>
                     <input type="file" name="gambar_file" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
-                    <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Maksimal 5MB. Format: JPG, PNG, GIF, WEBP</small>
+                    <small class="d-block mt-2 text-muted small">Maksimal 5MB. Format: JPG, PNG, GIF, WEBP</small>
                 </div>
                 <div class="form-group">
-                    <label>Atau Masukkan URL Gambar</label>
+                    <label>Or Enter Image URL</label>
                     <input type="text" name="gambar_thumbnail" id="edit_gambar_thumbnail" placeholder="https://example.com/image.jpg">
-                    <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Jika upload file, URL akan diabaikan</small>
+                    <small class="d-block mt-2 text-muted small">If file upload is used, URL will be ignored</small>
                 </div>
-                <button type="submit" class="btn-submit">Update Berita</button>
-                <button type="button" class="btn-cancel" onclick="cancelEdit()">Batal</button>
+                <button type="submit" class="btn-submit">Update News</button>
+                <button type="button" class="btn-cancel" onclick="cancelEdit()">Cancel</button>
             </form>
         </div>
 
         <div class="form-section">
-            <h2>Tambah Berita Baru</h2>
+            <h2>Add New News</h2>
             <form method="POST" action="" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="add_news">
                 <div class="form-group">
-                    <label>Judul Berita *</label>
+                    <label>News Title *</label>
                     <input type="text" name="judul" required>
                 </div>
                 <div class="form-group">
-                    <label>Konten *</label>
+                    <label>Content *</label>
                     <textarea name="konten" required></textarea>
                 </div>
                 <div class="form-group">
                     <label>Upload Gambar Thumbnail (File)</label>
                     <input type="file" name="gambar_file" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
-                    <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Maksimal 5MB. Format: JPG, PNG, GIF, WEBP</small>
+                    <small class="d-block mt-2 text-muted small">Maksimal 5MB. Format: JPG, PNG, GIF, WEBP</small>
                 </div>
                 <div class="form-group">
-                    <label>Atau Masukkan URL Gambar</label>
+                    <label>Or Enter Image URL</label>
                     <input type="text" name="gambar_thumbnail" placeholder="https://example.com/image.jpg">
-                    <small style="color: var(--gray); display: block; margin-top: 0.5rem;">Jika upload file, URL akan diabaikan</small>
+                    <small class="d-block mt-2 text-muted small">If file upload is used, URL will be ignored</small>
                 </div>
-                <button type="submit" class="btn-submit">Tambah Berita</button>
+                <button type="submit" class="btn-submit">Add News</button>
             </form>
         </div>
 
         <div class="data-section">
-            <h2>Daftar Berita (<?php echo count($news_list); ?>)</h2>
+            <h2>News List (<?php echo count($news_list); ?>)</h2>
             <?php if (empty($news_list)): ?>
-                <p style="color: var(--gray); text-align: center; padding: 2rem;">Belum ada berita</p>
+                <p class="text-center p-4 muted-gray">No news yet</p>
             <?php else: ?>
                 <div class="table-container">
                     <table class="data-table">
@@ -422,10 +422,10 @@ $news_list = $stmt->fetchAll();
                             <tr>
                                 <th>ID</th>
                                 <th>Thumbnail</th>
-                                <th>Judul</th>
-                                <th>Konten</th>
-                                <th>Tanggal</th>
-                                <th>Aksi</th>
+                                <th>Title</th>
+                                <th>Content</th>
+                                <th>Date</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -437,8 +437,8 @@ $news_list = $stmt->fetchAll();
                                             <img src="<?php echo htmlspecialchars($news['gambar_thumbnail']); ?>" 
                                                  alt="<?php echo htmlspecialchars($news['judul']); ?>"
                                                  onerror="this.style.display='none'">
-                                        <?php else: ?>
-                                            <span style="color: var(--gray);">-</span>
+                                            <?php else: ?>
+                                            <span class="muted-gray">-</span>
                                         <?php endif; ?>
                                     </td>
                                     <td><?php echo htmlspecialchars($news['judul']); ?></td>
@@ -448,11 +448,11 @@ $news_list = $stmt->fetchAll();
                                         <button type="button" class="btn-edit" onclick="editNews(<?php echo htmlspecialchars(json_encode($news)); ?>)">
                                             <i class="ri-edit-line"></i> Edit
                                         </button>
-                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus berita ini?');">
+                                        <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this news?');">
                                             <input type="hidden" name="action" value="delete_news">
                                             <input type="hidden" name="id" value="<?php echo $news['id_berita']; ?>">
                                             <button type="submit" class="btn-delete">
-                                                <i class="ri-delete-bin-line"></i> Hapus
+                                                <i class="ri-delete-bin-line"></i> Delete
                                             </button>
                                         </form>
                                     </td>
@@ -505,7 +505,7 @@ $news_list = $stmt->fetchAll();
                     <?php endif; ?>
                 </div>
                 <div class="pagination-info">
-                    Menampilkan <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> dari <?php echo $total_items; ?> berita
+                    Showing <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> of <?php echo $total_items; ?> news
                 </div>
             <?php endif; ?>
         </div>

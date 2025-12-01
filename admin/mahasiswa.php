@@ -24,15 +24,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message_type = 'error';
         } else {
             try {
-                $stmt = $conn->prepare("INSERT INTO mahasiswa (nama, title, tahun, status, id_admin) VALUES (:nama, :title, :tahun, :status, :id_admin)");
+                $stmt = $conn->prepare("INSERT INTO mahasiswa (nama, tahun, status) VALUES (:nama, :tahun, :status)");
                 $stmt->execute([
                     'nama' => $nama,
-                    'title' => $title ?: null,
                     'tahun' => $tahun ?: null,
-                    'status' => $status,
-                    'id_admin' => $admin_id
+                    'status' => $status
                 ]);
-                $message = 'Mahasiswa berhasil ditambahkan!';
+                $message = 'Student successfully added!';
                 $message_type = 'success';
             } catch(PDOException $e) {
                 $message = 'Error: ' . $e->getMessage();
@@ -51,15 +49,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message_type = 'error';
         } else {
             try {
-                $stmt = $conn->prepare("UPDATE mahasiswa SET nama = :nama, title = :title, tahun = :tahun, status = :status WHERE id_mahasiswa = :id");
+                $stmt = $conn->prepare("UPDATE mahasiswa SET nama = :nama, tahun = :tahun, status = :status WHERE id_mahasiswa = :id");
                 $stmt->execute([
                     'id' => $id,
                     'nama' => $nama,
-                    'title' => $title ?: null,
                     'tahun' => $tahun ?: null,
                     'status' => $status
                 ]);
-                $message = 'Mahasiswa berhasil diupdate!';
+                $message = 'Student successfully updated!';
                 $message_type = 'success';
             } catch(PDOException $e) {
                 $message = 'Error: ' . $e->getMessage();
@@ -71,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $conn->prepare("DELETE FROM mahasiswa WHERE id_mahasiswa = :id");
             $stmt->execute(['id' => $id]);
-            $message = 'Mahasiswa berhasil dihapus!';
+            $message = 'Student successfully deleted!';
             $message_type = 'success';
         } catch(PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
@@ -98,7 +95,7 @@ if (isset($_GET['edit'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mahasiswa - CMS InLET</title>
+    <title>Manage Students - CMS InLET</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="admin.css">
@@ -278,7 +275,7 @@ if (isset($_GET['edit'])) {
     <main class="content">
         <div class="content-inner">
             <div class="cms-content">
-                <h1 style="color: var(--primary); margin-bottom: 2rem;"><i class="ri-graduation-cap-line"></i> Kelola Mahasiswa</h1>
+                <h1 class="text-primary mb-4"><i class="ri-graduation-cap-line"></i> Manage Students</h1>
 
                 <?php if ($message): ?>
                     <div class="message <?php echo $message_type; ?>">
@@ -288,7 +285,7 @@ if (isset($_GET['edit'])) {
 
                 <!-- Add/Edit Form -->
                 <div class="form-section <?php echo $edit_mahasiswa ? 'edit-form-section active' : ''; ?>">
-                    <h2><?php echo $edit_mahasiswa ? 'Edit Mahasiswa' : 'Tambah Mahasiswa Baru'; ?></h2>
+                    <h2><?php echo $edit_mahasiswa ? 'Edit Student' : 'Add New Student'; ?></h2>
                     <form method="POST">
                         <input type="hidden" name="action" value="<?php echo $edit_mahasiswa ? 'update_mahasiswa' : 'add_mahasiswa'; ?>">
                         <?php if ($edit_mahasiswa): ?>
@@ -296,20 +293,20 @@ if (isset($_GET['edit'])) {
                         <?php endif; ?>
                         
                         <div class="form-group">
-                            <label for="nama">Nama *</label>
+                            <label for="nama">Name *</label>
                             <input type="text" id="nama" name="nama" 
                                    value="<?php echo htmlspecialchars($edit_mahasiswa['nama'] ?? ''); ?>" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="title">Title/Judul</label>
+                            <label for="title">Title/Research Title</label>
                             <input type="text" id="title" name="title" 
                                    value="<?php echo htmlspecialchars($edit_mahasiswa['title'] ?? ''); ?>" 
-                                   placeholder="Judul penelitian/skripsi">
+                                   placeholder="Research/thesis title">
                         </div>
                         
                         <div class="form-group">
-                            <label for="tahun">Tahun</label>
+                            <label for="tahun">Year</label>
                             <input type="number" id="tahun" name="tahun" 
                                    value="<?php echo htmlspecialchars($edit_mahasiswa['tahun'] ?? ''); ?>" 
                                    min="2000" max="2100">
@@ -319,37 +316,37 @@ if (isset($_GET['edit'])) {
                             <label for="status">Status *</label>
                             <select id="status" name="status" required>
                                 <option value="regular" <?php echo (($edit_mahasiswa['status'] ?? 'regular') === 'regular') ? 'selected' : ''; ?>>Regular</option>
-                                <option value="magang" <?php echo (($edit_mahasiswa['status'] ?? '') === 'magang') ? 'selected' : ''; ?>>Magang</option>
-                                <option value="skripsi" <?php echo (($edit_mahasiswa['status'] ?? '') === 'skripsi') ? 'selected' : ''; ?>>Skripsi</option>
+                                <option value="magang" <?php echo (($edit_mahasiswa['status'] ?? '') === 'magang') ? 'selected' : ''; ?>>Internship</option>
+                                <option value="skripsi" <?php echo (($edit_mahasiswa['status'] ?? '') === 'skripsi') ? 'selected' : ''; ?>>Undergraduate Thesis</option>
                             </select>
                         </div>
                         
                         <button type="submit" class="btn-submit">
-                            <?php echo $edit_mahasiswa ? 'Update Mahasiswa' : 'Tambah Mahasiswa'; ?>
+                            <?php echo $edit_mahasiswa ? 'Update Student' : 'Add Student'; ?>
                         </button>
                         <?php if ($edit_mahasiswa): ?>
-                            <a href="mahasiswa.php" class="btn-cancel">Batal</a>
+                            <a href="mahasiswa.php" class="btn-cancel">Cancel</a>
                         <?php endif; ?>
                     </form>
                 </div>
 
                 <!-- Data List -->
                 <div class="data-section">
-                    <h2>Daftar Mahasiswa (<?php echo count($mahasiswa_list); ?>)</h2>
+                    <h2>Student List (<?php echo count($mahasiswa_list); ?>)</h2>
                     
                     <?php if (empty($mahasiswa_list)): ?>
-                        <p style="color: var(--gray);">Belum ada mahasiswa yang terdaftar.</p>
+                        <p class="muted-gray">No students registered yet.</p>
                     <?php else: ?>
                         <div class="table-container">
                             <table>
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Nama</th>
+                                        <th>Name</th>
                                         <th>Title</th>
-                                        <th>Tahun</th>
+                                        <th>Year</th>
                                         <th>Status</th>
-                                        <th>Aksi</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -370,11 +367,11 @@ if (isset($_GET['edit'])) {
                                                 <a href="?edit=<?php echo $mhs['id_mahasiswa']; ?>" class="btn-edit">
                                                     <i class="ri-edit-line"></i> Edit
                                                 </a>
-                                                <form method="POST" style="display: inline;" onsubmit="return confirm('Yakin hapus mahasiswa ini?');">
+                                                <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this student?');">
                                                     <input type="hidden" name="action" value="delete_mahasiswa">
                                                     <input type="hidden" name="id" value="<?php echo $mhs['id_mahasiswa']; ?>">
                                                     <button type="submit" class="btn-delete">
-                                                        <i class="ri-delete-bin-line"></i> Hapus
+                                                        <i class="ri-delete-bin-line"></i> Delete
                                                     </button>
                                                 </form>
                                             </td>

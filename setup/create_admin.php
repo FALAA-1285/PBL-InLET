@@ -47,7 +47,7 @@ try {
         'email' => $admin_email
     ]);
     
-    echo "<h2>Admin berhasil dibuat!</h2>";
+    echo "<h2>Admin successfully created!</h2>";
     echo "<p><strong>Username:</strong> $admin_username</p>";
     echo "<p><strong>Password:</strong> $admin_password</p>";
     echo "<p style='color: red;'><strong>PENTING:</strong> Ganti password setelah login pertama kali!</p>";

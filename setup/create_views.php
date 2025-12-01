@@ -31,7 +31,7 @@ try {
             WHERE pj.status = 'dipinjam'";
     
     $conn->exec($sql);
-    echo "<p style='color: green;'>✅ View 'view_alat_dipinjam' berhasil dibuat!</p>";
+    echo "<p style='color: green;'>✅ View 'view_alat_dipinjam' successfully created!</p>";
 } catch(PDOException $e) {
     echo "<p style='color: orange;'>⚠️ View 'view_alat_dipinjam': " . $e->getMessage() . "</p>";
 }
@@ -55,7 +55,7 @@ try {
             ) pj ON pj.id_alat = alat.id_alat";
     
     $conn->exec($sql);
-    echo "<p style='color: green;'>✅ View 'view_alat_tersedia' berhasil dibuat!</p>";
+    echo "<p style='color: green;'>✅ View 'view_alat_tersedia' successfully created!</p>";
 } catch(PDOException $e) {
     echo "<p style='color: orange;'>⚠️ View 'view_alat_tersedia': " . $e->getMessage() . "</p>";
 }

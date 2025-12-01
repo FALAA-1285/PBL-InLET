@@ -31,14 +31,14 @@ try {
             WHERE pj.status = 'dipinjam'";
     
     $conn->exec($sql);
-    echo "<p style='color: green;'>✅ View 'view_alat_dipinjam' berhasil dibuat!</p>";
+    echo "<p style='color: green;'>✅ View 'view_alat_dipinjam' successfully created!</p>";
     
     // Verify the view was created
     $stmt = $conn->query("SELECT COUNT(*) FROM information_schema.views WHERE table_name = 'view_alat_dipinjam' AND table_schema = 'public'");
     $exists = $stmt->fetchColumn() > 0;
     
     if ($exists) {
-        echo "<p style='color: green;'>✅ View berhasil diverifikasi di database.</p>";
+        echo "<p style='color: green;'>✅ View successfully verified in database.</p>";
         
         // Test query
         $test_stmt = $conn->query("SELECT COUNT(*) FROM view_alat_dipinjam");
