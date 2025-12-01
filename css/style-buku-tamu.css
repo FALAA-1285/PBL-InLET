@@ -1,0 +1,283 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+    padding-top: 80px;
+}
+
+.hero {
+    min-height: 50vh;
+    background-image: url("../assets/Teknik-Polinema.jpg");
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color: #0b1220;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.hero .container {
+    position: relative;
+    z-index: 10;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    font-weight: 700 !important;
+    text-align: center;
+    color: #ffffff;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    text-transform: none;
+}
+
+.hero h1.display-4 {
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+}
+
+.hero p {
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+
+.hero p.lead {
+    font-size: 1.25rem !important;
+    font-weight: 500 !important;
+    margin-top: 1rem !important;
+}
+
+.section-title h2,
+.section-title p {
+    text-align: center;
+}
+
+.section-title h2 {
+    color: #0d6efd;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+/* Responsive Hero */
+@media (max-width: 768px) {
+    .hero {
+        min-height: 40vh;
+    }
+
+    .hero h1 {
+        font-size: 1.6rem;
+    }
+
+    .hero p {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero {
+        min-height: 35vh;
+    }
+
+    .hero h1 {
+        font-size: 1.4rem;
+    }
+
+    .hero p {
+        font-size: 0.9rem;
+    }
+}
+
+.card-surface {
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 15px 45px rgba(15, 23, 42, 0.08);
+    padding: 2.5rem;
+    margin: 2rem auto;
+    max-width: 900px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.form-label .required {
+    color: #ef4444;
+}
+
+.form-control,
+.form-select {
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 0.875rem 1.25rem;
+    font-size: 1rem;
+    transition: all 0.3s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+    outline: none;
+    transform: translateY(-1px);
+}
+
+.form-control:hover {
+    border-color: #cbd5e1;
+}
+
+.form-control::placeholder {
+    color: #94a3b8;
+}
+
+textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 1rem 2.5rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    transition: all 0.3s;
+    width: 100%;
+    margin-top: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.btn-submit:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
+    color: white;
+}
+
+.btn-submit:active {
+    transform: translateY(-1px);
+}
+
+.btn-submit i {
+    font-size: 1.3rem;
+}
+
+.message {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.message.success {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.message.error {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.message i {
+    font-size: 1.25rem;
+}
+
+.info-box {
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    border-left: 5px solid #667eea;
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+}
+
+.info-box h5 {
+    color: #4338ca;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.info-box h5 i {
+    font-size: 1.3rem;
+}
+
+.info-box p {
+    color: #4c1d95;
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.input-group-icon {
+    position: relative;
+}
+
+.input-group-icon i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    z-index: 10;
+}
+
+.input-group-icon .form-control {
+    padding-left: 2.75rem;
+}
+
+@media (max-width: 768px) {
+    .card-surface {
+        padding: 1.75rem 1.25rem;
+        margin: 1rem;
+    }
+
+    .info-box {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+}
+

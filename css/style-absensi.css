@@ -1,0 +1,398 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+    padding-top: 80px;
+}
+
+.hero {
+    min-height: 50vh;
+    background-image: url("../assets/Teknik-Polinema.jpg");
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color: #0b1220;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.hero .container {
+    position: relative;
+    z-index: 10;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    font-weight: 700 !important;
+    text-align: center;
+    color: #ffffff;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    text-transform: none;
+}
+
+.hero h1.display-4 {
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+}
+
+.hero p {
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+
+.hero p.lead {
+    font-size: 1.25rem !important;
+    font-weight: 500 !important;
+    margin-top: 1rem !important;
+}
+
+.section-title h2,
+.section-title p {
+    text-align: center;
+}
+
+.section-title h2 {
+    color: #0d6efd;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+/* Responsive Hero */
+@media (max-width: 768px) {
+    .hero {
+        min-height: 40vh;
+    }
+
+    .hero h1 {
+        font-size: 1.6rem;
+    }
+
+    .hero p {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero {
+        min-height: 35vh;
+    }
+
+    .hero h1 {
+        font-size: 1.4rem;
+    }
+
+    .hero p {
+        font-size: 0.9rem;
+    }
+}
+
+.card-surface {
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 15px 45px rgba(15, 23, 42, 0.08);
+    padding: 2.5rem;
+    margin: 2rem auto;
+    max-width: 700px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.form-label .required {
+    color: #ef4444;
+}
+
+.form-control,
+.form-select {
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 0.875rem 1.25rem;
+    font-size: 1rem;
+    transition: all 0.3s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+    outline: none;
+    transform: translateY(-1px);
+}
+
+.form-control:hover {
+    border-color: #cbd5e1;
+}
+
+.btn-group-absensi {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-absen {
+    flex: 1;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-masuk {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.btn-masuk:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
+    color: white;
+}
+
+.btn-keluar {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    box-shadow: 0 8px 25px rgba(245, 87, 108, 0.3);
+}
+
+.btn-keluar:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(245, 87, 108, 0.5);
+    color: white;
+}
+
+.message {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.message.success {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.message.error {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.message i {
+    font-size: 1.25rem;
+}
+
+.input-group-icon {
+    position: relative;
+}
+
+.input-group-icon i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    z-index: 10;
+    font-size: 1.1rem;
+    line-height: 1;
+    display: block;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin: 0;
+    padding: 0;
+}
+
+.input-group-icon .form-control {
+    padding-left: 2.75rem;
+    padding-right: 1rem;
+    padding-top: 0.875rem;
+    padding-bottom: 0.875rem;
+    line-height: 1.5;
+    height: auto;
+}
+
+/* NIM Autocomplete Styles */
+.nim-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-top: none;
+    border-radius: 0 0 14px 14px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    display: none;
+    margin-top: -2px;
+}
+
+.suggestion-item {
+    padding: 0.875rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background: #f8fafc;
+}
+
+.suggestion-item strong {
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.suggestion-item span {
+    color: var(--dark);
+    font-size: 0.9rem;
+}
+
+.suggestion-item small {
+    color: var(--gray);
+    font-size: 0.8rem;
+    text-transform: capitalize;
+}
+
+.suggestion-item.no-results {
+    color: var(--gray);
+    font-style: italic;
+    cursor: default;
+}
+
+.suggestion-item.no-results:hover {
+    background: white;
+}
+
+/* NIM Validation Styles */
+.nim-validation {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.nim-validation.valid {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.nim-validation.invalid {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.nim-validation i {
+    font-size: 1.1rem;
+}
+
+.nim-validation i.ri-loader-4-line {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.nim-validation span {
+    flex: 1;
+}
+
+.nim-validation strong {
+    font-weight: 600;
+}
+
+/* Scrollbar for suggestions */
+.nim-suggestions::-webkit-scrollbar {
+    width: 6px;
+}
+
+.nim-suggestions::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.nim-suggestions::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.nim-suggestions::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+@media (max-width: 576px) {
+    .card-surface {
+        padding: 1.75rem 1.25rem;
+        margin: 1rem;
+    }
+
+    .btn-group-absensi {
+        flex-direction: column;
+    }
+}
+

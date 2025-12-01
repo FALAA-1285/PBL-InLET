@@ -61,21 +61,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Create table if not exists
+// Create table if not exists and update structure
 try {
-                // Try to alter table if exists to make pesan nullable
-                try {
-                    $conn->exec("ALTER TABLE buku_tamu ALTER COLUMN pesan DROP NOT NULL");
-                } catch (PDOException $e) {
-                    // Column might already be nullable or table doesn't exist yet
-                }
-                
-                $conn->exec("CREATE TABLE IF NOT EXISTS buku_tamu (
+    // Try to alter table if exists to make pesan nullable
+    try {
+        $conn->exec("ALTER TABLE buku_tamu ALTER COLUMN pesan DROP NOT NULL");
+    } catch (PDOException $e) {
+        // Column might already be nullable or table doesn't exist yet
+    }
+    
+    // Try to alter institusi and no_hp to NOT NULL if table exists
+    try {
+        $conn->exec("ALTER TABLE buku_tamu ALTER COLUMN institusi SET NOT NULL");
+    } catch (PDOException $e) {
+        // Column might already be NOT NULL or table doesn't exist yet
+    }
+    
+    try {
+        $conn->exec("ALTER TABLE buku_tamu ALTER COLUMN no_hp SET NOT NULL");
+    } catch (PDOException $e) {
+        // Column might already be NOT NULL or table doesn't exist yet
+    }
+    
+    $conn->exec("CREATE TABLE IF NOT EXISTS buku_tamu (
         id_buku_tamu SERIAL PRIMARY KEY,
         nama VARCHAR(150) NOT NULL,
         email VARCHAR(150) NOT NULL,
-        institusi VARCHAR(200),
-        no_hp VARCHAR(50),
+        institusi VARCHAR(200) NOT NULL,
+        no_hp VARCHAR(50) NOT NULL,
         pesan VARCHAR(2000),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
         is_read BOOLEAN DEFAULT false,
@@ -437,12 +450,8 @@ $unread_count = $stmt->fetchColumn();
                                         </div>
                                         <div class="guest-meta">
                                             <span><i class="ri-mail-line"></i> <?= htmlspecialchars($msg['email']); ?></span>
-                                            <?php if ($msg['institusi']): ?>
-                                                <span><i class="ri-building-line"></i> <?= htmlspecialchars($msg['institusi']); ?></span>
-                                            <?php endif; ?>
-                                            <?php if ($msg['no_hp']): ?>
-                                                <span><i class="ri-phone-line"></i> <?= htmlspecialchars($msg['no_hp']); ?></span>
-                                            <?php endif; ?>
+                                            <span><i class="ri-building-line"></i> <?= htmlspecialchars($msg['institusi'] ?? 'N/A'); ?></span>
+                                            <span><i class="ri-phone-line"></i> <?= htmlspecialchars($msg['no_hp'] ?? 'N/A'); ?></span>
                                         </div>
                                     </td>
                                     <td>
