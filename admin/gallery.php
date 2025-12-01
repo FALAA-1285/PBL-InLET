@@ -1,28 +1,35 @@
 <?php
-// gallery_admin.php
 require_once '../config/auth.php';
-requireAdmin();
-require_once '../config/database.php';
 require_once '../config/upload.php';
+requireAdmin();
 
 $conn = getDBConnection();
 $message = '';
 $message_type = '';
 
-// ---------- Utilities ----------
+function getNewsThumbnail(PDO $conn, $id_berita)
+{
+    if (!$id_berita) {
+        return null;
+    }
+
+    $stmt = $conn->prepare("SELECT gambar_thumbnail FROM berita WHERE id_berita = :id");
+    $stmt->execute(['id' => $id_berita]);
+    $news = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($news && !empty($news['gambar_thumbnail'])) {
+        return $news['gambar_thumbnail'];
+    }
+    return null;
+}
+
 function startsWith($haystack, $needle)
 {
-    if ($needle === '')
-        return false;
-    return substr($haystack, 0, strlen($needle)) === $needle;
+    return $needle !== '' && strncmp($haystack, $needle, strlen($needle)) === 0;
 }
 
 function isLocalGalleryPath($path)
 {
-    if (!$path)
-        return false;
-    $p = ltrim($path, '/');
-    return startsWith($p, 'uploads/gallery/');
+    return startsWith($path, 'uploads/gallery/');
 }
 
 function cleanupGalleryFile($path)
@@ -34,179 +41,142 @@ function cleanupGalleryFile($path)
 
 function isValidImageReference($input)
 {
-    if ($input === '' || $input === null)
+    if ($input === '') {
         return false;
-    if (filter_var($input, FILTER_VALIDATE_URL))
+    }
+    if (filter_var($input, FILTER_VALIDATE_URL)) {
         return true;
-    $i = ltrim($input, '/');
-    return startsWith($i, 'uploads/') || startsWith($i, 'assets/');
+    }
+    return startsWith($input, 'uploads/') || startsWith($input, '/uploads/') || startsWith($input, 'assets/') || startsWith($input, '/assets/');
 }
 
-function getNewsThumbnail(PDO $conn, $id_berita)
-{
-    if (!$id_berita)
-        return null;
-    $stmt = $conn->prepare("SELECT gambar_thumbnail FROM berita WHERE id_berita = :id");
-    $stmt->execute(['id' => $id_berita]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    return ($row && !empty($row['gambar_thumbnail'])) ? $row['gambar_thumbnail'] : null;
-}
-
-// ---------- Handle POST actions (add, update, delete) ----------
+// Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
-    // ---------- ADD ----------
     if ($action === 'add_gallery') {
-        $judul = trim($_POST['judul'] ?? '');
-        $gambar_url = trim($_POST['gambar_url'] ?? '');
-        $id_berita_input = intval($_POST['id_berita'] ?? 0);
-        $id_berita = $id_berita_input > 0 ? $id_berita_input : null;
+        $title = trim($_POST['title'] ?? '');
+        $image_url = trim($_POST['image_url'] ?? '');
+        $id_news_input = intval($_POST['id_news'] ?? 0);
+        $id_news = $id_news_input > 0 ? $id_news_input : null;
+        $final_image = '';
 
-        $final_image = null;
-
-        // validation
-        if ($judul === '') {
-            $message = 'Judul wajib diisi.';
+        if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] === UPLOAD_ERR_OK) {
+            $uploadResult = uploadImage($_FILES['image_file'], 'gallery/');
+            if ($uploadResult['success']) {
+                $final_image = $uploadResult['path'];
+            } else {
+                $message = $uploadResult['message'];
+                $message_type = 'error';
+            }
+        } elseif ($image_url !== '') {
+            if (isValidImageReference($image_url)) {
+                $final_image = $image_url;
+            } else {
+                $message = 'Invalid image URL.';
+                $message_type = 'error';
+            }
+        } elseif ($id_news) {
+            $news_thumbnail = getNewsThumbnail($conn, $id_news);
+            if ($news_thumbnail) {
+                $final_image = $news_thumbnail;
+            } else {
+                $message = 'The selected news has no thumbnail image yet.';
+                $message_type = 'error';
+            }
+        } else {
+            $message = 'Please select related news or upload/enter an image URL.';
             $message_type = 'error';
         }
 
-        // file upload has highest priority
-        if (empty($message) && isset($_FILES['gambar_file']) && $_FILES['gambar_file']['error'] === UPLOAD_ERR_OK) {
-            $upload = uploadImage($_FILES['gambar_file'], 'gallery/');
-            if ($upload['success']) {
-                $final_image = $upload['path'];
-            } else {
-                $message = $upload['message'];
-                $message_type = 'error';
-            }
-        }
-
-        // URL input
-        if (empty($message) && !$final_image && $gambar_url !== '') {
-            if (!isValidImageReference($gambar_url)) {
-                $message = 'URL gambar tidak valid.';
-                $message_type = 'error';
-            } else {
-                $final_image = $gambar_url;
-            }
-        }
-
-        // thumbnail dari berita
-        if (empty($message) && !$final_image && $id_berita) {
-            $thumb = getNewsThumbnail($conn, $id_berita);
-            if ($thumb) {
-                $final_image = $thumb;
-            } else {
-                $message = 'Berita yang dipilih belum memiliki gambar thumbnail.';
-                $message_type = 'error';
-            }
-        }
-
-        if (empty($message) && !$final_image) {
-            $message = 'Silakan pilih berita terkait atau upload/masukkan URL gambar.';
+        if (empty($title)) {
+            $message = 'Title is required.';
             $message_type = 'error';
         }
 
         if (empty($message)) {
             try {
-                $stmt = $conn->prepare("INSERT INTO gallery (id_berita, judul, gambar, created_at, updated_at) VALUES (:id_berita, :judul, :gambar, NOW(), NOW())");
+                $stmt = $conn->prepare("INSERT INTO gallery (id_berita, judul, gambar, created_at, updated_at) VALUES (:id_news, :title, :image, NOW(), NOW())");
                 $stmt->execute([
-                    'id_berita' => $id_berita,
-                    'judul' => $judul,
-                    'gambar' => $final_image
+                    'id_news' => $id_news,
+                    'title' => $title,
+                    'image' => $final_image ?: null,
                 ]);
-                $message = 'Gambar gallery berhasil ditambahkan!';
+                $message = 'Gallery image added successfully!';
                 $message_type = 'success';
             } catch (PDOException $e) {
                 $message = 'Error: ' . $e->getMessage();
                 $message_type = 'error';
             }
         }
-    }
-
-    // ---------- UPDATE ----------
-    if ($action === 'update_gallery') {
+    } elseif ($action === 'update_gallery') {
         $id = intval($_POST['id'] ?? 0);
-        $judul = trim($_POST['judul'] ?? '');
-        $gambar_url = trim($_POST['gambar_url'] ?? '');
-        $id_berita_input = intval($_POST['id_berita'] ?? 0);
-        $id_berita = $id_berita_input > 0 ? $id_berita_input : null;
-        $current_gambar = trim($_POST['current_gambar'] ?? '');
-        $final_image = $current_gambar;
+        $title = trim($_POST['title'] ?? '');
+        $image_url = trim($_POST['image_url'] ?? '');
+        $id_news_input = intval($_POST['id_news'] ?? 0);
+        $id_news = $id_news_input > 0 ? $id_news_input : null;
+        $current_image = trim($_POST['current_image'] ?? '');
+        $final_image = $current_image;
 
-        if ($judul === '') {
-            $message = 'Judul wajib diisi.';
+        if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] === UPLOAD_ERR_OK) {
+            $uploadResult = uploadImage($_FILES['image_file'], 'gallery/');
+            if ($uploadResult['success']) {
+                $final_image = $uploadResult['path'];
+                if ($current_image && $final_image !== $current_image) {
+                    cleanupGalleryFile($current_image);
+                }
+            } else {
+                $message = $uploadResult['message'];
+                $message_type = 'error';
+            }
+        } elseif ($image_url !== '') {
+            if (isValidImageReference($image_url)) {
+                if ($current_image && isLocalGalleryPath($current_image) && $current_image !== $image_url) {
+                    cleanupGalleryFile($current_image);
+                }
+                $final_image = $image_url;
+            } else {
+                $message = 'Invalid image URL.';
+                $message_type = 'error';
+            }
+        } elseif ($id_news) {
+            $news_thumbnail = getNewsThumbnail($conn, $id_news);
+            if ($news_thumbnail) {
+                if ($current_image && isLocalGalleryPath($current_image) && $current_image !== $news_thumbnail) {
+                    cleanupGalleryFile($current_image);
+                }
+                $final_image = $news_thumbnail;
+            } else {
+                $message = 'The selected news has no thumbnail image yet.';
+                $message_type = 'error';
+            }
+        } elseif (empty($current_image)) {
+            $message = 'Please select related news or upload/enter an image URL.';
             $message_type = 'error';
         }
 
-        // file upload
-        if (empty($message) && isset($_FILES['gambar_file']) && $_FILES['gambar_file']['error'] === UPLOAD_ERR_OK) {
-            $upload = uploadImage($_FILES['gambar_file'], 'gallery/');
-            if ($upload['success']) {
-                $final_image = $upload['path'];
-                if ($current_gambar && $final_image !== $current_gambar) {
-                    cleanupGalleryFile($current_gambar);
-                }
-            } else {
-                $message = $upload['message'];
-                $message_type = 'error';
-            }
-        }
-
-        // url image
-        if (empty($message) && !$final_image && $gambar_url !== '') {
-            if (!isValidImageReference($gambar_url)) {
-                $message = 'URL gambar tidak valid.';
-                $message_type = 'error';
-            } else {
-                if ($current_gambar && isLocalGalleryPath($current_gambar) && $current_gambar !== $gambar_url) {
-                    cleanupGalleryFile($current_gambar);
-                }
-                $final_image = $gambar_url;
-            }
-        }
-
-        // berita thumbnail
-        if (empty($message) && !$final_image && $id_berita) {
-            $thumb = getNewsThumbnail($conn, $id_berita);
-            if ($thumb) {
-                if ($current_gambar && isLocalGalleryPath($current_gambar) && $current_gambar !== $thumb) {
-                    cleanupGalleryFile($current_gambar);
-                }
-                $final_image = $thumb;
-            } else {
-                $message = 'Berita yang dipilih belum memiliki gambar thumbnail.';
-                $message_type = 'error';
-            }
-        }
-
-        // if user cleared current and didn't supply new
-        if (empty($message) && empty($final_image)) {
-            $message = 'Silakan pilih berita terkait atau upload/masukkan URL gambar.';
+        if (empty($title)) {
+            $message = 'Title is required.';
             $message_type = 'error';
         }
 
         if (empty($message)) {
             try {
-                $stmt = $conn->prepare("UPDATE gallery SET id_berita = :id_berita, judul = :judul, gambar = :gambar, updated_at = NOW() WHERE id_gallery = :id");
+                $stmt = $conn->prepare("UPDATE gallery SET id_berita = :id_news, judul = :title, gambar = :image, updated_at = NOW() WHERE id_gallery = :id");
                 $stmt->execute([
                     'id' => $id,
-                    'id_berita' => $id_berita,
-                    'judul' => $judul,
-                    'gambar' => $final_image
+                    'id_news' => $id_news,
+                    'title' => $title,
+                    'image' => $final_image,
                 ]);
-                $message = 'Data gallery berhasil diperbarui!';
+                $message = 'Gallery data updated successfully!';
                 $message_type = 'success';
             } catch (PDOException $e) {
                 $message = 'Error: ' . $e->getMessage();
                 $message_type = 'error';
             }
         }
-    }
-
-    // ---------- DELETE ----------
-    if ($action === 'delete_gallery') {
+    } elseif ($action === 'delete_gallery') {
         $id = intval($_POST['id'] ?? 0);
         try {
             $stmt = $conn->prepare("SELECT gambar FROM gallery WHERE id_gallery = :id");
@@ -216,61 +186,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conn->prepare("DELETE FROM gallery WHERE id_gallery = :id");
             $stmt->execute(['id' => $id]);
 
-            if ($existing && !empty($existing['gambar'])) {
+            if ($existing && isset($existing['gambar'])) {
                 cleanupGalleryFile($existing['gambar']);
             }
 
-            $message = 'Data gallery berhasil dihapus.';
+            $message = 'Gallery data deleted successfully.';
             $message_type = 'success';
         } catch (PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
         }
     }
-    // after POST, reload to avoid resubmission (optional)
-    if (!headers_sent()) {
-        // keep message via session? For simplicity we just continue (page will render message)
-    }
 }
 
-// ---------- Pagination & Fetch for admin table ----------
+// Pagination setup
 $items_per_page = 10;
 $current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
+// Get total count
 $stmt = $conn->query("SELECT COUNT(*) FROM gallery");
 $total_items = (int) $stmt->fetchColumn();
 $total_pages = (int) ceil($total_items / max(1, $items_per_page));
 
-$stmt = $conn->prepare("SELECT g.id_gallery, g.id_berita, g.judul, g.gambar, g.created_at, g.updated_at, b.judul AS berita_judul FROM gallery g LEFT JOIN berita b ON g.id_berita = b.id_berita ORDER BY g.created_at DESC, g.id_gallery DESC LIMIT :limit OFFSET :offset");
+// Fetch gallery entries
+$stmt = $conn->prepare("SELECT g.id_gallery, g.id_berita, g.judul, g.gambar, g.created_at, g.updated_at, b.judul AS news_title FROM gallery g LEFT JOIN berita b ON g.id_berita = b.id_berita ORDER BY g.created_at DESC, g.id_gallery DESC LIMIT :limit OFFSET :offset");
 $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $gallery_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// For front gallery display (public), fetch a set (used later)
-$gallery_init_stmt = $conn->prepare("SELECT id_gallery AS id, judul, gambar AS img, id_berita, created_at FROM gallery ORDER BY created_at DESC LIMIT 60");
-$gallery_init_stmt->execute();
-$gallery_init = $gallery_init_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// fetch berita options
+// Fetch news options for optional relation
 $news_stmt = $conn->query("SELECT id_berita, judul FROM berita ORDER BY created_at DESC, id_berita DESC");
 $news_options = $news_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// variables for front pagination (gallery) if needed later
-$gallery_items_per_page = 12;
-$gallery_page = isset($_GET['gpage']) ? max(1, intval($_GET['gpage'])) : 1;
-$gallery_offset = ($gallery_page - 1) * $gallery_items_per_page;
-$total_gallery_items = count($gallery_init); // using initial fetch size
-$total_gallery_pages = (int) ceil($total_gallery_items / max(1, $gallery_items_per_page));
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <title>Kelola Gallery - CMS InLET</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Gallery - CMS InLET</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="admin.css">
@@ -279,28 +235,30 @@ $total_gallery_pages = (int) ceil($total_gallery_items / max(1, $gallery_items_p
             background: var(--light);
         }
 
-        .admin-header {
-            background: white;
-            padding: 1.5rem 2rem;
-            box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
-            margin-bottom: 2rem;
-            border-radius: 18px;
-        }
-
-        .admin-header-content {
+        .content-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
             gap: 1rem;
         }
 
-        .admin-header h1 {
-            color: var(--dark);
-            font-size: 1.5rem;
+        .content-header h1 {
+            color: var(--primary);
+            font-size: 2rem;
             margin: 0;
             display: flex;
             align-items: center;
             gap: 0.75rem;
+        }
+
+        .content-header h1 i {
+            background: rgba(99, 102, 241, 0.12);
+            color: var(--primary);
+            padding: 0.5rem;
+            border-radius: 12px;
+            font-size: 1.75rem;
         }
 
         .cms-content {
@@ -327,7 +285,8 @@ $total_gallery_pages = (int) ceil($total_gallery_items / max(1, $gallery_items_p
             border-left: 4px solid #ef4444;
         }
 
-        .form-section {
+        .form-section,
+        .data-section {
             background: white;
             padding: 2rem;
             border-radius: 15px;
@@ -335,10 +294,10 @@ $total_gallery_pages = (int) ceil($total_gallery_items / max(1, $gallery_items_p
             margin-bottom: 2rem;
         }
 
-        .form-section h2 {
+        .form-section h2,
+        .data-section h2 {
             color: var(--primary);
             margin-bottom: 1.5rem;
-            font-size: 1.3rem;
         }
 
         .form-group {
@@ -352,9 +311,7 @@ $total_gallery_pages = (int) ceil($total_gallery_items / max(1, $gallery_items_p
             font-weight: 500;
         }
 
-        .form-group input[type="text"],
-        .form-group input[type="file"],
-        .form-group textarea,
+        .form-group input,
         .form-group select {
             width: 100%;
             padding: 0.75rem;
@@ -366,22 +323,9 @@ $total_gallery_pages = (int) ceil($total_gallery_items / max(1, $gallery_items_p
         }
 
         .form-group input:focus,
-        .form-group textarea:focus,
         .form-group select:focus {
             outline: none;
             border-color: var(--primary);
-        }
-
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .form-group small {
-            display: block;
-            margin-top: 0.5rem;
-            color: var(--gray);
-            font-size: 0.875rem;
         }
 
         .btn-submit {
@@ -418,62 +362,6 @@ $total_gallery_pages = (int) ceil($total_gallery_items / max(1, $gallery_items_p
             background: #4b5563;
         }
 
-        .data-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-            margin-bottom: 2rem;
-        }
-
-        .data-section h2 {
-            color: var(--primary);
-            margin-bottom: 1.5rem;
-        }
-
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        th {
-            background: var(--light);
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        tr:hover {
-            background: var(--light);
-        }
-
-        .image-cell {
-            text-align: center;
-        }
-
-        .image-cell img {
-            width: 120px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 2px solid #e2e8f0;
-            transition: transform 0.3s;
-        }
-
-        .image-cell img:hover {
-            transform: scale(1.05);
-        }
-
         .btn-edit {
             background: #3b82f6;
             color: white;
@@ -505,6 +393,51 @@ $total_gallery_pages = (int) ceil($total_gallery_items / max(1, $gallery_items_p
             background: #dc2626;
         }
 
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table th {
+            background: var(--light);
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .data-table tr:hover {
+            background: var(--light);
+        }
+
+        .image-cell img {
+            max-width: 150px;
+            max-height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .image-cell {
+            min-width: 160px;
+        }
+
+        .help-text {
+            color: var(--gray);
+            font-size: 0.85rem;
+            display: block;
+            margin-top: 0.35rem;
+        }
+
         .edit-form-section {
             display: none;
         }
@@ -532,12 +465,6 @@ $total_gallery_pages = (int) ceil($total_gallery_items / max(1, $gallery_items_p
             transition: all 0.3s;
         }
 
-        .pagination a:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
         .pagination .active {
             background: var(--primary);
             color: white;
@@ -550,29 +477,16 @@ $total_gallery_pages = (int) ceil($total_gallery_items / max(1, $gallery_items_p
             pointer-events: none;
         }
 
+        .pagination a:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
         .pagination-info {
             text-align: center;
             color: var(--gray);
             margin-top: 1rem;
-        }
-
-        .btn-primary-header {
-            background: var(--primary);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary-header:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -580,111 +494,107 @@ $total_gallery_pages = (int) ceil($total_gallery_items / max(1, $gallery_items_p
 <body>
     <?php $active_page = 'gallery';
     include __DIR__ . '/partials/sidebar.php'; ?>
-
     <main class="content">
         <div class="content-inner">
-            <h1 style="color: var(--primary); margin-bottom: 2rem;"><i class="ri-image-line"></i> Kelola Mitra Lab</h1>
-
+            <div class="content-header">
+                <h1><i class="ri-image-line"></i> Gallery</h1>
+            </div>
 
             <div class="cms-content">
-
                 <?php if ($message): ?>
                     <div class="message <?php echo htmlspecialchars($message_type); ?>">
                         <?php echo htmlspecialchars($message); ?>
                     </div>
                 <?php endif; ?>
 
-                <!-- Edit Form (hidden by default) -->
                 <div id="edit-form-section" class="form-section edit-form-section">
-                    <h2>Edit Gambar Gallery</h2>
+                    <h2>Edit Gallery Image</h2>
                     <form method="POST" enctype="multipart/form-data" id="edit-gallery-form">
                         <input type="hidden" name="action" value="update_gallery">
                         <input type="hidden" name="id" id="edit_id">
-                        <input type="hidden" name="current_gambar" id="edit_current_gambar">
+                        <input type="hidden" name="current_image" id="edit_current_image">
                         <div class="form-group">
-                            <label>Judul *</label>
-                            <input type="text" name="judul" id="edit_judul" required placeholder="Judul gambar">
+                            <label>Title *</label>
+                            <input type="text" name="title" id="edit_title" required>
                         </div>
                         <div class="form-group">
-                            <label>Berita Terkait (Opsional)</label>
-                            <select name="id_berita" id="edit_id_berita">
-                                <option value="">-- Tidak dikaitkan --</option>
+                            <label>Related News (Optional)</label>
+                            <select name="id_news" id="edit_id_news">
+                                <option value="">-- Not Related --</option>
                                 <?php foreach ($news_options as $news): ?>
                                     <option value="<?php echo $news['id_berita']; ?>">
                                         <?php echo htmlspecialchars($news['judul']); ?></option>
                                 <?php endforeach; ?>
                             </select>
-                            <small>Jika tidak mengupload/URL, gambar dapat mengambil thumbnail berita ini (jika
-                                ada).</small>
+                            <span class="help-text">If no file or URL is uploaded, image will use news thumbnail.</span>
                         </div>
                         <div class="form-group">
-                            <label>Upload Gambar (File)</label>
-                            <input type="file" name="gambar_file" accept="image/*">
-                            <small>Jika diisi, unggahan ini akan menggantikan gambar lama.</small>
+                            <label>Upload Image File</label>
+                            <input type="file" name="image_file"
+                                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
+                            <span class="help-text">Max 5MB. If uploaded, this will override news/URL selection.</span>
                         </div>
                         <div class="form-group">
-                            <label>Atau Masukkan URL Gambar</label>
-                            <input type="text" name="gambar_url" id="edit_gambar_url"
+                            <label>Or Enter Image URL</label>
+                            <input type="text" name="image_url" id="edit_image_url"
                                 placeholder="https://example.com/image.jpg">
+                            <span class="help-text">Optional. Will override news image if filled.</span>
                         </div>
-                        <div>
-                            <button type="submit" class="btn-submit">Simpan Perubahan</button>
-                            <button type="button" class="btn-cancel" onclick="cancelEdit()">Batal</button>
-                        </div>
+                        <button type="submit" class="btn-submit">Save Changes</button>
+                        <button type="button" class="btn-cancel" onclick="cancelEdit()">Cancel</button>
                     </form>
                 </div>
 
-                <!-- Add Form -->
-                <div id="add-form-section" class="form-section">
-                    <h2>Tambah Gambar Baru</h2>
+                <div class="form-section" id="add-form-section">
+                    <h2>Add New Image</h2>
                     <form method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="action" value="add_gallery">
                         <div class="form-group">
-                            <label>Judul *</label>
-                            <input type="text" name="judul" required placeholder="Judul gambar">
+                            <label>Title *</label>
+                            <input type="text" name="title" required placeholder="Image title">
                         </div>
                         <div class="form-group">
-                            <label>Berita Terkait (Opsional)</label>
-                            <select name="id_berita">
-                                <option value="">-- Tidak dikaitkan --</option>
+                            <label>Related News (Optional)</label>
+                            <select name="id_news">
+                                <option value="">-- Not Related --</option>
                                 <?php foreach ($news_options as $news): ?>
                                     <option value="<?php echo $news['id_berita']; ?>">
                                         <?php echo htmlspecialchars($news['judul']); ?></option>
                                 <?php endforeach; ?>
                             </select>
-                            <small style="display:block;color:var(--gray);">Jika tidak mengupload/URL, gambar dapat
-                                mengambil thumbnail berita ini (jika ada).</small>
+                            <span class="help-text">If no file/URL uploaded, image will use this news thumbnail.</span>
                         </div>
                         <div class="form-group">
-                            <label>Upload Gambar (File)</label>
-                            <input type="file" name="gambar_file" accept="image/*">
+                            <label>Upload Image File</label>
+                            <input type="file" name="image_file"
+                                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
+                            <span class="help-text">Max 5MB. Overrides URL and news image.</span>
                         </div>
                         <div class="form-group">
-                            <label>Atau Masukkan URL Gambar</label>
-                            <input type="text" name="gambar_url" placeholder="https://example.com/image.jpg">
+                            <label>Or Enter Image URL</label>
+                            <input type="text" name="image_url" placeholder="https://example.com/image.jpg">
+                            <span class="help-text">One option must be filled: select news, upload file, or enter
+                                URL.</span>
                         </div>
-                        <div>
-                            <button type="submit" class="btn-submit">Tambah Gambar</button>
-                        </div>
+                        <button type="submit" class="btn-submit">Add Image</button>
                     </form>
                 </div>
 
-                <!-- Data Table -->
                 <div class="data-section">
-                    <h2>Daftar Gallery (<?php echo count($gallery_items); ?>)</h2>
+                    <h2>Gallery List (<?php echo count($gallery_items); ?>)</h2>
                     <?php if (empty($gallery_items)): ?>
-                        <p style="color:var(--gray); text-align:center; padding:1rem;">Belum ada data gallery.</p>
+                        <p class="text-center p-4 muted-gray">No gallery data yet.</p>
                     <?php else: ?>
                         <div class="table-container">
-                            <table>
+                            <table class="data-table">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Judul</th>
-                                        <th>Berita</th>
-                                        <th>Gambar</th>
-                                        <th>Dibuat</th>
-                                        <th>Aksi</th>
+                                        <th>Title</th>
+                                        <th>Related News</th>
+                                        <th>Image</th>
+                                        <th>Created</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -692,29 +602,33 @@ $total_gallery_pages = (int) ceil($total_gallery_items / max(1, $gallery_items_p
                                         <tr>
                                             <td><?php echo $item['id_gallery']; ?></td>
                                             <td><?php echo htmlspecialchars($item['judul']); ?></td>
-                                            <td><?php echo htmlspecialchars($item['berita_judul'] ?? '-'); ?></td>
+                                            <td><?php echo htmlspecialchars($item['news_title'] ?? '-'); ?></td>
                                             <td class="image-cell">
                                                 <?php if (!empty($item['gambar'])): ?>
                                                     <img src="<?php echo htmlspecialchars($item['gambar']); ?>"
                                                         alt="<?php echo htmlspecialchars($item['judul']); ?>"
                                                         onerror="this.style.display='none'">
                                                 <?php else: ?>
-                                                    <span style="color:var(--gray);">-</span>
+                                                    <span class="muted-gray">-</span>
                                                 <?php endif; ?>
                                             </td>
-                                            <td><?php echo !empty($item['created_at']) ? date('d M Y', strtotime($item['created_at'])) : '-'; ?>
+                                            <td>
+                                                <?php
+                                                $created = $item['created_at'] ?? null;
+                                                echo $created ? date('d M Y', strtotime($created)) : '-';
+                                                ?>
                                             </td>
                                             <td>
                                                 <button type="button" class="btn-edit"
-                                                    onclick='editGallery(<?php echo json_encode($item, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>
+                                                    onclick="editGallery(<?php echo htmlspecialchars(json_encode($item)); ?>)">
                                                     <i class="ri-edit-line"></i> Edit
                                                 </button>
-                                                <form method="POST" style="display:inline;"
-                                                    onsubmit="return confirm('Yakin hapus gambar ini?');">
+                                                <form method="POST" class="d-inline"
+                                                    onsubmit="return confirm('Are you sure you want to delete this image?');">
                                                     <input type="hidden" name="action" value="delete_gallery">
                                                     <input type="hidden" name="id" value="<?php echo $item['id_gallery']; ?>">
                                                     <button type="submit" class="btn-delete">
-                                                        <i class="ri-delete-bin-line"></i> Hapus
+                                                        <i class="ri-delete-bin-line"></i> Delete
                                                     </button>
                                                 </form>
                                             </td>
@@ -723,87 +637,67 @@ $total_gallery_pages = (int) ceil($total_gallery_items / max(1, $gallery_items_p
                                 </tbody>
                             </table>
                         </div>
+                    <?php endif; ?>
 
-                        <!-- Pagination -->
-                        <?php if ($total_pages > 1): ?>
-                            <div class="pagination">
-                                <?php if ($current_page > 1): ?>
-                                    <a href="?page=<?php echo $current_page - 1; ?>">&laquo; Previous</a>
-                                <?php else: ?>
-                                    <span class="disabled">&laquo; Previous</span>
-                                <?php endif; ?>
+                    <?php if ($total_pages > 1): ?>
+                        <div class="pagination">
+                            <?php if ($current_page > 1): ?>
+                                <a href="?page=<?php echo $current_page - 1; ?>">&laquo; Previous</a>
+                            <?php else: ?>
+                                <span class="disabled">&laquo; Previous</span>
+                            <?php endif; ?>
 
-                                <?php
-                                $start_page = max(1, $current_page - 2);
-                                $end_page = min($total_pages, $current_page + 2);
+                            <?php
+                            $start_page = max(1, $current_page - 2);
+                            $end_page = min($total_pages, $current_page + 2);
+                            if ($start_page > 1): ?>
+                                <a href="?page=1">1</a>
+                                <?php if ($start_page > 2): ?><span>...</span><?php endif; ?>
+                            <?php endif; ?>
 
-                                if ($start_page > 1): ?>
-                                    <a href="?page=1">1</a>
-                                    <?php if ($start_page > 2): ?>
-                                        <span>...</span>
-                                    <?php endif; ?>
-                                <?php endif; ?>
+                            <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                                <a href="?page=<?php echo $i; ?>"
+                                    class="<?php echo $i == $current_page ? 'active' : ''; ?>"><?php echo $i; ?></a>
+                            <?php endfor; ?>
 
-                                <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
-                                    <?php if ($i == $current_page): ?>
-                                        <span class="active"><?php echo $i; ?></span>
-                                    <?php else: ?>
-                                        <a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
-                                    <?php endif; ?>
-                                <?php endfor; ?>
+                            <?php if ($end_page < $total_pages): ?>
+                                <?php if ($end_page < $total_pages - 1): ?><span>...</span><?php endif; ?>
+                                <a href="?page=<?php echo $total_pages; ?>"><?php echo $total_pages; ?></a>
+                            <?php endif; ?>
 
-                                <?php if ($end_page < $total_pages): ?>
-                                    <?php if ($end_page < $total_pages - 1): ?>
-                                        <span>...</span>
-                                    <?php endif; ?>
-                                    <a href="?page=<?php echo $total_pages; ?>"><?php echo $total_pages; ?></a>
-                                <?php endif; ?>
+                            <?php if ($current_page < $total_pages): ?>
+                                <a href="?page=<?php echo $current_page + 1; ?>">Next &raquo;</a>
+                            <?php else: ?>
+                                <span class="disabled">Next &raquo;</span>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
 
-                                <?php if ($current_page < $total_pages): ?>
-                                    <a href="?page=<?php echo $current_page + 1; ?>">Next &raquo;</a>
-                                <?php else: ?>
-                                    <span class="disabled">Next &raquo;</span>
-                                <?php endif; ?>
-                            </div>
-                            <div class="pagination-info">
-                                Menampilkan <?php echo ($offset + 1); ?> -
-                                <?php echo min($offset + $items_per_page, $total_items); ?> dari <?php echo $total_items; ?>
-                                gambar
-                            </div>
-                        <?php endif; ?>
+                    <?php if ($total_pages > 1): ?>
+                        <div class="pagination-info">
+                            Page <?php echo $current_page; ?> of <?php echo $total_pages; ?>
+                        </div>
                     <?php endif; ?>
                 </div>
-
             </div>
         </div>
     </main>
 
     <script>
-        // ----- Edit gallery helper -----
         function editGallery(item) {
-            // item passed as object
-            var data = (typeof item === 'string') ? JSON.parse(item) : item;
+            document.getElementById('edit_id').value = item.id_gallery;
+            document.getElementById('edit_title').value = item.judul;
+            document.getElementById('edit_id_news').value = item.id_berita || '';
+            document.getElementById('edit_image_url').value = '';
+            document.getElementById('edit_current_image').value = item.gambar || '';
 
-            // populate form
-            document.getElementById('edit_id').value = data.id_gallery || data.id || '';
-            document.getElementById('edit_current_gambar').value = data.gambar || '';
-            document.getElementById('edit_judul').value = data.judul || '';
-            if (document.getElementById('edit_id_berita')) {
-                document.getElementById('edit_id_berita').value = data.id_berita || '';
-            }
-            if (document.getElementById('edit_gambar_url')) {
-                document.getElementById('edit_gambar_url').value = data.gambar || '';
-            }
-
-            // show edit form
-            document.getElementById('edit-form-section').classList.add('active');
             document.getElementById('add-form-section').style.display = 'none';
+            document.getElementById('edit-form-section').classList.add('active');
             document.getElementById('edit-form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function cancelEdit() {
-            var form = document.getElementById('edit-gallery-form');
-            if (form) form.reset();
+            document.getElementById('edit-gallery-form').reset();
             document.getElementById('edit-form-section').classList.remove('active');
             document.getElementById('add-form-section').style.display = 'block';
         }

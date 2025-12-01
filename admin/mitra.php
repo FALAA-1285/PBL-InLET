@@ -122,7 +122,7 @@ if (isset($_GET['edit'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mitra Lab - CMS InLET</title>
+    <title>Manage Partners - CMS InLET</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="admin.css">
@@ -321,8 +321,7 @@ if (isset($_GET['edit'])) {
     <main class="content">
         <div class="content-inner">
             <div class="cms-content">
-                <h1 style="color: var(--primary); margin-bottom: 2rem;"><i class="ri-community-line"></i> Kelola Mitra
-                    Lab</h1>
+                <h1 class="text-primary mb-4"><i class="ri-community-line"></i> Kelola Mitra Lab</h1>
 
                 <?php if ($message): ?>
                     <div class="message <?php echo $message_type; ?>">
@@ -332,7 +331,7 @@ if (isset($_GET['edit'])) {
 
                 <!-- Add/Edit Form -->
                 <div class="form-section <?php echo $edit_mitra ? 'edit-form-section active' : ''; ?>">
-                    <h2><?php echo $edit_mitra ? 'Edit Mitra' : 'Tambah Mitra Baru'; ?></h2>
+                    <h2><?php echo $edit_mitra ? 'Edit Partner' : 'Add New Partner'; ?></h2>
                     <form method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="action"
                             value="<?php echo $edit_mitra ? 'update_mitra' : 'add_mitra'; ?>">
@@ -347,7 +346,7 @@ if (isset($_GET['edit'])) {
                         </div>
 
                         <div class="form-group">
-                            <label for="logo">Logo URL (opsional)</label>
+                            <label for="logo">Logo URL (optional)</label>
                             <input type="url" id="logo" name="logo"
                                 value="<?php echo htmlspecialchars($edit_mitra['logo'] ?? ''); ?>"
                                 placeholder="https://example.com/logo.png">
@@ -359,7 +358,7 @@ if (isset($_GET['edit'])) {
                         </div>
 
                         <button type="submit" class="btn-submit">
-                            <?php echo $edit_mitra ? 'Update Mitra' : 'Tambah Mitra'; ?>
+                            <?php echo $edit_mitra ? 'Update Partner' : 'Add Partner'; ?>
                         </button>
                         <?php if ($edit_mitra): ?>
                             <a href="mitra.php" class="btn-cancel">Batal</a>
@@ -372,7 +371,7 @@ if (isset($_GET['edit'])) {
                     <h2>Daftar Mitra (<?php echo count($mitra_list); ?>)</h2>
 
                     <?php if (empty($mitra_list)): ?>
-                        <p style="color: var(--gray);">Belum ada mitra yang terdaftar.</p>
+                        <p class="muted-gray">No partners registered yet.</p>
                     <?php else: ?>
                         <div class="table-container">
                             <table>
@@ -394,7 +393,7 @@ if (isset($_GET['edit'])) {
                                                         alt="<?php echo htmlspecialchars($mitra['nama_institusi']); ?>"
                                                         onerror="this.style.display='none'">
                                                 <?php else: ?>
-                                                    <span style="color: var(--gray);">-</span>
+                                                    <span class="muted-gray">-</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td><?php echo htmlspecialchars($mitra['nama_institusi']); ?></td>
@@ -402,12 +401,12 @@ if (isset($_GET['edit'])) {
                                                 <a href="?edit=<?php echo $mitra['id_mitra']; ?>" class="btn-edit">
                                                     <i class="ri-edit-line"></i> Edit
                                                 </a>
-                                                <form method="POST" style="display: inline;"
-                                                    onsubmit="return confirm('Yakin hapus mitra ini?');">
+                                                <form method="POST" class="d-inline"
+                                                    onsubmit="return confirm('Are you sure you want to delete this partner?');">
                                                     <input type="hidden" name="action" value="delete_mitra">
                                                     <input type="hidden" name="id" value="<?php echo $mitra['id_mitra']; ?>">
                                                     <button type="submit" class="btn-delete">
-                                                        <i class="ri-delete-bin-line"></i> Hapus
+                                                        <i class="ri-delete-bin-line"></i> Delete
                                                     </button>
                                                 </form>
                                             </td>
@@ -422,5 +421,4 @@ if (isset($_GET['edit'])) {
         </div>
     </main>
 </body>
-
 </html>

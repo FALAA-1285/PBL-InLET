@@ -16,21 +16,22 @@ if (isLoggedIn() && isAdmin()) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
-    
+
     if (empty($username) || empty($password)) {
-        $error = 'Username dan password harus diisi!';
+        $error = 'Username and password are required!';
     } else {
         if (loginAdmin($username, $password)) {
             header('Location: admin/dashboard.php');
             exit();
         } else {
-            $error = 'Username atau password salah!';
+            $error = 'Invalid username or password!';
         }
     }
 }
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -247,6 +248,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </style>
 </head>
+
 <body>
     <div class="login-container">
         <div class="login-box">
@@ -255,44 +257,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="ri-shield-user-line"></i>
                 </div>
                 <h1>Login Admin</h1>
-                <p>Masuk ke CMS InLET Polinema</p>
+                <p>Log in to InLET Polinema CMS</p>
             </div>
-            
+
             <?php if ($error): ?>
                 <div class="error-message">
                     <i class="ri-error-warning-fill"></i>
                     <span><?php echo htmlspecialchars($error); ?></span>
                 </div>
             <?php endif; ?>
-            
+
             <form method="POST" action="">
                 <div class="form-group">
                     <label for="username">Username</label>
                     <div class="input-wrapper">
                         <i class="ri-user-line"></i>
-                        <input type="text" id="username" name="username" 
-                               placeholder="Masukkan username" 
-                               required autofocus
-                               value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>">
+                        <input type="text" id="username" name="username" placeholder="Enter username" required autofocus
+                            value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>">
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="password">Password</label>
                     <div class="input-wrapper">
                         <i class="ri-lock-password-line"></i>
-                        <input type="password" id="password" name="password" 
-                               placeholder="Masukkan password" 
-                               required>
+                        <input type="password" id="password" name="password" placeholder="Enter password" required>
                     </div>
                 </div>
-                
+
                 <button type="submit" class="btn-login">
                     <i class="ri-login-box-line"></i>
-                    <span>Masuk</span>
+                    <span>Login</span>
                 </button>
             </form>
-            
+
             <div class="login-footer">
                 <a href="index.php">
                     <i class="ri-arrow-left-line"></i> Kembali ke Beranda
@@ -301,4 +299,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 </body>
+
 </html>

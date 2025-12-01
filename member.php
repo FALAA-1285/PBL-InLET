@@ -3,7 +3,7 @@ require_once 'config/database.php';
 
 $conn = getDBConnection();
 
-// Search setup
+// Search and filter setup
 $search_query = isset($_GET['search']) ? trim($_GET['search']) : '';
 $letter_filter = isset($_GET['letter']) ? strtoupper(trim($_GET['letter'])) : '';
 
@@ -28,45 +28,35 @@ if (!empty($letter_filter) && strlen($letter_filter) == 1 && ctype_alpha($letter
 
 $where_sql = !empty($where_clauses) ? 'WHERE ' . implode(' AND ', $where_clauses) : '';
 
-// Get total count
+// Count total items
 $count_sql = "SELECT COUNT(*) FROM member $where_sql";
 $stmt = $conn->prepare($count_sql);
 foreach ($params as $key => $value) {
     $stmt->bindValue($key, $value);
 }
 $stmt->execute();
-$total_items_members = (int)$stmt->fetchColumn();
-$total_pages_members = max(1, ($items_per_page > 0 && $total_items_members > 0) ? (int)ceil($total_items_members / $items_per_page) : 1);
+$total_items_members = (int) $stmt->fetchColumn();
+$total_pages_members = max(1, ($items_per_page > 0 && $total_items_members > 0) ? (int) ceil($total_items_members / $items_per_page) : 1);
 $current_page_members = min(max(1, $current_page_members), $total_pages_members);
 $offset_members = ($current_page_members - 1) * $items_per_page;
 
 
-// Get members (all fields are already in member table)
-// Get total count for members with search
-if (!empty($search_name) && is_numeric($search_name)) {
-    $stmt = $conn->prepare("SELECT COUNT(*) FROM member WHERE nama = :name");
-    $total_items_members = $stmt->fetchColumn();
-    
-    // Get members with pagination and search
-    $stmt = $conn->prepare("SELECT * FROM member WHERE nama = :name ORDER BY nama LIMIT :limit OFFSET :offset");
-} else {
-    $stmt = $conn->query("SELECT COUNT(*) FROM member");
-    $total_items_members = $stmt->fetchColumn();
-    
-    // Get members with pagination
-    $stmt = $conn->prepare("SELECT * FROM member ORDER BY nama LIMIT :limit OFFSET :offset");
+// Fetch members with search and pagination
+$query_sql = "SELECT * FROM member $where_sql ORDER BY nama LIMIT :limit OFFSET :offset";
+$stmt = $conn->prepare($query_sql);
+foreach ($params as $key => $value) {
+    $stmt->bindValue($key, $value);
 }
 $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset_members, PDO::PARAM_INT);
 $stmt->execute();
 $members = $stmt->fetchAll();
-$total_pages_members = ceil($total_items_members / $items_per_page);
 
-// Get all first letters for index
+// Get first letters for index
 $stmt = $conn->query("SELECT DISTINCT UPPER(SUBSTRING(nama FROM 1 FOR 1)) as first_letter FROM member WHERE nama IS NOT NULL AND nama != '' ORDER BY first_letter");
 $available_letters = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-// Function to get initials
+// Get initials
 function getInitials($name)
 {
     $words = explode(' ', $name);
@@ -88,7 +78,8 @@ function getInitials($name)
     <title>Our Experts - Information & Learning Engineering Technology</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/style-member.css">
 </head>
@@ -96,7 +87,7 @@ function getInitials($name)
 <body>
     <?php include 'includes/header.php'; ?>
 
-    <main class="flex-grow-1" style="flex: 1 0 auto; min-height: 0; padding-top: 80px;">
+    <main>
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
                 <h1 class="display-4 fw-bold">Our Experts - Information And Learning Engineering Technology</h1>
@@ -104,14 +95,12 @@ function getInitials($name)
             </div>
         </section>
 
-        <section class="team-section" id="profiles" style="padding-bottom: 4rem;">
+        <section class="team-section" id="profiles">
             <div class="container">
                 <div class="section-title text-center mb-5">
                     <h2 class="fw-bold">Meet the Team</h2>
                     <p class="text-muted">The brilliant minds behind our research.</p>
-                    <div
-                        style="width: 60px; height: 3px; background: var(--primary-color, #0d6efd); margin: 15px auto;">
-                    </div>
+                    <div class="divider"></div>
                 </div>
 
                 <!-- Alphabet Index -->
@@ -123,7 +112,7 @@ function getInitials($name)
                             </div>
                             <?php if (!empty($letter_filter)): ?>
                                 <p class="text-center text-muted mt-2">
-                                    Menampilkan member dengan huruf awal "<?= htmlspecialchars($letter_filter); ?>"
+                                    Showing members with initial letter "<?= htmlspecialchars($letter_filter); ?>"
                                 </p>
                             <?php endif; ?>
                         </div>
@@ -135,7 +124,7 @@ function getInitials($name)
                         <div class="col-12 text-center py-5">
                             <div class="alert alert-light shadow-sm" role="alert">
                                 <i class="fas fa-users fa-3x mb-3 text-muted"></i>
-                                <p class="mb-0 text-muted">Belum ada member yang terdaftar saat ini.</p>
+                                <p class="mb-0 text-muted">No members registered at this time.</p>
                             </div>
                         </div>
                     <?php else: ?>
@@ -143,14 +132,14 @@ function getInitials($name)
                             <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
                                 <div class="member-card card-surface h-100">
                                     <?php
-                                    // Image Logic
+                                    // Handle image
                                     $has_photo = false;
                                     $foto_url = '';
                                     if (!empty($member['foto'])) {
                                         $foto_url = $member['foto'];
-                                        // Jika bukan URL http, asumsikan file lokal
+                                        // If not HTTP URL, assume local file
                                         if (!preg_match('/^https?:\/\//', $foto_url)) {
-                                            // Tambahkan prefix uploads/ jika belum ada
+                                            // Add uploads/ prefix if missing
                                             if (strpos($foto_url, 'uploads/') !== 0) {
                                                 $foto_url = 'uploads/' . ltrim($foto_url, '/');
                                             }
@@ -165,7 +154,7 @@ function getInitials($name)
                                                 alt="<?php echo htmlspecialchars($member['nama']); ?>" class="member-img"
                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
 
-                                            <div class="member-initials" style="display: none;">
+                                            <div class="member-initials d-none">
                                                 <?php echo getInitials($member['nama']); ?>
                                             </div>
                                         <?php else: ?>
@@ -194,7 +183,7 @@ function getInitials($name)
                                     <?php if ($member['email']): ?>
                                         <div class="member-footer">
                                             <a href="mailto:<?php echo htmlspecialchars($member['email']); ?>" class="btn-email">
-                                                <i class="fas fa-envelope me-2"></i>Hubungi via Email
+                                                <i class="fas fa-envelope me-2"></i>Contact via Email
                                             </a>
                                         </div>
                                     <?php endif; ?>
@@ -206,18 +195,23 @@ function getInitials($name)
 
                 <!-- Pagination for Members -->
                 <?php if ($total_pages_members > 1): ?>
-                    <nav aria-label="Members pagination" style="margin-top: 3rem;">
-                        <ul class="pagination justify-content-center" style="gap: 0.5rem;">
-                            <?php 
+                    <nav aria-label="Members pagination" class="mt-5">
+                        <ul class="pagination justify-content-center pagination-gap">
+                            <?php
                             $page_url = "?";
-                            if (!empty($search_name)) {
-                                $page_url .= "name=" . urlencode($search_name) . "&";
+                            if (!empty($search_query)) {
+                                $page_url .= "search=" . urlencode($search_query) . "&";
+                            }
+                            if (!empty($letter_filter)) {
+                                $page_url .= "letter=" . urlencode($letter_filter) . "&";
                             }
                             ?>
-                            
+
                             <?php if ($current_page_members > 1): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="<?= $page_url ?>page_members=<?php echo $current_page_members - 1; ?>#focus-areas" aria-label="Previous">
+                                    <a class="page-link"
+                                        href="<?= $page_url ?>page_members=<?php echo $current_page_members - 1; ?>#focus-areas"
+                                        aria-label="Previous">
                                         <span aria-hidden="true">&laquo; Previous</span>
                                     </a>
                                 </li>
@@ -226,11 +220,11 @@ function getInitials($name)
                                     <span class="page-link" aria-hidden="true">&laquo; Previous</span>
                                 </li>
                             <?php endif; ?>
-                            
+
                             <?php
                             $start_page = max(1, $current_page_members - 2);
                             $end_page = min($total_pages_members, $current_page_members + 2);
-                            
+
                             if ($start_page > 1): ?>
                                 <li class="page-item">
                                     <a class="page-link" href="<?= $page_url ?>page_members=1#focus-areas">1</a>
@@ -241,13 +235,14 @@ function getInitials($name)
                                     </li>
                                 <?php endif; ?>
                             <?php endif; ?>
-                            
+
                             <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
                                 <li class="page-item <?php echo ($i == $current_page_members) ? 'active' : ''; ?>">
-                                    <a class="page-link" href="<?= $page_url ?>page_members=<?php echo $i; ?>#focus-areas"><?php echo $i; ?></a>
+                                    <a class="page-link"
+                                        href="<?= $page_url ?>page_members=<?php echo $i; ?>#focus-areas"><?php echo $i; ?></a>
                                 </li>
                             <?php endfor; ?>
-                            
+
                             <?php if ($end_page < $total_pages_members): ?>
                                 <?php if ($end_page < $total_pages_members - 1): ?>
                                     <li class="page-item disabled">
@@ -255,13 +250,16 @@ function getInitials($name)
                                     </li>
                                 <?php endif; ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="<?= $page_url ?>page_members=<?php echo $total_pages_members; ?>#focus-areas"><?php echo $total_pages_members; ?></a>
+                                    <a class="page-link"
+                                        href="<?= $page_url ?>page_members=<?php echo $total_pages_members; ?>#focus-areas"><?php echo $total_pages_members; ?></a>
                                 </li>
                             <?php endif; ?>
-                            
+
                             <?php if ($current_page_members < $total_pages_members): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="<?= $page_url ?>page_members=<?php echo $current_page_members + 1; ?>#focus-areas" aria-label="Next">
+                                    <a class="page-link"
+                                        href="<?= $page_url ?>page_members=<?php echo $current_page_members + 1; ?>#focus-areas"
+                                        aria-label="Next">
                                         <span aria-hidden="true">Next &raquo;</span>
                                     </a>
                                 </li>
@@ -271,14 +269,14 @@ function getInitials($name)
                                 </li>
                             <?php endif; ?>
                         </ul>
-                        
+
                     </nav>
                 <?php endif; ?>
             </div>
         </section>
     </main>
 
-    <div style="flex-shrink: 0; margin-top: auto; width: 100%; position: relative; z-index: 1;">
+    <div class="footer-wrap">
         <?php include 'includes/footer.php'; ?>
     </div>
 

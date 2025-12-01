@@ -15,12 +15,12 @@ $new_admin = null;
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
-    
+
     if ($action === 'reset') {
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
         $confirm_password = $_POST['confirm_password'] ?? '';
-        
+
         if (empty($username) || empty($password)) {
             $message = 'Username dan password harus diisi!';
             $message_type = 'error';
@@ -33,25 +33,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             try {
                 $conn = getDBConnection();
-                
+
                 // Hash password
                 $password_hash = password_hash($password, PASSWORD_DEFAULT);
-                
+
                 // Hapus semua admin yang ada
                 $conn->exec("DELETE FROM admin");
-                
+
                 // Buat admin baru
                 $stmt = $conn->prepare("INSERT INTO admin (username, password_hash, role) VALUES (:username, :password_hash, 'admin') RETURNING id_admin, username, role");
                 $stmt->execute([
                     'username' => $username,
                     'password_hash' => $password_hash
                 ]);
-                
+
                 $new_admin = $stmt->fetch();
-                
-                $message = 'Admin berhasil direset dan dibuat ulang!';
+
+                $message = 'Admin successfully reset and recreated!';
                 $message_type = 'success';
-            } catch(PDOException $e) {
+            } catch (PDOException $e) {
                 $message = 'Error: ' . $e->getMessage();
                 $message_type = 'error';
             }
@@ -64,12 +64,13 @@ try {
     $conn = getDBConnection();
     $stmt = $conn->query("SELECT COUNT(*) as count FROM admin");
     $admin_count = $stmt->fetch()['count'];
-} catch(PDOException $e) {
+} catch (PDOException $e) {
     $admin_count = 0;
 }
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -299,6 +300,7 @@ try {
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -315,8 +317,8 @@ try {
                 Peringatan!
             </h3>
             <p>
-                Tindakan ini akan <strong>menghapus semua admin yang ada</strong> dan membuat admin baru. 
-                Pastikan Anda yakin sebelum melanjutkan!
+                Tindakan ini akan <strong>menghapus semua admin yang ada</strong> dan membuat admin baru.
+                Make sure you are certain before proceeding!
             </p>
         </div>
 
@@ -329,7 +331,7 @@ try {
 
         <?php if ($new_admin): ?>
             <div class="admin-info">
-                <h4><i class="ri-information-line"></i> Admin Baru Berhasil Dibuat</h4>
+                <h4><i class="ri-information-line"></i> Admin Successfully Created</h4>
                 <div class="info-item">
                     <span class="info-label">Username:</span>
                     <span class="info-value"><?php echo htmlspecialchars($new_admin['username']); ?></span>
@@ -343,31 +345,27 @@ try {
 
         <form method="POST">
             <input type="hidden" name="action" value="reset">
-            
+
             <div class="form-group">
                 <label for="username">Username Baru *</label>
-                <input type="text" id="username" name="username" 
-                       placeholder="Masukkan username" 
-                       required autofocus
-                       value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>">
+                <input type="text" id="username" name="username" placeholder="Masukkan username" required autofocus
+                    value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>">
             </div>
-            
+
             <div class="form-group">
                 <label for="password">Password Baru *</label>
-                <input type="password" id="password" name="password" 
-                       placeholder="Minimal 6 karakter" 
-                       required minlength="6">
+                <input type="password" id="password" name="password" placeholder="Minimal 6 karakter" required
+                    minlength="6">
             </div>
-            
+
             <div class="form-group">
                 <label for="confirm_password">Konfirmasi Password *</label>
-                <input type="password" id="confirm_password" name="confirm_password" 
-                       placeholder="Ulangi password" 
-                       required minlength="6">
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="Ulangi password"
+                    required minlength="6">
             </div>
-            
-            <button type="submit" class="btn-reset" 
-                    onclick="return confirm('Yakin ingin menghapus semua admin dan membuat admin baru? Tindakan ini tidak dapat dibatalkan!');">
+
+            <button type="submit" class="btn-reset"
+                onclick="return confirm('Are you sure you want to delete all admins and create a new admin? This action cannot be undone!');">
                 <i class="ri-refresh-line"></i>
                 <span>Reset & Buat Admin Baru</span>
             </button>
@@ -381,12 +379,12 @@ try {
             </p>
         </div>
 
-        <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e2e8f0;">
-            <a href="../login.php" style="color: var(--primary); text-decoration: none; font-weight: 500;">
+        <div class="text-center mt-4 pt-4 border-top">
+            <a href="../login.php" class="text-primary text-decoration-none fw-semibold">
                 <i class="ri-arrow-left-line"></i> Kembali ke Login
             </a>
         </div>
     </div>
 </body>
-</html>
 
+</html>

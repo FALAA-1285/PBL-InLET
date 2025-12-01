@@ -14,7 +14,7 @@ $menu_items = [
     ],
     [
         'id' => 'member',
-        'label' => 'Member',
+        'label' => 'Members',
         'href' => 'member.php',
         'icon' => 'ri-team-line',
     ],
@@ -26,31 +26,37 @@ $menu_items = [
     ],
     [
         'id' => 'mitra',
-        'label' => 'Mitra Lab',
+        'label' => 'Lab Partners',
         'href' => 'mitra.php',
         'icon' => 'ri-community-line',
     ],
     [
         'id' => 'mahasiswa',
-        'label' => 'Mahasiswa',
+        'label' => 'Students',
         'href' => 'mahasiswa.php',
         'icon' => 'ri-graduation-cap-line',
     ],
     [
         'id' => 'alat_lab',
-        'label' => 'Alat Lab',
+        'label' => 'Lab Tools',
         'href' => 'alat_lab.php',
         'icon' => 'ri-tools-line',
     ],
     [
+        'id' => 'peminjaman',
+        'label' => 'Tool Loan',
+        'href' => 'peminjaman.php',
+        'icon' => 'ri-exchange-line',
+    ],
+    [
         'id' => 'absensi',
-        'label' => 'Absensi',
+        'label' => 'Attendance',
         'href' => 'absensi.php',
         'icon' => 'ri-calendar-check-line',
     ],
     [
         'id' => 'buku_tamu',
-        'label' => 'Buku Tamu',
+        'label' => 'Guestbook',
         'href' => 'buku_tamu.php',
         'icon' => 'ri-book-open-line',
     ],
@@ -98,4 +104,3 @@ $active_page = $active_page ?? pathinfo($_SERVER['PHP_SELF'], PATHINFO_FILENAME)
         </div>
     </div>
 </aside>
-

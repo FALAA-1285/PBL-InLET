@@ -8,12 +8,13 @@ $root_base = $is_service_page ? '../' : '';
 $service_base = $is_service_page ? '' : 'service/';
 ?>
 
+<link rel="stylesheet" href="<?= $root_base ?>css/inline-cleanup.css">
+
 <header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top shadow-sm">
         <div class="container">
-
             <a href="<?= $root_base ?>index.php" class="navbar-brand">
-                <img src="<?= $root_base ?>assets/logo.png" alt="Logo" style="height: 40px;">
+                <img src="<?= $root_base ?>assets/logo.png" alt="Logo" class="logo-img">
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -22,25 +23,32 @@ $service_base = $is_service_page ? '' : 'service/';
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-
                     <li class="nav-item">
                         <a class="nav-link <?= ($current_page == 'index.php') ? 'active text-primary fw-bold' : ''; ?>"
-                            href="<?= $root_base ?>index.php">Home</a>
+                            href="<?= $root_base ?>index.php">
+                            Home
+                        </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link <?= ($current_page == 'research.php') ? 'active text-primary fw-bold' : ''; ?>"
-                            href="<?= $root_base ?>research.php">Research</a>
+                            href="<?= $root_base ?>research.php">
+                            Research
+                        </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link <?= ($current_page == 'member.php') ? 'active text-primary fw-bold' : ''; ?>"
-                            href="<?= $root_base ?>member.php">Member</a>
+                            href="<?= $root_base ?>member.php">
+                            Members
+                        </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link <?= ($current_page == 'news.php') ? 'active text-primary fw-bold' : ''; ?>"
-                            href="<?= $root_base ?>news.php">News</a>
+                            href="<?= $root_base ?>news.php">
+                            News
+                        </a>
                     </li>
 
                     <li class="nav-item dropdown">
@@ -52,25 +60,37 @@ $service_base = $is_service_page ? '' : 'service/';
                         <ul class="dropdown-menu custom-dropdown shadow-sm border-0" aria-labelledby="serviceDropdown">
                             <li>
                                 <a class="dropdown-item <?= ($current_page == 'peminjaman.php') ? 'active text-primary fw-bold' : ''; ?>"
-                                    href="<?= $service_base ?>peminjaman.php">Peminjaman</a>
+                                    href="<?= $service_base ?>peminjaman.php">
+                                    Tool Loan
+                                </a>
                             </li>
-
                             <li>
                                 <a class="dropdown-item <?= ($current_page == 'absen.php') ? 'active text-primary fw-bold' : ''; ?>"
-                                    href="<?= $service_base ?>absen.php">Absensi</a>
+                                    href="<?= $service_base ?>absen.php">
+                                    Attendance
+                                </a>
                             </li>
-
                             <li>
                                 <a class="dropdown-item <?= ($current_page == 'buku_tamu.php') ? 'active text-primary fw-bold' : ''; ?>"
-                                    href="<?= $service_base ?>buku_tamu.php">Buku Tamu</a>
+                                    href="<?= $service_base ?>buku_tamu.php">
+                                    Guestbook
+                                </a>
                             </li>
                         </ul>
+                    </li>
+
+                    <li class="nav-item ms-lg-1">
+                        <a class="nav-link btn-admin <?= ($current_page == 'login.php') ? 'active' : ''; ?>"
+                            href="<?= $root_base ?>login.php">
+                            Admin
+                        </a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 </header>
+
 <style>
     html {
         scrollbar-width: none;
@@ -118,9 +138,11 @@ $service_base = $is_service_page ? '' : 'service/';
     .navbar-nav .nav-link {
         color: #1f2937;
         font-weight: 500;
-        padding: 0.7rem 1.1rem;
+        padding: 0.7rem 1rem;
         font-size: 1rem;
         transition: all 0.25s ease;
+        border-radius: 8px;
+        margin: 0 0.1rem;
     }
 
     .navbar-nav .nav-link.fw-500 {
@@ -129,12 +151,14 @@ $service_base = $is_service_page ? '' : 'service/';
 
     .navbar-nav .nav-link:hover {
         color: #0d6efd;
+        background-color: rgba(13, 110, 253, 0.04);
         transform: translateY(-1px);
     }
 
     .navbar-nav .nav-link.active {
         color: #0d6efd !important;
         font-weight: 700 !important;
+        background-color: rgba(13, 110, 253, 0.08);
     }
 
     .fw-bold {
@@ -206,8 +230,80 @@ $service_base = $is_service_page ? '' : 'service/';
         transform: rotate(180deg);
     }
 
+    .btn-admin {
+        color: #ffffff !important;
+        background-color: #0d6efd;
+        border: 1.5px solid #0d6efd;
+        padding: 0.7rem 1.2rem;
+        font-weight: 500;
+        font-size: 1rem;
+        border-radius: 8px;
+        transition: all 0.25s ease;
+        margin-left: 0.25rem;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .btn-admin::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        z-index: -1;
+    }
+
+    .btn-admin:hover {
+        color: #ffffff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+    }
+
+    .btn-admin:hover::before {
+        transform: translateX(0);
+    }
+
+    .btn-admin:active::before {
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-admin.active {
+        color: #2a0492ff !important;
+        background-color: #0b5ed7;
+        border-color: #0b5ed7;
+        font-weight: 600;
+    }
+
+    .btn-admin.active:hover {
+        background-color: #0a58ca;
+        border-color: #0a58ca;
+    }
+
+    .btn-admin.active::before {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: translateX(0);
+    }
+
     @media (max-width: 992px) {
-        .navbar .dropdown-menu {
+        .navbar-nav {
+            text-align: center;
+        }
+
+        .nav-item {
+            margin: 3px 0;
+        }
+
+        .navbar-nav .nav-link {
+            margin: 2px 0;
+            padding: 0.6rem 0.8rem;
+        }
+
+        .dropdown-menu {
             position: static;
             box-shadow: none;
             border: none;
@@ -221,22 +317,20 @@ $service_base = $is_service_page ? '' : 'service/';
             border-radius: 0;
         }
 
-        .navbar-nav {
-            text-align: center;
+        .btn-admin {
+            margin-left: 0;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+            width: auto;
+            max-width: 120px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .nav-item {
-            margin: 5px 0;
+        .ms-lg-1 {
+            margin-left: 0 !important;
         }
-    }
-
-    .btn {
-        font-weight: 500;
-        transition: all 0.2s ease-in-out;
-    }
-
-    .btn:hover {
-        transform: translateY(-1px);
     }
 
     .navbar-toggler {

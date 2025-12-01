@@ -10,6 +10,7 @@ body {
 main {
     flex: 1;
     padding-top: 80px;
+    margin-top: 0;
 }
 
 .hero {
@@ -23,7 +24,7 @@ main {
     align-items: center;
     justify-content: center;
     position: relative;
-    margin-top: 0;
+    margin-top: 0 !important;
     padding-top: 0;
 }
 
@@ -56,6 +57,10 @@ main {
     font-weight: 700 !important;
 }
 
+.hero {
+    margin-bottom: 0 !important;
+}
+
 .hero p {
     font-size: 1.1rem;
     margin-top: 0.5rem;
@@ -71,6 +76,20 @@ main {
 .section-title h2,
 .section-title p {
     text-align: center;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.section-title {
+    margin: 0 !important;
+    padding: 0 !important;
+    padding-bottom: 1.5rem !important;
+}
+
+.research {
+    padding: 6rem 2rem;
+    background: #f8fafc;
+    margin-top: 0 !important;
 }
 
 .section-title h2 {
@@ -111,8 +130,8 @@ main {
 
 .feature-card {
     background: #ffffff;
-    border-radius: 16px;
-    padding: 1.8rem;
+    border-radius: 18px;
+    padding: 2rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     transition: .25s ease;
     cursor: pointer;
@@ -213,4 +232,47 @@ main {
     opacity: 0.4;
     box-shadow: none;
     color: #94a3b8;
+}
+
+/* News specific adjustments to match index spacing */
+.feature-card img,
+.feature-card .no-image {
+    height: 220px;
+    object-fit: cover;
+    width: 100%;
+    display: block;
+}
+
+.feature-card .card-body {
+    padding: 1.5rem 2.5rem;
+}
+
+.section-title h2 {
+    font-size: 2rem;
+}
+
+.section-title p {
+    font-size: 1rem;
+    color: #64748b;
+}
+
+/* Empty Data Alert */
+.empty-data-alert {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin: 2rem 0;
+}
+
+.empty-data-alert i {
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.empty-data-alert p {
+    color: #6c757d;
+    margin-bottom: 0;
 }

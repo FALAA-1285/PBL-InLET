@@ -9,7 +9,7 @@ $message_type = '';
 // Handle actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
-    
+
     if ($action === 'delete') {
         $id = intval($_POST['id'] ?? 0);
         try {
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute(['id' => $id]);
             $message = 'Data absensi berhasil dihapus!';
             $message_type = 'success';
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
         }
@@ -47,7 +47,7 @@ $total_items = $stmt->fetchColumn();
 $total_pages = ceil($total_items / $items_per_page);
 
 // Get absensi data with mahasiswa info
-$query = "SELECT 
+$query = "SELECT
     a.id_absensi,
     a.id_mhs,
     a.tanggal,
@@ -55,10 +55,10 @@ $query = "SELECT
     a.waktu_pulang,
     a.keterangan,
     m.nama as nama_mahasiswa,
-    m.nim,
+    m.id_mahasiswa as nim,
     m.status as status_mahasiswa
 FROM absensi a
-LEFT JOIN mahasiswa m ON m.id_mhs = a.id_mhs
+LEFT JOIN mahasiswa m ON m.id_mahasiswa = a.id_mhs
 WHERE 1=1" . $date_filter . "
 ORDER BY a.tanggal DESC, a.waktu_datang DESC
 LIMIT :limit OFFSET :offset";
@@ -78,10 +78,11 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absensi - CMS InLET</title>
+    <title>Manage Attendance - CMS InLET</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="admin.css">
@@ -112,7 +113,7 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
             background: white;
             padding: 1.25rem;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
             transition: 0.3s;
         }
 
@@ -140,7 +141,7 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
             background: white;
             padding: 0.5rem;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .filter-tab {
@@ -217,17 +218,17 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
         }
 
         .status-badge.masuk {
-            background: rgba(16,185,129,0.15);
+            background: rgba(16, 185, 129, 0.15);
             color: #047857;
         }
 
         .status-badge.keluar {
-            background: rgba(239,68,68,0.15);
+            background: rgba(239, 68, 68, 0.15);
             color: #991b1b;
         }
 
         .status-badge.lengkap {
-            background: rgba(59,130,246,0.15);
+            background: rgba(59, 130, 246, 0.15);
             color: #1e40af;
         }
 
@@ -340,9 +341,11 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
         }
     </style>
 </head>
+
 <body>
-    <?php $active_page = 'absensi'; include __DIR__ . '/partials/sidebar.php'; ?>
-    
+    <?php $active_page = 'absensi';
+    include __DIR__ . '/partials/sidebar.php'; ?>
+
     <main class="content">
         <div class="content-inner">
             <div class="content-header">
@@ -392,7 +395,7 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                 <div class="empty-state">
                     <i class="ri-calendar-line"></i>
                     <h3>Tidak ada data absensi</h3>
-                    <p>Belum ada data absensi untuk periode yang dipilih.</p>
+                    <p>No attendance data for the selected period.</p>
                 </div>
             <?php else: ?>
                 <div class="table-wrapper">
@@ -417,12 +420,12 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                                         <div>
                                             <strong><?= htmlspecialchars($abs['nama_mahasiswa'] ?? 'N/A'); ?></strong>
                                             <?php if ($abs['nim']): ?>
-                                                <div style="font-size: 0.85rem; color: var(--gray); margin-top: 0.25rem;">
+                                                <div class="small text-muted mt-1">
                                                     NIM: <?= htmlspecialchars($abs['nim']); ?>
                                                 </div>
                                             <?php endif; ?>
                                             <?php if ($abs['status_mahasiswa']): ?>
-                                                <div style="font-size: 0.75rem; color: var(--primary); margin-top: 0.25rem;">
+                                                <div class="small text-primary mt-1">
                                                     <?= ucfirst($abs['status_mahasiswa']); ?>
                                                 </div>
                                             <?php endif; ?>
@@ -437,7 +440,7 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                                                 <strong><?= date('H:i', strtotime($abs['waktu_datang'])); ?></strong>
                                             </div>
                                         <?php else: ?>
-                                            <span style="color: var(--gray);">-</span>
+                                            <span class="muted-gray">-</span>
                                         <?php endif; ?>
                                     </td>
                                     <td>
@@ -446,14 +449,14 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                                                 <strong><?= date('H:i', strtotime($abs['waktu_pulang'])); ?></strong>
                                             </div>
                                         <?php else: ?>
-                                            <span style="color: var(--gray);">-</span>
+                                            <span class="muted-gray">-</span>
                                         <?php endif; ?>
                                     </td>
                                     <td>
                                         <?php
                                         $has_masuk = !empty($abs['waktu_datang']);
                                         $has_keluar = !empty($abs['waktu_pulang']);
-                                        
+
                                         if ($has_masuk && $has_keluar) {
                                             echo '<span class="status-badge lengkap"><i class="ri-check-double-line"></i> Lengkap</span>';
                                         } elseif ($has_masuk) {
@@ -461,7 +464,7 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                                         } elseif ($has_keluar) {
                                             echo '<span class="status-badge keluar"><i class="ri-logout-box-line"></i> Keluar</span>';
                                         } else {
-                                            echo '<span style="color: var(--gray);">-</span>';
+                                            echo '<span class="muted-gray">-</span>';
                                         }
                                         ?>
                                     </td>
@@ -471,15 +474,17 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                                                 <?= htmlspecialchars($abs['keterangan']); ?>
                                             </div>
                                         <?php else: ?>
-                                            <span style="color: var(--gray);">-</span>
+                                            <span class="muted-gray">-</span>
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <form method="POST" onsubmit="return confirm('Yakin hapus data absensi ini?');" style="display: inline;">
+                                        <form method="POST"
+                                            onsubmit="return confirm('Are you sure you want to delete this attendance data?');"
+                                            class="d-inline">
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="id" value="<?= $abs['id_absensi']; ?>">
                                             <button type="submit" class="btn-action btn-delete">
-                                                <i class="ri-delete-bin-line"></i> Hapus
+                                                <i class="ri-delete-bin-line"></i> Delete
                                             </button>
                                         </form>
                                     </td>
@@ -497,18 +502,18 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                         <?php else: ?>
                             <span class="disabled">&laquo; Previous</span>
                         <?php endif; ?>
-                        
+
                         <?php
                         $start_page = max(1, $current_page - 2);
                         $end_page = min($total_pages, $current_page + 2);
-                        
+
                         if ($start_page > 1): ?>
                             <a href="?page=1&filter=<?= $filter; ?>">1</a>
                             <?php if ($start_page > 2): ?>
                                 <span>...</span>
                             <?php endif; ?>
                         <?php endif; ?>
-                        
+
                         <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
                             <?php if ($i == $current_page): ?>
                                 <span class="active"><?= $i; ?></span>
@@ -516,27 +521,28 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                                 <a href="?page=<?= $i; ?>&filter=<?= $filter; ?>"><?= $i; ?></a>
                             <?php endif; ?>
                         <?php endfor; ?>
-                        
+
                         <?php if ($end_page < $total_pages): ?>
                             <?php if ($end_page < $total_pages - 1): ?>
                                 <span>...</span>
                             <?php endif; ?>
                             <a href="?page=<?= $total_pages; ?>&filter=<?= $filter; ?>"><?= $total_pages; ?></a>
                         <?php endif; ?>
-                        
+
                         <?php if ($current_page < $total_pages): ?>
                             <a href="?page=<?= $current_page + 1; ?>&filter=<?= $filter; ?>">Next &raquo;</a>
                         <?php else: ?>
                             <span class="disabled">Next &raquo;</span>
                         <?php endif; ?>
                     </div>
-                    <div style="text-align: center; color: var(--gray); margin-top: 1rem;">
-                        Menampilkan <?= ($offset + 1); ?> - <?= min($offset + $items_per_page, $total_items); ?> dari <?= $total_items; ?> data absensi
+                    <div class="text-center muted-gray mt-3">
+                        Showing <?= ($offset + 1); ?> - <?= min($offset + $items_per_page, $total_items); ?> of
+                        <?= $total_items; ?> attendance records
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
         </div>
     </main>
 </body>
-</html>
 
+</html>
