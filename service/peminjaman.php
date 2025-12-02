@@ -1,7 +1,11 @@
 <?php
 require_once '../config/database.php';
+require_once '../config/settings.php';
 
 $conn = getDBConnection();
+
+// Get page title and subtitle
+$page_info = getPageTitle('tool_loans');
 $message = '';
 $message_type = '';
 
@@ -324,7 +328,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tool & Room Borrowing - InLET</title>
+    <title><?= htmlspecialchars($page_info['title'] ?: 'Tool Loans - InLET'); ?></title>
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -338,8 +342,12 @@ try {
     <main class="page-main">
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
-                <h1 class="display-4 fw-bold">Lab Borrowing Dashboard</h1>
-                <p class="lead mt-3">Easily manage tool and room borrowing from the lab</p>
+                <h1 class="display-4 fw-bold"><?= htmlspecialchars($page_info['title'] ?: 'Lab Borrowing Dashboard'); ?></h1>
+                <?php if (!empty($page_info['subtitle'])): ?>
+                    <p class="lead mt-3"><?= htmlspecialchars($page_info['subtitle']); ?></p>
+                <?php else: ?>
+                    <p class="lead mt-3">Easily manage tool and room borrowing from the lab</p>
+                <?php endif; ?>
             </div>
         </section>
 

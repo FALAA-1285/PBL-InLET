@@ -1,7 +1,11 @@
 <?php
 require_once 'config/database.php';
+require_once 'config/settings.php';
 
 $conn = getDBConnection();
+
+// Get page title and subtitle
+$page_info = getPageTitle('news');
 
 // Search setup
 $search_query = isset($_GET['search']) ? trim($_GET['search']) : '';
@@ -88,7 +92,7 @@ function getPaginationUrl($page, $search = '')
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>News - Information And Learning Engineering Technology</title>
+    <title><?= htmlspecialchars($page_info['title'] ?: 'News - InLET'); ?></title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -104,8 +108,12 @@ function getPaginationUrl($page, $search = '')
     <main>
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
-                <h1 class="display-4 fw-bold">News - Information And Learning Engineering Technology</h1>
-                <p class="lead mt-3">Stay updated with our latest publications, activities, and breakthroughs.</p>
+                <h1 class="display-4 fw-bold"><?= htmlspecialchars($page_info['title'] ?: 'News - Information And Learning Engineering Technology'); ?></h1>
+                <?php if (!empty($page_info['subtitle'])): ?>
+                    <p class="lead mt-3"><?= htmlspecialchars($page_info['subtitle']); ?></p>
+                <?php else: ?>
+                    <p class="lead mt-3">Stay updated with our latest publications, activities, and breakthroughs.</p>
+                <?php endif; ?>
             </div>
         </section>
 

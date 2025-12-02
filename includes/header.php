@@ -2,10 +2,19 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+require_once __DIR__ . '/../config/settings.php';
+
 $current_page = basename($_SERVER['PHP_SELF']);
 $is_service_page = str_contains($_SERVER['PHP_SELF'], '/service/');
 $root_base = $is_service_page ? '../' : '';
 $service_base = $is_service_page ? '' : 'service/';
+
+// Get site logo dynamically
+$site_logo = getSiteLogo();
+// If logo is a relative path, prepend root_base
+if (!empty($site_logo) && !preg_match('#^https?://#i', $site_logo)) {
+    $site_logo = $root_base . ltrim($site_logo, '/');
+}
 ?>
 
 <link rel="stylesheet" href="<?= $root_base ?>css/inline-cleanup.css">
@@ -14,7 +23,7 @@ $service_base = $is_service_page ? '' : 'service/';
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top shadow-sm">
         <div class="container">
             <a href="<?= $root_base ?>index.php" class="navbar-brand">
-                <img src="<?= $root_base ?>assets/logo.png" alt="Logo" class="logo-img">
+                <img src="<?= htmlspecialchars($site_logo); ?>" alt="Logo" class="logo-img" onerror="this.src='<?= $root_base ?>assets/logo.png'">
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">

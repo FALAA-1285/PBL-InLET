@@ -1,7 +1,11 @@
 <?php
 require_once 'config/database.php';
+require_once 'config/settings.php';
 
 $conn = getDBConnection();
+
+// Get page title and subtitle
+$page_info = getPageTitle('member');
 
 // Search and filter setup
 $search_query = isset($_GET['search']) ? trim($_GET['search']) : '';
@@ -75,7 +79,7 @@ function getInitials($name)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Experts - Information & Learning Engineering Technology</title>
+    <title><?= htmlspecialchars($page_info['title'] ?: 'Members - InLET'); ?></title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
@@ -90,8 +94,12 @@ function getInitials($name)
     <main>
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
-                <h1 class="display-4 fw-bold">Our Experts - Information And Learning Engineering Technology</h1>
-                <p class="lead mt-3">Driving innovation in Information and Learning Engineering Technology.</p>
+                <h1 class="display-4 fw-bold"><?= htmlspecialchars($page_info['title'] ?: 'Our Experts - Information And Learning Engineering Technology'); ?></h1>
+                <?php if (!empty($page_info['subtitle'])): ?>
+                    <p class="lead mt-3"><?= htmlspecialchars($page_info['subtitle']); ?></p>
+                <?php else: ?>
+                    <p class="lead mt-3">Driving innovation in Information and Learning Engineering Technology.</p>
+                <?php endif; ?>
             </div>
         </section>
 

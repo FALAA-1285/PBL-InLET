@@ -1,6 +1,20 @@
 <?php
+require_once __DIR__ . '/../config/settings.php';
+
 $is_service_page = str_contains($_SERVER['PHP_SELF'], '/service/');
 $root_base = $is_service_page ? '../' : '';
+
+// Get footer settings dynamically
+$footer_settings = getFooterSettings();
+$contact_info = getContactInfo();
+
+// Get footer logo
+$footer_logo = $footer_settings['logo'];
+if (!empty($footer_logo) && !preg_match('#^https?://#i', $footer_logo)) {
+    $footer_logo = $root_base . ltrim($footer_logo, '/');
+} else {
+    $footer_logo = $root_base . 'assets/logoPutih.png'; // Default fallback
+}
 ?>
 <footer class="footer bg-dark text-white py-5 mt-5">
     <div class="container-fluid px-5">
@@ -8,10 +22,14 @@ $root_base = $is_service_page ? '../' : '';
 
             <div class="col-lg-4 col-md-6 text-center text-md-start">
                 <a href="#" class="d-inline-flex align-items-center mb-3">
-                    <img src="<?= $root_base ?>assets/logoPutih.png" alt="InLET Logo" width="130" class="me-2">
+                    <img src="<?= htmlspecialchars($footer_logo); ?>" alt="InLET Logo" width="130" class="me-2" onerror="this.src='<?= $root_base ?>assets/logoPutih.png'">
                 </a>
-                <p class="text-light-soft mb-0">Information and Learning Engineering Technology</p>
-                <p class="text-light-soft mb-0">State Polytechnic of Malang</p>
+                <?php if (!empty($footer_settings['title'])): ?>
+                    <p class="text-light-soft mb-0"><?= htmlspecialchars($footer_settings['title']); ?></p>
+                <?php else: ?>
+                    <p class="text-light-soft mb-0">Information and Learning Engineering Technology</p>
+                    <p class="text-light-soft mb-0">State Polytechnic of Malang</p>
+                <?php endif; ?>
             </div>
 
             <div class="col-lg-4 col-md-6 text-center">
@@ -34,16 +52,26 @@ $root_base = $is_service_page ? '../' : '';
             </div>
 
             <div class="col-lg-4 col-md-12 text-center text-md-end">
-                <p class="mb-2 contact-info"><i class="bi bi-envelope-fill me-2"></i>info@inlet.edu</p>
-                <p class="mb-2 contact-info"><i class="bi bi-phone-fill me-2"></i>+62 823 328 645</p>
-                <p class="mb-0 contact-info"><i class="bi bi-geo-alt-fill me-2"></i>Malang, East Java</p>
+                <?php if (!empty($contact_info['email'])): ?>
+                    <p class="mb-2 contact-info"><i class="bi bi-envelope-fill me-2"></i><?= htmlspecialchars($contact_info['email']); ?></p>
+                <?php endif; ?>
+                <?php if (!empty($contact_info['phone'])): ?>
+                    <p class="mb-2 contact-info"><i class="bi bi-phone-fill me-2"></i><?= htmlspecialchars($contact_info['phone']); ?></p>
+                <?php endif; ?>
+                <?php if (!empty($contact_info['address'])): ?>
+                    <p class="mb-0 contact-info"><i class="bi bi-geo-alt-fill me-2"></i><?= htmlspecialchars($contact_info['address']); ?></p>
+                <?php endif; ?>
             </div>
         </div>
 
         <hr class="border-light-soft my-4">
 
         <div class="text-center">
-            <p class="text-light-soft mb-0">&copy; 2025 InLET - Information and Learning Engineering Technology</p>
+            <?php if (!empty($footer_settings['copyright'])): ?>
+                <p class="text-light-soft mb-0"><?= htmlspecialchars($footer_settings['copyright']); ?></p>
+            <?php else: ?>
+                <p class="text-light-soft mb-0">&copy; <?= date('Y'); ?> InLET - Information and Learning Engineering Technology</p>
+            <?php endif; ?>
         </div>
     </div>
     <style>

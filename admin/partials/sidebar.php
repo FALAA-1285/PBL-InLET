@@ -7,6 +7,12 @@ $menu_items = [
         'icon' => 'ri-dashboard-line',
     ],
     [
+        'id' => 'Settings',
+        'label' => 'Settings',
+        'href' => 'settings.php',
+        'icon' => 'ri-settings-3-line',
+    ],
+    [
         'id' => 'research',
         'label' => 'Research',
         'href' => 'research.php',

@@ -3,8 +3,12 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 require_once '../config/database.php';
+require_once '../config/settings.php';
 
 $conn = getDBConnection();
+
+// Get page title and subtitle
+$page_info = getPageTitle('attendance');
 $message = '';
 $message_type = '';
 
@@ -215,7 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Form - InLET</title>
+    <title><?= htmlspecialchars($page_info['title'] ?: 'Attendance - InLET'); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
@@ -228,8 +232,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <main>
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
-                <h1 class="display-4 fw-bold">Attendance Form</h1>
-                <p class="lead mt-3">Information And Learning Engineering Technology</p>
+                <h1 class="display-4 fw-bold"><?= htmlspecialchars($page_info['title'] ?: 'Attendance Form'); ?></h1>
+                <?php if (!empty($page_info['subtitle'])): ?>
+                    <p class="lead mt-3"><?= htmlspecialchars($page_info['subtitle']); ?></p>
+                <?php else: ?>
+                    <p class="lead mt-3">Information And Learning Engineering Technology</p>
+                <?php endif; ?>
             </div>
         </section>
 

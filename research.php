@@ -1,7 +1,11 @@
 <?php
 require_once 'config/database.php';
+require_once 'config/settings.php';
 
 $conn = getDBConnection();
+
+// Get page title and subtitle
+$page_info = getPageTitle('research');
 
 function getYoutubeEmbedUrl($url)
 {
@@ -131,7 +135,7 @@ $progress_list = $stmt->fetchAll();
 
 <head>
     <meta charset="UTF-8">
-    <title>Research - Information & Learning Engineering Technology</title>
+    <title><?= htmlspecialchars($page_info['title'] ?: 'Research - InLET'); ?></title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -146,9 +150,12 @@ $progress_list = $stmt->fetchAll();
     <main class="page-main">
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
-                <h1 class="display-4 fw-bold">Research - Information And Learning Engineering Technology</h1>
-                <p class="lead mt-3">Pioneering advancements in Language and Educational Technology to shape the future
-                    of learning</p>
+                <h1 class="display-4 fw-bold"><?= htmlspecialchars($page_info['title'] ?: 'Research - Information And Learning Engineering Technology'); ?></h1>
+                <?php if (!empty($page_info['subtitle'])): ?>
+                    <p class="lead mt-3"><?= htmlspecialchars($page_info['subtitle']); ?></p>
+                <?php else: ?>
+                    <p class="lead mt-3">Pioneering advancements in Language and Educational Technology to shape the future of learning</p>
+                <?php endif; ?>
             </div>
         </section>
 

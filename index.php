@@ -1,7 +1,11 @@
 <?php
 require_once 'config/database.php';
+require_once 'config/settings.php';
 
 $conn = getDBConnection();
+
+// Get page title and subtitle
+$page_info = getPageTitle('home');
 
 // Safe query helper
 function safeQueryAll($conn, $sql)
@@ -87,7 +91,7 @@ function getInitials($name)
 
 <head>
     <meta charset="UTF-8">
-    <title>Home - Information & Learning Engineering Technology</title>
+    <title><?= htmlspecialchars($page_info['title'] ?: 'Home - InLET'); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -102,8 +106,12 @@ function getInitials($name)
     <main>
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
-                <h1 class="display-4 fw-bold">InLET - Information And Learning Engineering Technology</h1>
-                <p class="lead mt-3">Transforming the future of language learning through advanced engineering.</p>
+                <h1 class="display-4 fw-bold"><?= htmlspecialchars($page_info['title'] ?: 'InLET - Information And Learning Engineering Technology'); ?></h1>
+                <?php if (!empty($page_info['subtitle'])): ?>
+                    <p class="lead mt-3"><?= htmlspecialchars($page_info['subtitle']); ?></p>
+                <?php else: ?>
+                    <p class="lead mt-3">Transforming the future of language learning through advanced engineering.</p>
+                <?php endif; ?>
             </div>
         </section>
 
