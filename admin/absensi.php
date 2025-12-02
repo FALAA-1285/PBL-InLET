@@ -49,16 +49,16 @@ $total_pages = ceil($total_items / $items_per_page);
 // Get absensi data with mahasiswa info
 $query = "SELECT
     a.id_absensi,
-    a.id_mhs,
+    a.nim,
     a.tanggal,
     a.waktu_datang,
     a.waktu_pulang,
     a.keterangan,
     m.nama as nama_mahasiswa,
-    m.id_mahasiswa as nim,
+    m.nim as nim,
     m.status as status_mahasiswa
 FROM absensi a
-LEFT JOIN mahasiswa m ON m.id_mahasiswa = a.id_mhs
+LEFT JOIN mahasiswa m ON m.nim = a.nim
 WHERE 1=1" . $date_filter . "
 ORDER BY a.tanggal DESC, a.waktu_datang DESC
 LIMIT :limit OFFSET :offset";
