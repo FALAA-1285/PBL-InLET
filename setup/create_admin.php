@@ -17,7 +17,7 @@ $admin_email = 'admin@inlet.edu';
 
 try {
     // Check if admin already exists
-    $stmt = $conn->prepare("SELECT id_user FROM users WHERE username = :username");
+    $stmt = $conn->prepare("SELECT id_admin FROM admin WHERE username = :username");
     $stmt->execute(['username' => $admin_username]);
     $existing = $stmt->fetch();
 
@@ -31,7 +31,7 @@ try {
     $password_hash = password_hash($admin_password, PASSWORD_DEFAULT);
 
     // Create user
-    $stmt = $conn->prepare("INSERT INTO users (username, password_hash, role) VALUES (:username, :password_hash, 'admin') RETURNING id_user");
+    $stmt = $conn->prepare("INSERT INTO admin (username, password_hash, role) VALUES (:username, :password_hash, 'admin') RETURNING id_user");
     $stmt->execute([
         'username' => $admin_username,
         'password_hash' => $password_hash
@@ -39,7 +39,7 @@ try {
     $user_id = $stmt->fetchColumn();
 
     // Create admin profile
-    $stmt = $conn->prepare("INSERT INTO admin (id_user, nama, email) VALUES (:id_user, :nama, :email)");
+    $stmt = $conn->prepare("INSERT INTO admin (id_admin, nama, email) VALUES (:id_admin, :nama, :email)");
     $stmt->execute([
         'id_user' => $user_id,
         'nama' => $admin_nama,
