@@ -58,7 +58,7 @@ $query = "SELECT
     m.nim as nim,
     m.status as status_mahasiswa
 FROM absensi a
-LEFT JOIN mahasiswa m ON m.nim = a.nim
+LEFT JOIN mahasiswa m ON m.nim = a.nim::text
 WHERE 1=1" . $date_filter . "
 ORDER BY a.tanggal DESC, a.waktu_datang DESC
 LIMIT :limit OFFSET :offset";
