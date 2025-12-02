@@ -14,18 +14,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
     if ($action === 'add_mahasiswa') {
+        $nim = trim($_POST['nim'] ?? '');
         $nama = trim($_POST['nama'] ?? '');
-        $title = trim($_POST['title'] ?? '');
         $tahun = $_POST['tahun'] ?? null;
         $status = $_POST['status'] ?? 'regular';
 
-        if (empty($nama)) {
+        if (empty($nim)) {
+            $message = 'NIM harus diisi!';
+            $message_type = 'error';
+        } elseif (empty($nama)) {
             $message = 'Nama harus diisi!';
             $message_type = 'error';
         } else {
             try {
-                $stmt = $conn->prepare("INSERT INTO mahasiswa (nama, tahun, status) VALUES (:nama, :tahun, :status)");
+                $stmt = $conn->prepare("INSERT INTO mahasiswa (nim, nama, tahun, status) VALUES (:nim, :nama, :tahun, :status)");
                 $stmt->execute([
+                    'nim' => $nim,
                     'nama' => $nama,
                     'tahun' => $tahun ?: null,
                     'status' => $status
@@ -33,14 +37,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = 'Student successfully added!';
                 $message_type = 'success';
             } catch (PDOException $e) {
-                $message = 'Error: ' . $e->getMessage();
-                $message_type = 'error';
+                if ($e->getCode() == 23000) {
+                    $message = 'NIM already exists!';
+                    $message_type = 'error';
+                } else {
+                    $message = 'Error: ' . $e->getMessage();
+                    $message_type = 'error';
+                }
             }
         }
     } elseif ($action === 'update_mahasiswa') {
         $id = $_POST['id'] ?? 0;
         $nama = trim($_POST['nama'] ?? '');
-        $title = trim($_POST['title'] ?? '');
         $tahun = $_POST['tahun'] ?? null;
         $status = $_POST['status'] ?? 'regular';
 
@@ -49,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message_type = 'error';
         } else {
             try {
-                $stmt = $conn->prepare("UPDATE mahasiswa SET nama = :nama, tahun = :tahun, status = :status WHERE id_mahasiswa = :id");
+                $stmt = $conn->prepare("UPDATE mahasiswa SET nama = :nama, tahun = :tahun, status = :status WHERE nim = :id");
                 $stmt->execute([
                     'id' => $id,
                     'nama' => $nama,
@@ -66,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'delete_mahasiswa') {
         $id = $_POST['id'] ?? 0;
         try {
-            $stmt = $conn->prepare("DELETE FROM mahasiswa WHERE id_mahasiswa = :id");
+            $stmt = $conn->prepare("DELETE FROM mahasiswa WHERE nim = :id");
             $stmt->execute(['id' => $id]);
             $message = 'Student successfully deleted!';
             $message_type = 'success';
@@ -84,8 +92,8 @@ $mahasiswa_list = $stmt->fetchAll();
 // Get mahasiswa for edit
 $edit_mahasiswa = null;
 if (isset($_GET['edit'])) {
-    $edit_id = intval($_GET['edit']);
-    $stmt = $conn->prepare("SELECT * FROM mahasiswa WHERE id_mahasiswa = :id");
+    $edit_id = $_GET['edit'];
+    $stmt = $conn->prepare("SELECT * FROM mahasiswa WHERE nim = :id");
     $stmt->execute(['id' => $edit_id]);
     $edit_mahasiswa = $stmt->fetch();
 }
@@ -164,6 +172,11 @@ if (isset($_GET['edit'])) {
         .form-group select:focus {
             outline: none;
             border-color: var(--primary);
+        }
+
+        .form-group input[readonly] {
+            background-color: #f1f5f9;
+            cursor: not-allowed;
         }
 
         .btn-submit {
@@ -288,16 +301,24 @@ if (isset($_GET['edit'])) {
         .btn-cancel {
             background: #6b7280;
             color: white;
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 2rem;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 1rem;
+            font-weight: 600;
             margin-left: 0.5rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
         }
 
         .btn-cancel:hover {
             background: #4b5563;
+        }
+
+        .d-inline {
+            display: inline;
         }
     </style>
 </head>
@@ -324,20 +345,24 @@ if (isset($_GET['edit'])) {
                         <input type="hidden" name="action"
                             value="<?php echo $edit_mahasiswa ? 'update_mahasiswa' : 'add_mahasiswa'; ?>">
                         <?php if ($edit_mahasiswa): ?>
-                            <input type="hidden" name="id" value="<?php echo $edit_mahasiswa['id_mahasiswa']; ?>">
+                            <input type="hidden" name="id" value="<?php echo $edit_mahasiswa['nim']; ?>">
                         <?php endif; ?>
+
+                        <div class="form-group">
+                            <label for="nim">NIM (Student ID) *</label>
+                            <input type="text" id="nim" name="nim"
+                                value="<?php echo htmlspecialchars($edit_mahasiswa['nim'] ?? ''); ?>" 
+                                <?php echo $edit_mahasiswa ? 'readonly' : 'required'; ?>
+                                placeholder="e.g., 225150200111001">
+                            <?php if ($edit_mahasiswa): ?>
+                                <small style="color: #6b7280; font-size: 0.875rem;">NIM cannot be changed</small>
+                            <?php endif; ?>
+                        </div>
 
                         <div class="form-group">
                             <label for="nama">Name *</label>
                             <input type="text" id="nama" name="nama"
                                 value="<?php echo htmlspecialchars($edit_mahasiswa['nama'] ?? ''); ?>" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="title">Title/Research Title</label>
-                            <input type="text" id="title" name="title"
-                                value="<?php echo htmlspecialchars($edit_mahasiswa['title'] ?? ''); ?>"
-                                placeholder="Research/thesis title">
                         </div>
 
                         <div class="form-group">
@@ -376,9 +401,8 @@ if (isset($_GET['edit'])) {
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
+                                        <th>NIM</th>
                                         <th>Name</th>
-                                        <th>Title</th>
                                         <th>Year</th>
                                         <th>Status</th>
                                         <th>Action</th>
@@ -387,9 +411,8 @@ if (isset($_GET['edit'])) {
                                 <tbody>
                                     <?php foreach ($mahasiswa_list as $mhs): ?>
                                         <tr>
-                                            <td><?php echo $mhs['id_mahasiswa']; ?></td>
+                                            <td><?php echo htmlspecialchars($mhs['nim']); ?></td>
                                             <td><?php echo htmlspecialchars($mhs['nama']); ?></td>
-                                            <td><?php echo htmlspecialchars($mhs['title'] ?? '-'); ?></td>
                                             <td><?php echo $mhs['tahun'] ?? '-'; ?></td>
                                             <td>
                                                 <span class="badge badge-<?php echo $mhs['status']; ?>">
@@ -399,13 +422,13 @@ if (isset($_GET['edit'])) {
                                                 </span>
                                             </td>
                                             <td>
-                                                <a href="?edit=<?php echo $mhs['id_mahasiswa']; ?>" class="btn-edit">
+                                                <a href="?edit=<?php echo urlencode($mhs['nim']); ?>" class="btn-edit">
                                                     <i class="ri-edit-line"></i> Edit
                                                 </a>
                                                 <form method="POST" class="d-inline"
                                                     onsubmit="return confirm('Are you sure you want to delete this student?');">
                                                     <input type="hidden" name="action" value="delete_mahasiswa">
-                                                    <input type="hidden" name="id" value="<?php echo $mhs['id_mahasiswa']; ?>">
+                                                    <input type="hidden" name="id" value="<?php echo htmlspecialchars($mhs['nim']); ?>">
                                                     <button type="submit" class="btn-delete">
                                                         <i class="ri-delete-bin-line"></i> Delete
                                                     </button>

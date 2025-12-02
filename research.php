@@ -117,7 +117,7 @@ $total_pages_progress = ceil($total_items_progress / $items_per_page);
 $stmt = $conn->prepare("SELECT p.*, a.judul as artikel_judul, m.nama as mahasiswa_nama, mem.nama as member_nama
                       FROM penelitian p
                       LEFT JOIN artikel a ON p.id_artikel = a.id_artikel
-                      LEFT JOIN mahasiswa m ON p.id_mhs = m.id_mahasiswa
+                      LEFT JOIN mahasiswa m ON p.nim = m.nim
                       LEFT JOIN member mem ON p.id_member = mem.id_member
                       ORDER BY p.created_at DESC
                       LIMIT :limit OFFSET :offset");

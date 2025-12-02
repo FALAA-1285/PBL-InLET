@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
     }
 
     try {
-        $stmt = $conn->prepare("SELECT id_mahasiswa as nim, nama, status FROM mahasiswa WHERE CAST(id_mahasiswa AS TEXT) ILIKE :search ORDER BY id_mahasiswa LIMIT 10");
+        $stmt = $conn->prepare("SELECT nim as nim, nama, status FROM mahasiswa WHERE CAST(nim AS TEXT) ILIKE :search ORDER BY nim LIMIT 10");
         $stmt->execute([':search' => '%' . $search_term . '%']);
         $results = $stmt->fetchAll();
 
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
     }
 
     try {
-        $stmt = $conn->prepare("SELECT id_mahasiswa as id_mhs, nama, status FROM mahasiswa WHERE id_mahasiswa = :nim LIMIT 1");
+        $stmt = $conn->prepare("SELECT nim as nim, nama, status FROM mahasiswa WHERE nim = :nim LIMIT 1");
         $stmt->execute(['nim' => $nim]);
         $mahasiswa = $stmt->fetch();
 
@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             // Check student
-            $check_mhs = $conn->prepare("SELECT id_mahasiswa as id_mhs, nama FROM mahasiswa WHERE id_mahasiswa = :nim LIMIT 1");
+            $check_mhs = $conn->prepare("SELECT nim as nim, nama FROM mahasiswa WHERE nim = :nim LIMIT 1");
             $check_mhs->execute(['nim' => $nim]);
             $mahasiswa = $check_mhs->fetch();
 
@@ -102,11 +102,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($tipe_absen === 'masuk') {
                     // Check check-in status
                     $check_stmt = $conn->prepare("SELECT id_absensi FROM absensi 
-                                                 WHERE id_mhs = :id_mhs 
+                                                 WHERE nim = :nim 
                                                  AND tanggal = :tanggal 
                                                  AND waktu_datang IS NOT NULL");
                     $check_stmt->execute([
-                        'id_mhs' => $mahasiswa['id_mhs'],
+                        'nim' => $mahasiswa['nim'],
                         'tanggal' => $today
                     ]);
 
@@ -116,10 +116,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } else {
                         // Check record
                         $check_stmt = $conn->prepare("SELECT id_absensi FROM absensi 
-                                                     WHERE id_mhs = :id_mhs 
+                                                     WHERE nim = :nim 
                                                      AND tanggal = :tanggal");
                         $check_stmt->execute([
-                            'id_mhs' => $mahasiswa['id_mhs'],
+                            'nim' => $mahasiswa['nim'],
                             'tanggal' => $today
                         ]);
                         $existing = $check_stmt->fetch();
@@ -142,10 +142,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             ]);
                         } else {
                             // Insert record
-                            $stmt = $conn->prepare("INSERT INTO absensi (id_mhs, tanggal, waktu_datang, keterangan)
-                                                   VALUES (:id_mhs, :tanggal, CURRENT_TIMESTAMP, :keterangan)");
+                            $stmt = $conn->prepare("INSERT INTO absensi (nim, tanggal, waktu_datang, keterangan)
+                                                   VALUES (:nim, :tanggal, CURRENT_TIMESTAMP, :keterangan)");
                             $stmt->execute([
-                                'id_mhs' => $mahasiswa['id_mhs'],
+                                'nim' => $mahasiswa['nim'],
                                 'tanggal' => $today,
                                 'keterangan' => $keterangan_full
                             ]);
@@ -157,11 +157,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } elseif ($tipe_absen === 'keluar') {
                     // Check check-in status
                     $check_stmt = $conn->prepare("SELECT id_absensi FROM absensi
-                                                 WHERE id_mhs = :id_mhs 
+                                                 WHERE nim = :nim 
                                                  AND tanggal = :tanggal 
                                                  AND waktu_datang IS NOT NULL");
                     $check_stmt->execute([
-                        'id_mhs' => $mahasiswa['id_mhs'],
+                        'nim' => $mahasiswa['nim'],
                         'tanggal' => $today
                     ]);
 
