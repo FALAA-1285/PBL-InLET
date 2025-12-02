@@ -181,92 +181,99 @@ function getInitials($name)
             </div>
         </section>
 
-        <!-- Partners section -->
+        <!-- Partners section - SLIDER -->
         <section class="py-5 bg-light" id="partner">
             <div class="container">
                 <div class="section-title">
                     <h2>Our Partners</h2>
                     <p>Collaboration with academic and industry institutions.</p>
                 </div>
-                <div class="row justify-content-center g-4">
-                    <?php if (empty($partners)): ?>
-                        <div class="col-12">
-                            <div class="empty-data-alert" role="alert">
-                                <i class="fas fa-handshake fa-3x mb-3 text-muted"></i>
-                                <p class="mb-0">No partners registered yet.</p>
-                            </div>
+                <?php if (empty($partners)): ?>
+                    <div class="text-center">
+                        <div class="alert alert-light" role="alert">
+                            <i class="fas fa-handshake fa-3x mb-3 text-muted"></i>
+                            <p class="mb-0">No partners registered yet.</p>
                         </div>
-                    <?php else: ?>
-                        <?php foreach ($partners as $p): ?>
-                            <div class="col-md-2 col-4 text-center">
-                                <?php if (!empty($p['logo'])): ?>
-                                    <img src="<?= htmlspecialchars($p['logo']) ?>" class="partner-logo img-fluid rounded shadow-sm"
-                                        alt="<?= htmlspecialchars($p['nama_institusi']) ?>"
-                                        title="<?= htmlspecialchars($p['nama_institusi']) ?>"
-                                        onerror="this.onerror=null; this.src='https://via.placeholder.com/200x100/cccccc/666666?text=' + encodeURIComponent('<?= addslashes(htmlspecialchars($p['nama_institusi'])) ?>');">
-                                <?php else: ?>
-                                    <div
-                                        class="partner-logo img-fluid rounded shadow-sm d-flex align-items-center justify-content-center partner-placeholder">
-                                        <?= htmlspecialchars($p['nama_institusi']) ?>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
+                    </div>
+                <?php else: ?>
+                    <div class="swiper partnersSwiper">
+                        <div class="swiper-wrapper">
+                            <?php foreach ($partners as $p): ?>
+                                <div class="swiper-slide d-flex justify-content-center align-items-center">
+                                    <?php if (!empty($p['logo'])): ?>
+                                        <img src="<?= htmlspecialchars($p['logo']) ?>" class="partner-logo img-fluid rounded shadow-sm"
+                                            alt="<?= htmlspecialchars($p['nama_institusi']) ?>"
+                                            title="<?= htmlspecialchars($p['nama_institusi']) ?>"
+                                            onerror="this.onerror=null; this.src='https://via.placeholder.com/200x100/cccccc/666666?text=' + encodeURIComponent('<?= addslashes(htmlspecialchars($p['nama_institusi'])) ?>');">
+                                    <?php else: ?>
+                                        <div class="partner-logo partner-placeholder">
+                                            <?= htmlspecialchars($p['nama_institusi']) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-button-prev"></div>
+                    </div>
+                <?php endif; ?>
             </div>
         </section>
 
         <!-- Team section -->
         <section class="py-5" id="team">
             <div class="container">
-                <div class="section-title">
-                    <h2>Expert Team</h2>
-                    <p>The experts behind our innovations.</p>
+                <div class="section-title text-center mb-5">
+                    <h2 class="fw-bold">Expert Team</h2>
+                    <p class="text-muted">The brilliant minds behind our research.</p>
+                    <div class="divider"></div>
                 </div>
                 <?php if (!empty($team)): ?>
-                    <div class="swiper teamSwiper">
-                        <div class="swiper-wrapper">
-                            <?php foreach ($team as $t):
-                                $foto_url = '';
-                                if (!empty($t['foto'])) {
-                                    $foto_url = $t['foto'];
-                                    if (!preg_match('/^https?:\/\//i', $foto_url)) {
-                                        if (strpos($foto_url, 'uploads/') !== 0) {
-                                            $foto_url = 'uploads/' . ltrim($foto_url, '/');
-                                        }
+                    <div class="row g-4">
+                        <?php foreach ($team as $t):
+                            $foto_url = '';
+                            if (!empty($t['foto'])) {
+                                $foto_url = $t['foto'];
+                                if (!preg_match('/^https?:\/\//i', $foto_url)) {
+                                    if (strpos($foto_url, 'uploads/') !== 0) {
+                                        $foto_url = 'uploads/' . ltrim($foto_url, '/');
                                     }
                                 }
-                                ?>
-                                <div class="swiper-slide">
-                                    <div class="member-card card-surface h-100 text-center">
-                                        <div class="member-img-wrapper">
-                                            <?php if (!empty($foto_url)): ?>
-                                                <img src="<?= htmlspecialchars($foto_url) ?>"
-                                                    alt="<?= htmlspecialchars($t['nama']) ?>" class="member-img"
-                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                                <div class="member-initials d-none">
-                                                    <?= htmlspecialchars(getInitials($t["nama"])) ?>
-                                                </div>
-                                            <?php else: ?>
-                                                <div class="member-initials">
-                                                    <?= htmlspecialchars(getInitials($t["nama"])) ?>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div class="member-info">
-                                            <h3 class="member-name"><?= htmlspecialchars($t["nama"]) ?></h3>
-                                            <div class="member-role"><?= htmlspecialchars($t["jabatan"] ?: 'Member') ?></div>
-                                            <?php if (!empty($t["deskripsi"])): ?>
-                                                <p class="member-desc"><?= htmlspecialchars($t["deskripsi"]) ?></p>
-                                            <?php endif; ?>
-                                        </div>
+                            }
+                            ?>
+                            <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                                <div class="member-card card-surface h-100">
+                                    <div class="member-img-wrapper">
+                                        <?php if (!empty($foto_url)): ?>
+                                            <img src="<?= htmlspecialchars($foto_url) ?>"
+                                                alt="<?= htmlspecialchars($t['nama']) ?>" class="member-img"
+                                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="member-initials d-none">
+                                                <?= htmlspecialchars(getInitials($t["nama"])) ?>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="member-initials">
+                                                <?= htmlspecialchars(getInitials($t["nama"])) ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
+                                    <div class="member-info">
+                                        <h3 class="member-name"><?= htmlspecialchars($t["nama"]) ?></h3>
+                                        <div class="member-role"><?= htmlspecialchars($t["jabatan"] ?: 'Member') ?></div>
+                                        <?php if (!empty($t["deskripsi"])): ?>
+                                            <p class="member-desc" title="<?= htmlspecialchars($t["deskripsi"]) ?>"><?= htmlspecialchars($t["deskripsi"]) ?></p>
+                                        <?php endif; ?>
+                                    </div>
+                                    <?php if (!empty($t['email'])): ?>
+                                        <div class="member-footer">
+                                            <a href="mailto:<?php echo htmlspecialchars($t['email']); ?>" class="btn-email">
+                                                <i class="fas fa-envelope me-2"></i>Contact via Email
+                                            </a>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
-                            <?php endforeach; ?>
-                        </div>
-                        <div class="swiper-button-next"></div>
-                        <div class="swiper-button-prev"></div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 <?php else: ?>
                     <div class="empty-data-alert" role="alert">
@@ -328,12 +335,13 @@ function getInitials($name)
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <script>
-        // Init swiper
-        new Swiper(".teamSwiper", {
-            slidesPerView: 3,
-            spaceBetween: 30,
+        // Init partner slider
+        new Swiper(".partnersSwiper", {
+            slidesPerView: 5,
+            spaceBetween: 50,
+            autoplay: { delay: 3000, disableOnInteraction: false },
             navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" },
-            breakpoints: { 0: { slidesPerView: 1 }, 576: { slidesPerView: 2 }, 992: { slidesPerView: 3 } }
+            breakpoints: { 0: { slidesPerView: 1, spaceBetween: 15 }, 576: { slidesPerView: 2, spaceBetween: 25 }, 768: { slidesPerView: 3, spaceBetween: 35 }, 992: { slidesPerView: 4, spaceBetween: 45 }, 1200: { slidesPerView: 5, spaceBetween: 50 } }
         });
 
         // Masonry layout
