@@ -215,74 +215,6 @@ main {
     margin: 0;
 }
 
-.teamSwiper {
-    padding: 20px 10px;
-}
-
-.teamSwiper .swiper-slide {
-    width: 300px;
-}
-
-/* Member card image styles */
-.member-img-wrapper {
-    position: relative;
-    overflow: hidden;
-    border-top-left-radius: 18px;
-    border-top-right-radius: 18px;
-    width: 100%;
-    aspect-ratio: 3 / 4;
-    max-height: 520px;
-    background: #f3f4f6;
-}
-
-.member-img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-}
-
-/* Make member card heights consistent */
-.member-card {
-    display: flex;
-    flex-direction: column;
-}
-.member-card .member-info {
-    padding: 1rem;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .pin-img-wrapper, .member-img-wrapper {
-        aspect-ratio: 4 / 5;
-        max-height: 420px;
-    }
-    .teamSwiper .swiper-slide {
-        width: 240px;
-    }
-}
-
-.card-surface {
-    background: #ffffff;
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.25);
-    box-shadow: 0 15px 45px rgba(15, 23, 42, 0.08);
-}
-
-.member-initials {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: #0d6efd;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 1.5rem;
-    margin: 0 auto 10px;
-}
-
 .research {
     background: #f8fafc;
     padding: 6rem 2rem;
@@ -353,4 +285,277 @@ main {
 .empty-data-alert p {
     color: #6c757d;
     margin-bottom: 0;
+}
+
+/* Partner Slider */
+.partnersSwiper {
+    padding: 2rem 0;
+    overflow: visible;
+}
+
+.partnersSwiper .swiper-slide {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.partnersSwiper .swiper-slide:hover {
+    transform: scale(1.05);
+}
+
+.partner-logo {
+    max-width: 250p x;
+    max-height: 120px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: grayscale(20%);
+    transition: filter 0.3s ease;
+}
+
+.partner-logo:hover {
+    filter: grayscale(0%);
+}
+
+.partner-placeholder {
+    max-width: 250px;
+    max-height: 120px;
+    width: auto;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Swiper Navigation */
+.partnersSwiper .swiper-button-next,
+.partnersSwiper .swiper-button-prev {
+    color: #0d6efd;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.partnersSwiper .swiper-button-next:hover,
+.partnersSwiper .swiper-button-prev:hover {
+    background: #0d6efd;
+    color: white;
+    transform: scale(1.1);
+}
+
+.partnersSwiper .swiper-button-next::after,
+.partnersSwiper .swiper-button-prev::after {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .partnersSwiper .swiper-slide {
+        height: 140px;
+    }
+
+    .partner-logo,
+    .partner-placeholder {
+        max-width: 200px;
+        max-height: 100px;
+        font-size: 0.9rem;
+    }
+
+    .partnersSwiper .swiper-button-next,
+    .partnersSwiper .swiper-button-prev {
+        width: 35px;
+        height: 35px;
+    }
+
+    .partnersSwiper .swiper-button-next::after,
+    .partnersSwiper .swiper-button-prev::after {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 576px) {
+    .partnersSwiper .swiper-slide {
+        height: 120px;
+    }
+
+    .partner-logo,
+    .partner-placeholder {
+        max-width: 180px;
+        max-height: 80px;
+        font-size: 0.8rem;
+    }
+}
+
+.team-section {
+    padding: 5rem 0;
+    background-color: #f8f9fa;
+}
+
+.member-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    height: 100%;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.member-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--gradient-accent);
+}
+
+.member-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--hover-shadow);
+}
+
+/* Avatar / Image Area */
+.member-img-wrapper {
+    width: 120px;
+    height: 120px;
+    margin: 2rem auto 1rem;
+    position: relative;
+}
+
+.member-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    background-color: #eee;
+}
+
+/* Fallback Initials Circle */
+.member-initials {
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-accent);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: bold;
+    border: 4px solid #fff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    user-select: none;
+}
+
+/* Text Content */
+.member-info {
+    padding: 1.5rem;
+    text-align: center;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.member-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.member-role {
+    font-size: 0.9rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+}
+
+.member-desc {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    
+    /* Membatasi teks menjadi 3 baris dengan '...' */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Footer Card (Email) */
+.member-footer {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+
+.btn-email {
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+    display: inline-block;
+}
+
+.btn-email:hover {
+    color: var(--primary-color);
+}
+
+/* Custom Pagination */
+.pagination-modern {
+    gap: 0.35rem;
+}
+
+.pagination-modern .page-link {
+    border: none;
+    border-radius: 18px;
+    padding: 0.65rem 1.3rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #475569;
+    background: #fff;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+    transition: all 0.2s ease;
+}
+
+.pagination-modern .page-link:hover {
+    color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+.pagination-modern .page-item.active .page-link {
+    background: var(--primary-color);
+    color: #fff;
+    box-shadow: 0 15px 30px rgba(13, 110, 253, 0.35);
+}
+
+.pagination-modern .page-item.disabled .page-link {
+    opacity: 0.4;
+    box-shadow: none;
+    color: #94a3b8;
 }
