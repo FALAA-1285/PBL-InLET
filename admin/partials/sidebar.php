@@ -73,17 +73,17 @@ $menu_items = [
         'icon' => 'ri-image-line',
     ],
     [
+        'id' => 'reset-admin',
+        'label' => 'Reset Admin',
+        'href' => '../setup/reset_admin.php',
+        'icon' => 'ri-refresh-line',
+    ],
+    [
         'id' => 'view-site',
         'label' => 'View Site',
         'href' => '../index.php',
         'icon' => 'ri-external-link-line',
         'target' => '_blank',
-    ],
-    [
-        'id' => 'reset-admin',
-        'label' => 'Reset Admin',
-        'href' => '../setup/reset_admin.php',
-        'icon' => 'ri-refresh-line',
     ],
     [
         'id' => 'logout',
