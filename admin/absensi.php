@@ -13,9 +13,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'delete') {
         $id = intval($_POST['id'] ?? 0);
         try {
+            // NOTE: Database table and column names (absensi, id_absensi) are kept as they are in the database
             $stmt = $conn->prepare("DELETE FROM absensi WHERE id_absensi = :id");
             $stmt->execute(['id' => $id]);
-            $message = 'Data absensi berhasil dihapus!';
+            $message = 'Attendance record successfully deleted!';
             $message_type = 'success';
         } catch (PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
@@ -29,7 +30,7 @@ $items_per_page = 15;
 $current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
-// Filter
+// Filtering setup
 $filter = $_GET['filter'] ?? 'all'; // 'all', 'today', 'week', 'month'
 $date_filter = '';
 if ($filter === 'today') {
@@ -40,23 +41,24 @@ if ($filter === 'today') {
     $date_filter = " AND tanggal >= CURRENT_DATE - INTERVAL '30 days'";
 }
 
-// Get total count
+// Get total count (using database column name 'tanggal')
 $count_query = "SELECT COUNT(*) FROM absensi WHERE 1=1" . $date_filter;
 $stmt = $conn->query($count_query);
 $total_items = $stmt->fetchColumn();
 $total_pages = ceil($total_items / $items_per_page);
 
-// Get absensi data with mahasiswa info
+// Get attendance data with student info
+// NOTE: Database column names are used (a.tanggal, a.waktu_datang, etc.) but aliased to English for the PHP array keys
 $query = "SELECT
     a.id_absensi,
     a.nim,
-    a.tanggal,
-    a.waktu_datang,
-    a.waktu_pulang,
-    a.keterangan,
-    m.nama as nama_mahasiswa,
-    m.nim as nim,
-    m.status as status_mahasiswa
+    a.tanggal as date,
+    a.waktu_datang as check_in_time,
+    a.waktu_pulang as check_out_time,
+    a.keterangan as notes,
+    m.nama as student_name,
+    m.nim as student_id,
+    m.status as student_status
 FROM absensi a
 LEFT JOIN mahasiswa m ON m.nim = a.nim::text
 WHERE 1=1" . $date_filter . "
@@ -67,7 +69,7 @@ $stmt = $conn->prepare($query);
 $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
-$absensi_list = $stmt->fetchAll();
+$attendance_list = $stmt->fetchAll();
 
 // Get statistics
 $stats = [];
@@ -217,17 +219,17 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
             font-weight: 600;
         }
 
-        .status-badge.masuk {
+        .status-badge.check_in {
             background: rgba(16, 185, 129, 0.15);
             color: #047857;
         }
 
-        .status-badge.keluar {
+        .status-badge.check_out {
             background: rgba(239, 68, 68, 0.15);
             color: #991b1b;
         }
 
-        .status-badge.lengkap {
+        .status-badge.complete {
             background: rgba(59, 130, 246, 0.15);
             color: #1e40af;
         }
@@ -299,7 +301,7 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
             color: var(--dark);
         }
 
-        .keterangan-text {
+        .notes-text {
             max-width: 300px;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -343,25 +345,25 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
 </head>
 
 <body>
-    <?php $active_page = 'absensi';
+    <?php $active_page = 'attendance';
     include __DIR__ . '/partials/sidebar.php'; ?>
 
     <main class="content">
         <div class="content-inner">
             <div class="content-header">
-                <h1><i class="ri-calendar-check-line"></i> Absensi</h1>
+                <h1><i class="ri-calendar-check-line"></i> Attendance</h1>
                 <div class="filter-tabs">
                     <a href="?filter=all" class="filter-tab <?= $filter === 'all' ? 'active' : ''; ?>">
-                        Semua
+                        All
                     </a>
                     <a href="?filter=today" class="filter-tab <?= $filter === 'today' ? 'active' : ''; ?>">
-                        Hari Ini
+                        Today
                     </a>
                     <a href="?filter=week" class="filter-tab <?= $filter === 'week' ? 'active' : ''; ?>">
-                        Minggu Ini
+                        This Week
                     </a>
                     <a href="?filter=month" class="filter-tab <?= $filter === 'month' ? 'active' : ''; ?>">
-                        Bulan Ini
+                        This Month
                     </a>
                 </div>
             </div>
@@ -374,15 +376,15 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
 
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h3>Hari Ini</h3>
+                    <h3>Today</h3>
                     <div class="stat-number"><?= $stats['today']; ?></div>
                 </div>
                 <div class="stat-card">
-                    <h3>Minggu Ini</h3>
+                    <h3>This Week</h3>
                     <div class="stat-number"><?= $stats['week']; ?></div>
                 </div>
                 <div class="stat-card">
-                    <h3>Bulan Ini</h3>
+                    <h3>This Month</h3>
                     <div class="stat-number"><?= $stats['month']; ?></div>
                 </div>
                 <div class="stat-card">
@@ -391,11 +393,11 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                 </div>
             </div>
 
-            <?php if (empty($absensi_list)): ?>
+            <?php if (empty($attendance_list)): ?>
                 <div class="empty-state">
                     <i class="ri-calendar-line"></i>
-                    <h3>Tidak ada data absensi</h3>
-                    <p>No attendance data for the selected period.</p>
+                    <h3>No Attendance Data</h3>
+                    <p>No attendance data found for the selected period.</p>
                 </div>
             <?php else: ?>
                 <div class="table-wrapper">
@@ -403,50 +405,50 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Mahasiswa</th>
-                                <th>Tanggal</th>
-                                <th>Waktu Masuk</th>
-                                <th>Waktu Keluar</th>
+                                <th>Student</th>
+                                <th>Date</th>
+                                <th>Check-in Time</th>
+                                <th>Check-out Time</th>
                                 <th>Status</th>
-                                <th>Keterangan</th>
-                                <th>Aksi</th>
+                                <th>Notes</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($absensi_list as $index => $abs): ?>
+                            <?php foreach ($attendance_list as $index => $record): ?>
                                 <tr>
                                     <td><?= $offset + $index + 1; ?></td>
                                     <td>
                                         <div>
-                                            <strong><?= htmlspecialchars($abs['nama_mahasiswa'] ?? 'N/A'); ?></strong>
-                                            <?php if ($abs['nim']): ?>
+                                            <strong><?= htmlspecialchars($record['student_name'] ?? 'N/A'); ?></strong>
+                                            <?php if ($record['student_id']): ?>
                                                 <div class="small text-muted mt-1">
-                                                    NIM: <?= htmlspecialchars($abs['nim']); ?>
+                                                    NIM: <?= htmlspecialchars($record['student_id']); ?>
                                                 </div>
                                             <?php endif; ?>
-                                            <?php if ($abs['status_mahasiswa']): ?>
+                                            <?php if ($record['student_status']): ?>
                                                 <div class="small text-primary mt-1">
-                                                    <?= ucfirst($abs['status_mahasiswa']); ?>
+                                                    <?= ucfirst($record['student_status']); ?>
                                                 </div>
                                             <?php endif; ?>
                                         </div>
                                     </td>
                                     <td>
-                                        <?= date('d M Y', strtotime($abs['tanggal'])); ?>
+                                        <?= date('d M Y', strtotime($record['date'])); ?>
                                     </td>
                                     <td>
-                                        <?php if ($abs['waktu_datang']): ?>
+                                        <?php if ($record['check_in_time']): ?>
                                             <div class="time-info">
-                                                <strong><?= date('H:i', strtotime($abs['waktu_datang'])); ?></strong>
+                                                <strong><?= date('H:i', strtotime($record['check_in_time'])); ?></strong>
                                             </div>
                                         <?php else: ?>
                                             <span class="muted-gray">-</span>
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <?php if ($abs['waktu_pulang']): ?>
+                                        <?php if ($record['check_out_time']): ?>
                                             <div class="time-info">
-                                                <strong><?= date('H:i', strtotime($abs['waktu_pulang'])); ?></strong>
+                                                <strong><?= date('H:i', strtotime($record['check_out_time'])); ?></strong>
                                             </div>
                                         <?php else: ?>
                                             <span class="muted-gray">-</span>
@@ -454,24 +456,25 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                                     </td>
                                     <td>
                                         <?php
-                                        $has_masuk = !empty($abs['waktu_datang']);
-                                        $has_keluar = !empty($abs['waktu_pulang']);
+                                        $has_check_in = !empty($record['check_in_time']);
+                                        $has_check_out = !empty($record['check_out_time']);
 
-                                        if ($has_masuk && $has_keluar) {
-                                            echo '<span class="status-badge lengkap"><i class="ri-check-double-line"></i> Lengkap</span>';
-                                        } elseif ($has_masuk) {
-                                            echo '<span class="status-badge masuk"><i class="ri-login-box-line"></i> Masuk</span>';
-                                        } elseif ($has_keluar) {
-                                            echo '<span class="status-badge keluar"><i class="ri-logout-box-line"></i> Keluar</span>';
+                                        if ($has_check_in && $has_check_out) {
+                                            echo '<span class="status-badge complete"><i class="ri-check-double-line"></i> Complete</span>';
+                                        } elseif ($has_check_in) {
+                                            echo '<span class="status-badge check_in"><i class="ri-login-box-line"></i> Checked In</span>';
+                                        } elseif ($has_check_out) {
+                                            // This case is rare/impossible if check-out requires check-in, but handled for completeness
+                                            echo '<span class="status-badge check_out"><i class="ri-logout-box-line"></i> Checked Out</span>';
                                         } else {
                                             echo '<span class="muted-gray">-</span>';
                                         }
                                         ?>
                                     </td>
                                     <td>
-                                        <?php if ($abs['keterangan']): ?>
-                                            <div class="keterangan-text" title="<?= htmlspecialchars($abs['keterangan']); ?>">
-                                                <?= htmlspecialchars($abs['keterangan']); ?>
+                                        <?php if ($record['notes']): ?>
+                                            <div class="notes-text" title="<?= htmlspecialchars($record['notes']); ?>">
+                                                <?= htmlspecialchars($record['notes']); ?>
                                             </div>
                                         <?php else: ?>
                                             <span class="muted-gray">-</span>
@@ -479,10 +482,10 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                                     </td>
                                     <td>
                                         <form method="POST"
-                                            onsubmit="return confirm('Are you sure you want to delete this attendance data?');"
+                                            onsubmit="return confirm('Are you sure you want to delete this attendance record?');"
                                             class="d-inline">
                                             <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="id" value="<?= $abs['id_absensi']; ?>">
+                                            <input type="hidden" name="id" value="<?= $record['id_absensi']; ?>">
                                             <button type="submit" class="btn-action btn-delete">
                                                 <i class="ri-delete-bin-line"></i> Delete
                                             </button>
@@ -494,7 +497,6 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
                     </table>
                 </div>
 
-                <!-- Pagination -->
                 <?php if ($total_pages > 1): ?>
                     <div class="pagination">
                         <?php if ($current_page > 1): ?>
@@ -544,5 +546,4 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
         </div>
     </main>
 </body>
-
 </html>
