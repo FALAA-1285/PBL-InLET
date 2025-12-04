@@ -102,6 +102,22 @@ try {
             justify-content: center;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 2rem;
+            position: relative;
+        }
+
+        
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('../assets/Teknik-Polinema.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.15;
+            z-index: 0;
         }
 
         .container {
@@ -111,6 +127,8 @@ try {
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             max-width: 500px;
             width: 100%;
+            backdrop-filter: blur(10px);
+        
         }
 
         .header {
@@ -298,6 +316,26 @@ try {
             color: var(--dark);
             font-weight: 600;
         }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .login-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .login-footer a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
     </style>
 </head>
 
@@ -379,11 +417,11 @@ try {
             </p>
         </div>
 
-        <div class="text-center mt-4 pt-4 border-top">
-            <a href="../login.php" class="text-primary text-decoration-none fw-semibold">
-                <i class="ri-arrow-left-line"></i> Kembali ke Login
-            </a>
-        </div>
+        <div class="login-footer">
+                <a href="../login.php">
+                    <i class="ri-arrow-left-line"></i> Kembali ke Login
+                </a>
+            </div>
     </div>
 </body>
 

@@ -7,6 +7,9 @@ $conn = getDBConnection();
 $message = '';
 $message_type = '';
 
+// Tab aktif (mengikuti pola di research.php)
+$current_tab = isset($_GET['tab']) ? $_GET['tab'] : 'page-titles';
+
 // Get current admin ID and verify it exists
 $admin_id = $_SESSION['id_admin'] ?? null;
 if ($admin_id) {
@@ -110,13 +113,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             'subtitle' => trim($_POST["{$page}_subtitle"] ?? '')
         ];
     }
-    
+
     $footer_title = trim($_POST['footer_title'] ?? '');
     $copyright_text = trim($_POST['copyright_text'] ?? '');
     $contact_email = trim($_POST['contact_email'] ?? '');
     $contact_phone = trim($_POST['contact_phone'] ?? '');
     $contact_address = trim($_POST['contact_address'] ?? '');
-    
+
     $site_logo = $settings['site_logo'] ?? ''; // Keep existing if not updated
     $footer_logo = $settings['footer_logo'] ?? ''; // Keep existing if not updated
 
@@ -167,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 break;
             }
         }
-        
+
         if (!$has_title) {
             $message = 'Minimal satu halaman harus memiliki title!';
             $message_type = 'error';
@@ -186,7 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     updated_at = CURRENT_TIMESTAMP,
                     updated_by = :updated_by
                     WHERE id_setting = :id_setting");
-                
+
                 $stmt->execute([
                     'id_setting' => $settings['id_setting'],
                     'page_titles' => $page_titles_json,
@@ -199,15 +202,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     'contact_address' => $contact_address ?: null,
                     'updated_by' => $admin_id ?: null
                 ]);
-                
+
                 $message = 'Settings berhasil diupdate!';
                 $message_type = 'success';
-                
+
                 // Reload settings
                 $stmt = $conn->prepare("SELECT * FROM settings WHERE id_setting = :id");
                 $stmt->execute(['id' => $settings['id_setting']]);
                 $settings = $stmt->fetch();
-                
+
                 // Reload page_titles
                 if (!empty($settings['page_titles'])) {
                     if (is_string($settings['page_titles'])) {
@@ -235,8 +238,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="admin.css">
     <style>
-        * {
-            box-sizing: border-box;
+        body {
+            background: var(--light);
         }
 
         .cms-content {
@@ -245,130 +248,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             padding-bottom: 4rem;
         }
 
-        .page-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 2rem;
-            border-radius: 15px;
-            margin-bottom: 2rem;
-            color: white;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        }
-
-        .page-header h1 {
-            margin: 0;
-            font-size: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .page-header p {
-            margin: 0.5rem 0 0 0;
-            opacity: 0.9;
-        }
-
         .message {
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
+            padding: 1rem;
+            border-radius: 10px;
             margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            animation: slideDown 0.3s ease;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .message.success {
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            background: #d1fae5;
             color: #065f46;
             border-left: 4px solid #10b981;
         }
 
         .message.error {
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            background: #fee2e2;
             color: #991b1b;
             border-left: 4px solid #ef4444;
-        }
-
-        .tabs-container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-            margin-bottom: 2rem;
-        }
-
-        .tabs-header {
-            display: flex;
-            background: #f8fafc;
-            border-bottom: 2px solid #e2e8f0;
-            overflow-x: auto;
-            scrollbar-width: thin;
-        }
-
-        .tabs-header::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .tabs-header::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 2px;
-        }
-
-        .tab-button {
-            padding: 1rem 1.5rem;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: #64748b;
-            transition: all 0.3s;
-            border-bottom: 3px solid transparent;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .tab-button:hover {
-            background: #f1f5f9;
-            color: #475569;
-        }
-
-        .tab-button.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-            background: white;
-        }
-
-        .tab-content {
-            display: none;
-            padding: 2rem;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
         }
 
         .form-section {
@@ -380,7 +275,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
 
         .form-section h2 {
-            color: #667eea;
+            color: var(--primary);
             margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
@@ -401,9 +296,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
-            color: #1e293b;
-            font-weight: 600;
-            font-size: 0.95rem;
+            color: var(--dark);
+            font-weight: 500;
         }
 
         .form-group input[type="text"],
@@ -424,7 +318,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         .form-group input:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--primary);
             background: white;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
@@ -439,6 +333,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             margin-top: 0.5rem;
             color: #64748b;
             font-size: 0.875rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
         }
 
         .logo-preview {
@@ -461,53 +413,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .btn-submit {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1rem 2.5rem;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-        }
-
-        .btn-submit:active {
-            transform: translateY(0);
-        }
-
         .section-divider {
             height: 1px;
             background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
             margin: 2rem 0;
-        }
-
-        .info-box {
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-            border-left: 4px solid #3b82f6;
-            padding: 1.25rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
-        }
-
-        .info-box p {
-            margin: 0;
-            color: #1e40af;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
 
         .page-title-group {
@@ -515,7 +424,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             padding: 1.5rem;
             border-radius: 12px;
             margin-bottom: 1.5rem;
-            border-left: 4px solid #667eea;
+            box-shadow: 8px 8px 8px rgba(146, 15, 15, 0.05);
         }
 
         .page-title-group h3 {
@@ -537,15 +446,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             .form-row {
                 grid-template-columns: 1fr;
             }
-
-            .tabs-header {
-                flex-wrap: nowrap;
-            }
-
-            .tab-button {
-                padding: 0.75rem 1rem;
-                font-size: 0.875rem;
-            }
         }
     </style>
 </head>
@@ -557,13 +457,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <main class="content">
         <div class="content-inner">
             <div class="cms-content">
-                <h1 class="text-primary mb-4"><i class="ri-settings-3-line"></i> Site Settings</h1>
-                <p>Kelola pengaturan situs, logo, dan informasi kontak</p>
-
-                <!-- <div class="page-header">
-                    <h1><i class="ri-settings-3-line"></i> Site Settings</h1>
-                    
-                </div> -->
+                <h1 class="text-primary mb-4"><i class="ri-settings-3-line"></i> Kelola Site Settings</h1>
 
                 <?php if ($message): ?>
                     <div class="message <?php echo $message_type; ?>">
@@ -572,213 +466,185 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     </div>
                 <?php endif; ?>
 
-                <div class="info-box">
-                    <p><i class="ri-information-line"></i> <strong>Catatan:</strong> Halaman ini hanya untuk mengupdate pengaturan. Tidak dapat menambahkan atau menghapus data settings.</p>
-                </div>
-
                 <!-- Settings Form -->
                 <form method="POST" enctype="multipart/form-data" id="settingsForm">
                     <input type="hidden" name="action" value="update_settings">
+                    
+                    <div class="tabs">
+                        <a href="?tab=page-titles&page=1"
+                            class="tab <?php echo ($current_tab === 'page-titles') ? 'active' : ''; ?>">Artikel</a>
+                        <a href="?tab=logos&page=1"
+                            class="tab <?php echo ($current_tab === 'logos') ? 'active' : ''; ?>">Logos</a>
+                        <a href="?tab=footer&page=1"
+                            class="tab <?php echo ($current_tab === 'footer') ? 'active' : ''; ?>">Footer</a>
+                        <a href="?tab=contact&page=1"
+                            class="tab <?php echo ($current_tab === 'contact') ? 'active' : ''; ?>">Contact</a>
+                    </div>
 
-                    <!-- Tabs Container -->
-                    <div class="tabs-container">
-                        <div class="tabs-header">
-                            <button type="button" class="tab-button active" data-tab="page-titles">
-                                <i class="ri-file-text-line"></i> Page Titles
-                            </button>
-                            <button type="button" class="tab-button" data-tab="logos">
-                                <i class="ri-image-line"></i> Logos
-                            </button>
-                            <button type="button" class="tab-button" data-tab="footer">
-                                <i class="ri-file-list-3-line"></i> Footer
-                            </button>
-                            <button type="button" class="tab-button" data-tab="contact">
-                                <i class="ri-contacts-line"></i> Contact
-                            </button>
-                        </div>
+                    <!-- Page Titles Tab -->
+                    <div class="tab-content <?php echo ($current_tab === 'page-titles') ? 'active' : ''; ?>"
+                        id="page-titles">
+                        <div class="form-section">
+                            <h2><i class="ri-global-line"></i> Page Titles & Subtitles</h2>
+                            <p style="color: #64748b; margin-bottom: 2rem;">Atur title dan subtitle untuk setiap
+                                halaman secara terpisah</p>
 
-                        <!-- Page Titles Tab -->
-                        <div class="tab-content active" id="page-titles">
-                            <div class="form-section">
-                                <h2><i class="ri-global-line"></i> Page Titles & Subtitles</h2>
-                                <p style="color: #64748b; margin-bottom: 2rem;">Atur title dan subtitle untuk setiap halaman secara terpisah</p>
+                            <?php
+                            $page_labels = [
+                                'home' => ['icon' => 'ri-home-line', 'label' => 'Home Page'],
+                                'research' => ['icon' => 'ri-flask-line', 'label' => 'Research Page'],
+                                'member' => ['icon' => 'ri-team-line', 'label' => 'Members Page'],
+                                'news' => ['icon' => 'ri-newspaper-line', 'label' => 'News Page'],
+                                'tool_loans' => ['icon' => 'ri-tools-line', 'label' => 'Tool Loans Page'],
+                                'attendance' => ['icon' => 'ri-calendar-check-line', 'label' => 'Attendance Page'],
+                                'guestbook' => ['icon' => 'ri-book-open-line', 'label' => 'Guestbook Page']
+                            ];
 
-                                <?php
-                                $page_labels = [
-                                    'home' => ['icon' => 'ri-home-line', 'label' => 'Home Page'],
-                                    'research' => ['icon' => 'ri-flask-line', 'label' => 'Research Page'],
-                                    'member' => ['icon' => 'ri-team-line', 'label' => 'Members Page'],
-                                    'news' => ['icon' => 'ri-newspaper-line', 'label' => 'News Page'],
-                                    'tool_loans' => ['icon' => 'ri-tools-line', 'label' => 'Tool Loans Page'],
-                                    'attendance' => ['icon' => 'ri-calendar-check-line', 'label' => 'Attendance Page'],
-                                    'guestbook' => ['icon' => 'ri-book-open-line', 'label' => 'Guestbook Page']
-                                ];
-
-                                foreach ($page_labels as $page => $info):
-                                    $current = $page_titles[$page] ?? ['title' => '', 'subtitle' => ''];
+                            foreach ($page_labels as $page => $info):
+                                $current = $page_titles[$page] ?? ['title' => '', 'subtitle' => ''];
                                 ?>
-                                    <div class="page-title-group">
-                                        <h3><i class="<?php echo $info['icon']; ?>"></i> <?php echo $info['label']; ?></h3>
-                                        <div class="form-row">
-                                            <div class="form-group">
-                                                <label for="<?php echo $page; ?>_title">Title *</label>
-                                                <input type="text" 
-                                                    id="<?php echo $page; ?>_title" 
-                                                    name="<?php echo $page; ?>_title" 
-                                                    value="<?php echo htmlspecialchars($current['title'] ?? ''); ?>" 
-                                                    placeholder="Enter page title">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="<?php echo $page; ?>_subtitle">Subtitle</label>
-                                                <input type="text" 
-                                                    id="<?php echo $page; ?>_subtitle" 
-                                                    name="<?php echo $page; ?>_subtitle" 
-                                                    value="<?php echo htmlspecialchars($current['subtitle'] ?? ''); ?>" 
-                                                    placeholder="Enter page subtitle">
-                                            </div>
+                                <div class="page-title-group">
+                                    <h3><i class="<?php echo $info['icon']; ?>"></i> <?php echo $info['label']; ?></h3>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="<?php echo $page; ?>_title">Title *</label>
+                                            <input type="text" id="<?php echo $page; ?>_title"
+                                                name="<?php echo $page; ?>_title"
+                                                value="<?php echo htmlspecialchars($current['title'] ?? ''); ?>"
+                                                placeholder="Enter page title">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="<?php echo $page; ?>_subtitle">Subtitle</label>
+                                            <input type="text" id="<?php echo $page; ?>_subtitle"
+                                                name="<?php echo $page; ?>_subtitle"
+                                                value="<?php echo htmlspecialchars($current['subtitle'] ?? ''); ?>"
+                                                placeholder="Enter page subtitle">
                                         </div>
                                     </div>
-                                <?php endforeach; ?>
-                            </div>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
+                    </div>
 
-                        <!-- Logos Tab -->
-                        <div class="tab-content" id="logos">
-                            <div class="form-section">
-                                <h2><i class="ri-image-line"></i> Logo Settings</h2>
+                    <!-- Logos Tab -->
+                    <div class="tab-content <?php echo ($current_tab === 'logos') ? 'active' : ''; ?>" id="logos">
+                        <div class="form-section">
+                            <h2><i class="ri-image-line"></i> Logo Settings</h2>
 
-                                <!-- Site Logo (Navbar) -->
-                                <div class="form-group">
-                                    <label for="site_logo">Logo Navbar</label>
-                                    <?php if (!empty($settings['site_logo'])): ?>
-                                        <div class="logo-preview current">
-                                            <strong style="display: block; margin-bottom: 0.5rem; color: #475569;">Logo Saat Ini:</strong>
-                                            <img src="../<?php echo htmlspecialchars($settings['site_logo']); ?>" 
-                                                alt="Current Site Logo" 
-                                                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                            <span style="display:none; color: #ef4444;">Gambar tidak dapat dimuat</span>
-                                        </div>
-                                    <?php endif; ?>
-                                    <input type="file" id="site_logo_file" name="site_logo_file" accept="image/*">
-                                    <small>Upload logo baru untuk navbar (JPG, PNG, GIF, WEBP - Max 5MB)</small>
-                                    <div class="form-group" style="margin-top: 1rem;">
-                                        <label for="site_logo_url">Atau Masukkan URL Logo</label>
-                                        <input type="url" id="site_logo_url" name="site_logo_url" 
-                                            placeholder="https://example.com/logo.png">
-                                        <small>Jika menggunakan URL, kosongkan field upload di atas</small>
+                            <!-- Site Logo (Navbar) -->
+                            <div class="form-group">
+                                <label for="site_logo">Logo Navbar</label>
+                                <?php if (!empty($settings['site_logo'])): ?>
+                                    <div class="logo-preview current">
+                                        <strong style="display: block; margin-bottom: 0.5rem; color: #475569;">Logo Saat
+                                            Ini:</strong>
+                                        <img src="../<?php echo htmlspecialchars($settings['site_logo']); ?>"
+                                            alt="Current Site Logo"
+                                            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                        <span style="display:none; color: #ef4444;">Gambar tidak dapat dimuat</span>
                                     </div>
+                                <?php endif; ?>
+                                <input type="file" id="site_logo_file" name="site_logo_file" accept="image/*">
+                                <small>Upload logo baru untuk navbar (JPG, PNG, GIF, WEBP - Max 5MB)</small>
+                                <div class="form-group" style="margin-top: 1rem;">
+                                    <label for="site_logo_url">Atau Masukkan URL Logo</label>
+                                    <input type="url" id="site_logo_url" name="site_logo_url"
+                                        placeholder="https://example.com/logo.png">
+                                    <small>Jika menggunakan URL, kosongkan field upload di atas</small>
                                 </div>
+                            </div>
 
-                                <div class="section-divider"></div>
+                            <div class="section-divider"></div>
 
-                                <!-- Footer Logo -->
-                                <div class="form-group">
-                                    <label for="footer_logo">Logo Footer</label>
-                                    <?php if (!empty($settings['footer_logo'])): ?>
-                                        <div class="logo-preview current">
-                                            <strong style="display: block; margin-bottom: 0.5rem; color: #475569;">Logo Saat Ini:</strong>
-                                            <img src="../<?php echo htmlspecialchars($settings['footer_logo']); ?>" 
-                                                alt="Current Footer Logo"
-                                                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                            <span style="display:none; color: #ef4444;">Gambar tidak dapat dimuat</span>
-                                        </div>
-                                    <?php endif; ?>
-                                    <input type="file" id="footer_logo_file" name="footer_logo_file" accept="image/*">
-                                    <small>Upload logo baru untuk footer (JPG, PNG, GIF, WEBP - Max 5MB)</small>
-                                    <div class="form-group" style="margin-top: 1rem;">
-                                        <label for="footer_logo_url">Atau Masukkan URL Logo</label>
-                                        <input type="url" id="footer_logo_url" name="footer_logo_url" 
-                                            placeholder="https://example.com/footer-logo.png">
-                                        <small>Jika menggunakan URL, kosongkan field upload di atas</small>
+                            <!-- Footer Logo -->
+                            <div class="form-group">
+                                <label for="footer_logo">Logo Footer</label>
+                                <?php if (!empty($settings['footer_logo'])): ?>
+                                    <div class="logo-preview current">
+                                        <strong style="display: block; margin-bottom: 0.5rem; color: #475569;">Logo Saat
+                                            Ini:</strong>
+                                        <img src="../<?php echo htmlspecialchars($settings['footer_logo']); ?>"
+                                            alt="Current Footer Logo"
+                                            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                        <span style="display:none; color: #ef4444;">Gambar tidak dapat dimuat</span>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Footer Tab -->
-                        <div class="tab-content" id="footer">
-                            <div class="form-section">
-                                <h2><i class="ri-file-list-3-line"></i> Footer Settings</h2>
-
-                                <div class="form-group">
-                                    <label for="footer_title">Footer Title</label>
-                                    <input type="text" id="footer_title" name="footer_title" 
-                                        value="<?php echo htmlspecialchars($settings['footer_title'] ?? ''); ?>"
-                                        placeholder="Enter footer title">
-                                    <small>Judul yang ditampilkan di footer</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="copyright_text">Copyright Text</label>
-                                    <textarea id="copyright_text" name="copyright_text" 
-                                        placeholder="© 2024 InLET. All rights reserved."><?php echo htmlspecialchars($settings['copyright_text'] ?? ''); ?></textarea>
-                                    <small>Teks copyright yang ditampilkan di footer</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Contact Tab -->
-                        <div class="tab-content" id="contact">
-                            <div class="form-section">
-                                <h2><i class="ri-contacts-line"></i> Contact Information</h2>
-
-                                <div class="form-group">
-                                    <label for="contact_email">Email</label>
-                                    <input type="email" id="contact_email" name="contact_email" 
-                                        value="<?php echo htmlspecialchars($settings['contact_email'] ?? ''); ?>"
-                                        placeholder="contact@inlet.edu">
-                                    <small>Alamat email kontak</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="contact_phone">Phone</label>
-                                    <input type="tel" id="contact_phone" name="contact_phone" 
-                                        value="<?php echo htmlspecialchars($settings['contact_phone'] ?? ''); ?>"
-                                        placeholder="+62 123 456 7890">
-                                    <small>Nomor telepon kontak</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="contact_address">Address</label>
-                                    <textarea id="contact_address" name="contact_address" 
-                                        placeholder="Jl. Soekarno Hatta No. 9, Malang, Jawa Timur"><?php echo htmlspecialchars($settings['contact_address'] ?? ''); ?></textarea>
-                                    <small>Alamat lengkap</small>
+                                <?php endif; ?>
+                                <input type="file" id="footer_logo_file" name="footer_logo_file" accept="image/*">
+                                <small>Upload logo baru untuk footer (JPG, PNG, GIF, WEBP - Max 5MB)</small>
+                                <div class="form-group" style="margin-top: 1rem;">
+                                    <label for="footer_logo_url">Atau Masukkan URL Logo</label>
+                                    <input type="url" id="footer_logo_url" name="footer_logo_url"
+                                        placeholder="https://example.com/footer-logo.png">
+                                    <small>Jika menggunakan URL, kosongkan field upload di atas</small>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Submit Button -->
-                    <div class="form-section" style="text-align: center;">
-                        <button type="submit" class="btn-submit">
-                            <i class="ri-save-line"></i> Update All Settings
-                        </button>
+                    <!-- Footer Tab -->
+                    <div class="tab-content <?php echo ($current_tab === 'footer') ? 'active' : ''; ?>" id="footer">
+                        <div class="form-section">
+                            <h2><i class="ri-file-list-3-line"></i> Footer Settings</h2>
+
+                            <div class="form-group">
+                                <label for="footer_title">Footer Title</label>
+                                <input type="text" id="footer_title" name="footer_title"
+                                    value="<?php echo htmlspecialchars($settings['footer_title'] ?? ''); ?>"
+                                    placeholder="Enter footer title">
+                                <small>Judul yang ditampilkan di footer</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="copyright_text">Copyright Text</label>
+                                <textarea id="copyright_text" name="copyright_text"
+                                    placeholder="© 2024 InLET. All rights reserved."><?php echo htmlspecialchars($settings['copyright_text'] ?? ''); ?></textarea>
+                                <small>Teks copyright yang ditampilkan di footer</small>
+                            </div>
+                        </div>
                     </div>
-                </form>
+
+                    <!-- Contact Tab -->
+                    <div class="tab-content <?php echo ($current_tab === 'contact') ? 'active' : ''; ?>" id="contact">
+                        <div class="form-section">
+                            <h2><i class="ri-contacts-line"></i> Contact Information</h2>
+
+                            <div class="form-group">
+                                <label for="contact_email">Email</label>
+                                <input type="email" id="contact_email" name="contact_email"
+                                    value="<?php echo htmlspecialchars($settings['contact_email'] ?? ''); ?>"
+                                    placeholder="contact@inlet.edu">
+                                <small>Alamat email kontak</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contact_phone">Phone</label>
+                                <input type="tel" id="contact_phone" name="contact_phone"
+                                    value="<?php echo htmlspecialchars($settings['contact_phone'] ?? ''); ?>"
+                                    placeholder="+62 123 456 7890">
+                                <small>Nomor telepon kontak</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contact_address">Address</label>
+                                <textarea id="contact_address" name="contact_address"
+                                    placeholder="Jl. Soekarno Hatta No. 9, Malang, Jawa Timur"><?php echo htmlspecialchars($settings['contact_address'] ?? ''); ?></textarea>
+                                <small>Alamat lengkap</small>
+                            </div>
+                        </div>
+                    </div>
             </div>
+
+            <!-- Submit Button -->
+            <div class="form-section" style="text-align: center;">
+                <button type="submit" class="btn-submit">
+                    <i class="ri-save-line"></i> Update All Settings
+                </button>
+            </div>
+            </form>
+        </div>
         </div>
     </main>
 
-    <script>
-        // Tab switching functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const tabButtons = document.querySelectorAll('.tab-button');
-            const tabContents = document.querySelectorAll('.tab-content');
-
-            tabButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const targetTab = this.getAttribute('data-tab');
-
-                    // Remove active class from all buttons and contents
-                    tabButtons.forEach(btn => btn.classList.remove('active'));
-                    tabContents.forEach(content => content.classList.remove('active'));
-
-                    // Add active class to clicked button and corresponding content
-                    this.classList.add('active');
-                    document.getElementById(targetTab).classList.add('active');
-                });
-            });
-        });
-    </script>
 </body>
+
 </html>

@@ -80,6 +80,12 @@ $menu_items = [
         'target' => '_blank',
     ],
     [
+        'id' => 'reset-admin',
+        'label' => 'Reset Admin',
+        'href' => '../setup/reset_admin.php',
+        'icon' => 'ri-refresh-line',
+    ],
+    [
         'id' => 'logout',
         'label' => 'Logout',
         'href' => 'logout.php',
