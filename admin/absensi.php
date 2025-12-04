@@ -99,9 +99,13 @@ $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
         }
 
         .content-header h1 {
-            color: var(--primary);
+            color: #000000;
             font-size: 2rem;
             margin: 0;
+        }
+
+        .content-header h1 i {
+            color: #000000;
         }
 
         .stats-grid {
