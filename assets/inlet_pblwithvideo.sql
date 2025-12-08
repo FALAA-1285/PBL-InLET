@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict 2rtB6HSBzVEPSvhLscfZo77ZeSJ7dqa8WCW2HUthAouhvZD8R5zqdZa5YhCAxf9
+\restrict Y5hFYutsZa6rHlDGvENXfTzHAUNpYIgBJDZeGclotgdL2mWdyOPPSfwEv3LEQrq
 
 -- Dumped from database version 15.14
 -- Dumped by pg_dump version 15.14
 
--- Started on 2025-12-08 08:17:43
+-- Started on 2025-12-08 09:42:36
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -21,7 +21,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 264 (class 1255 OID 46818)
+-- TOC entry 266 (class 1255 OID 46818)
 -- Name: create_request(integer, integer, character varying, date, time without time zone, time without time zone, character varying, integer); Type: PROCEDURE; Schema: public; Owner: postgres
 --
 
@@ -148,7 +148,7 @@ $$;
 ALTER PROCEDURE public.create_request(IN p_id_alat integer, IN p_id_ruang integer, IN p_nama_peminjam character varying, IN p_tanggal_pinjam date, IN p_waktu_pinjam time without time zone, IN p_waktu_kembali time without time zone, IN p_keterangan character varying, IN p_jumlah integer, OUT p_id_request integer, OUT p_result_code integer, OUT p_result_message character varying) OWNER TO postgres;
 
 --
--- TOC entry 276 (class 1255 OID 46819)
+-- TOC entry 278 (class 1255 OID 46819)
 -- Name: proc_reject_request(integer, integer, text); Type: PROCEDURE; Schema: public; Owner: postgres
 --
 
@@ -194,7 +194,7 @@ $$;
 ALTER PROCEDURE public.proc_reject_request(IN p_id_request integer, IN p_id_admin integer, IN p_alasan_reject text, OUT p_result_code integer, OUT p_result_message character varying) OWNER TO postgres;
 
 --
--- TOC entry 277 (class 1255 OID 46820)
+-- TOC entry 279 (class 1255 OID 46820)
 -- Name: proc_return_peminjaman(integer, integer, character varying, text); Type: PROCEDURE; Schema: public; Owner: postgres
 --
 
@@ -247,7 +247,7 @@ $$;
 ALTER PROCEDURE public.proc_return_peminjaman(OUT p_result_code integer, OUT p_result_message character varying, IN p_id_peminjaman integer, IN p_id_admin_return integer, IN p_kondisi_barang character varying, IN p_catatan_return text) OWNER TO postgres;
 
 --
--- TOC entry 278 (class 1255 OID 46821)
+-- TOC entry 280 (class 1255 OID 46821)
 -- Name: proc_update_absensi(character varying, character varying, text); Type: PROCEDURE; Schema: public; Owner: postgres
 --
 
@@ -373,7 +373,7 @@ CREATE SEQUENCE public.absensi_id_absensi_seq
 ALTER TABLE public.absensi_id_absensi_seq OWNER TO postgres;
 
 --
--- TOC entry 3610 (class 0 OID 0)
+-- TOC entry 3621 (class 0 OID 0)
 -- Dependencies: 240
 -- Name: absensi_id_absensi_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -414,7 +414,7 @@ CREATE SEQUENCE public.admin_id_admin_seq
 ALTER TABLE public.admin_id_admin_seq OWNER TO postgres;
 
 --
--- TOC entry 3611 (class 0 OID 0)
+-- TOC entry 3622 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: admin_id_admin_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -457,7 +457,7 @@ CREATE SEQUENCE public.alat_lab_id_alat_lab_seq
 ALTER TABLE public.alat_lab_id_alat_lab_seq OWNER TO postgres;
 
 --
--- TOC entry 3612 (class 0 OID 0)
+-- TOC entry 3623 (class 0 OID 0)
 -- Dependencies: 242
 -- Name: alat_lab_id_alat_lab_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -497,7 +497,7 @@ CREATE SEQUENCE public.artikel_id_artikel_seq
 ALTER TABLE public.artikel_id_artikel_seq OWNER TO postgres;
 
 --
--- TOC entry 3613 (class 0 OID 0)
+-- TOC entry 3624 (class 0 OID 0)
 -- Dependencies: 234
 -- Name: artikel_id_artikel_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -539,7 +539,7 @@ CREATE SEQUENCE public.berita_id_berita_seq
 ALTER TABLE public.berita_id_berita_seq OWNER TO postgres;
 
 --
--- TOC entry 3614 (class 0 OID 0)
+-- TOC entry 3625 (class 0 OID 0)
 -- Dependencies: 232
 -- Name: berita_id_berita_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -584,7 +584,7 @@ CREATE SEQUENCE public.buku_tamu_id_buku_tamu_seq
 ALTER TABLE public.buku_tamu_id_buku_tamu_seq OWNER TO postgres;
 
 --
--- TOC entry 3615 (class 0 OID 0)
+-- TOC entry 3626 (class 0 OID 0)
 -- Dependencies: 222
 -- Name: buku_tamu_id_buku_tamu_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -624,7 +624,7 @@ CREATE SEQUENCE public.contact_info_id_contact_seq
 ALTER TABLE public.contact_info_id_contact_seq OWNER TO postgres;
 
 --
--- TOC entry 3616 (class 0 OID 0)
+-- TOC entry 3627 (class 0 OID 0)
 -- Dependencies: 260
 -- Name: contact_info_id_contact_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -664,7 +664,7 @@ CREATE SEQUENCE public.fokus_penelitian_id_fp_seq
 ALTER TABLE public.fokus_penelitian_id_fp_seq OWNER TO postgres;
 
 --
--- TOC entry 3617 (class 0 OID 0)
+-- TOC entry 3628 (class 0 OID 0)
 -- Dependencies: 248
 -- Name: fokus_penelitian_id_fp_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -705,7 +705,7 @@ CREATE SEQUENCE public.footer_settings_id_footer_seq
 ALTER TABLE public.footer_settings_id_footer_seq OWNER TO postgres;
 
 --
--- TOC entry 3618 (class 0 OID 0)
+-- TOC entry 3629 (class 0 OID 0)
 -- Dependencies: 262
 -- Name: footer_settings_id_footer_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -747,7 +747,7 @@ CREATE SEQUENCE public.gallery_id_gallery_seq
 ALTER TABLE public.gallery_id_gallery_seq OWNER TO postgres;
 
 --
--- TOC entry 3619 (class 0 OID 0)
+-- TOC entry 3630 (class 0 OID 0)
 -- Dependencies: 220
 -- Name: gallery_id_gallery_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -789,7 +789,7 @@ CREATE SEQUENCE public.mahasiswa_id_mahasiswa_seq
 ALTER TABLE public.mahasiswa_id_mahasiswa_seq OWNER TO postgres;
 
 --
--- TOC entry 3620 (class 0 OID 0)
+-- TOC entry 3631 (class 0 OID 0)
 -- Dependencies: 226
 -- Name: mahasiswa_id_mahasiswa_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -851,7 +851,7 @@ CREATE SEQUENCE public.member_id_member_seq
 ALTER TABLE public.member_id_member_seq OWNER TO postgres;
 
 --
--- TOC entry 3621 (class 0 OID 0)
+-- TOC entry 3632 (class 0 OID 0)
 -- Dependencies: 228
 -- Name: member_id_member_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -890,7 +890,7 @@ CREATE SEQUENCE public.mitra_id_mitra_seq
 ALTER TABLE public.mitra_id_mitra_seq OWNER TO postgres;
 
 --
--- TOC entry 3622 (class 0 OID 0)
+-- TOC entry 3633 (class 0 OID 0)
 -- Dependencies: 230
 -- Name: mitra_id_mitra_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -938,7 +938,7 @@ CREATE SEQUENCE public.peminjaman_id_peminjaman_seq
 ALTER TABLE public.peminjaman_id_peminjaman_seq OWNER TO postgres;
 
 --
--- TOC entry 3623 (class 0 OID 0)
+-- TOC entry 3634 (class 0 OID 0)
 -- Dependencies: 244
 -- Name: peminjaman_id_peminjaman_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -987,7 +987,7 @@ CREATE SEQUENCE public.penelitian_id_penelitian_seq
 ALTER TABLE public.penelitian_id_penelitian_seq OWNER TO postgres;
 
 --
--- TOC entry 3624 (class 0 OID 0)
+-- TOC entry 3635 (class 0 OID 0)
 -- Dependencies: 236
 -- Name: penelitian_id_penelitian_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -1030,7 +1030,7 @@ CREATE SEQUENCE public.pengunjung_id_pengunjung_seq
 ALTER TABLE public.pengunjung_id_pengunjung_seq OWNER TO postgres;
 
 --
--- TOC entry 3625 (class 0 OID 0)
+-- TOC entry 3636 (class 0 OID 0)
 -- Dependencies: 252
 -- Name: pengunjung_id_pengunjung_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -1070,7 +1070,7 @@ CREATE SEQUENCE public.produk_id_produk_seq
 ALTER TABLE public.produk_id_produk_seq OWNER TO postgres;
 
 --
--- TOC entry 3626 (class 0 OID 0)
+-- TOC entry 3637 (class 0 OID 0)
 -- Dependencies: 238
 -- Name: produk_id_produk_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -1111,7 +1111,7 @@ CREATE SEQUENCE public.ruang_lab_id_ruang_lab_seq
 ALTER TABLE public.ruang_lab_id_ruang_lab_seq OWNER TO postgres;
 
 --
--- TOC entry 3627 (class 0 OID 0)
+-- TOC entry 3638 (class 0 OID 0)
 -- Dependencies: 246
 -- Name: ruang_lab_id_ruang_lab_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -1161,12 +1161,52 @@ CREATE SEQUENCE public.settings_id_setting_seq
 ALTER TABLE public.settings_id_setting_seq OWNER TO postgres;
 
 --
--- TOC entry 3628 (class 0 OID 0)
+-- TOC entry 3639 (class 0 OID 0)
 -- Dependencies: 250
 -- Name: settings_id_setting_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
 ALTER SEQUENCE public.settings_id_setting_seq OWNED BY public.settings.id_setting;
+
+
+--
+-- TOC entry 265 (class 1259 OID 47155)
+-- Name: video; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.video (
+    id_video integer NOT NULL,
+    title character varying(255) NOT NULL,
+    href_link text,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.video OWNER TO postgres;
+
+--
+-- TOC entry 264 (class 1259 OID 47154)
+-- Name: video_id_video_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.video_id_video_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.video_id_video_seq OWNER TO postgres;
+
+--
+-- TOC entry 3640 (class 0 OID 0)
+-- Dependencies: 264
+-- Name: video_id_video_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.video_id_video_seq OWNED BY public.video.id_video;
 
 
 --
@@ -1276,7 +1316,7 @@ CREATE SEQUENCE public.visitor_id_visitor_seq
 ALTER TABLE public.visitor_id_visitor_seq OWNER TO postgres;
 
 --
--- TOC entry 3629 (class 0 OID 0)
+-- TOC entry 3641 (class 0 OID 0)
 -- Dependencies: 254
 -- Name: visitor_id_visitor_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -1285,7 +1325,7 @@ ALTER SEQUENCE public.visitor_id_visitor_seq OWNED BY public.visitor.id_visitor;
 
 
 --
--- TOC entry 3313 (class 2604 OID 46951)
+-- TOC entry 3318 (class 2604 OID 46951)
 -- Name: absensi id_absensi; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1293,7 +1333,7 @@ ALTER TABLE ONLY public.absensi ALTER COLUMN id_absensi SET DEFAULT nextval('pub
 
 
 --
--- TOC entry 3299 (class 2604 OID 46952)
+-- TOC entry 3304 (class 2604 OID 46952)
 -- Name: admin id_admin; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1301,7 +1341,7 @@ ALTER TABLE ONLY public.admin ALTER COLUMN id_admin SET DEFAULT nextval('public.
 
 
 --
--- TOC entry 3315 (class 2604 OID 46953)
+-- TOC entry 3320 (class 2604 OID 46953)
 -- Name: alat_lab id_alat_lab; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1309,7 +1349,7 @@ ALTER TABLE ONLY public.alat_lab ALTER COLUMN id_alat_lab SET DEFAULT nextval('p
 
 
 --
--- TOC entry 3308 (class 2604 OID 46954)
+-- TOC entry 3313 (class 2604 OID 46954)
 -- Name: artikel id_artikel; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1317,7 +1357,7 @@ ALTER TABLE ONLY public.artikel ALTER COLUMN id_artikel SET DEFAULT nextval('pub
 
 
 --
--- TOC entry 3306 (class 2604 OID 46955)
+-- TOC entry 3311 (class 2604 OID 46955)
 -- Name: berita id_berita; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1325,7 +1365,7 @@ ALTER TABLE ONLY public.berita ALTER COLUMN id_berita SET DEFAULT nextval('publi
 
 
 --
--- TOC entry 3296 (class 2604 OID 46956)
+-- TOC entry 3301 (class 2604 OID 46956)
 -- Name: buku_tamu id_buku_tamu; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1333,7 +1373,7 @@ ALTER TABLE ONLY public.buku_tamu ALTER COLUMN id_buku_tamu SET DEFAULT nextval(
 
 
 --
--- TOC entry 3336 (class 2604 OID 46957)
+-- TOC entry 3341 (class 2604 OID 46957)
 -- Name: contact_info id_contact; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1341,7 +1381,7 @@ ALTER TABLE ONLY public.contact_info ALTER COLUMN id_contact SET DEFAULT nextval
 
 
 --
--- TOC entry 3325 (class 2604 OID 46958)
+-- TOC entry 3330 (class 2604 OID 46958)
 -- Name: fokus_penelitian id_fp; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1349,7 +1389,7 @@ ALTER TABLE ONLY public.fokus_penelitian ALTER COLUMN id_fp SET DEFAULT nextval(
 
 
 --
--- TOC entry 3337 (class 2604 OID 46959)
+-- TOC entry 3342 (class 2604 OID 46959)
 -- Name: footer_settings id_footer; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1357,7 +1397,7 @@ ALTER TABLE ONLY public.footer_settings ALTER COLUMN id_footer SET DEFAULT nextv
 
 
 --
--- TOC entry 3293 (class 2604 OID 46960)
+-- TOC entry 3298 (class 2604 OID 46960)
 -- Name: gallery id_gallery; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1365,7 +1405,7 @@ ALTER TABLE ONLY public.gallery ALTER COLUMN id_gallery SET DEFAULT nextval('pub
 
 
 --
--- TOC entry 3302 (class 2604 OID 46471)
+-- TOC entry 3307 (class 2604 OID 46471)
 -- Name: mahasiswa id_mahasiswa; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1373,7 +1413,7 @@ ALTER TABLE ONLY public.mahasiswa ALTER COLUMN id_mahasiswa SET DEFAULT nextval(
 
 
 --
--- TOC entry 3304 (class 2604 OID 46961)
+-- TOC entry 3309 (class 2604 OID 46961)
 -- Name: member id_member; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1381,7 +1421,7 @@ ALTER TABLE ONLY public.member ALTER COLUMN id_member SET DEFAULT nextval('publi
 
 
 --
--- TOC entry 3305 (class 2604 OID 46962)
+-- TOC entry 3310 (class 2604 OID 46962)
 -- Name: mitra id_mitra; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1389,7 +1429,7 @@ ALTER TABLE ONLY public.mitra ALTER COLUMN id_mitra SET DEFAULT nextval('public.
 
 
 --
--- TOC entry 3319 (class 2604 OID 46963)
+-- TOC entry 3324 (class 2604 OID 46963)
 -- Name: peminjaman id_peminjaman; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1397,7 +1437,7 @@ ALTER TABLE ONLY public.peminjaman ALTER COLUMN id_peminjaman SET DEFAULT nextva
 
 
 --
--- TOC entry 3309 (class 2604 OID 46964)
+-- TOC entry 3314 (class 2604 OID 46964)
 -- Name: penelitian id_penelitian; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1405,7 +1445,7 @@ ALTER TABLE ONLY public.penelitian ALTER COLUMN id_penelitian SET DEFAULT nextva
 
 
 --
--- TOC entry 3330 (class 2604 OID 46965)
+-- TOC entry 3335 (class 2604 OID 46965)
 -- Name: pengunjung id_pengunjung; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1413,7 +1453,7 @@ ALTER TABLE ONLY public.pengunjung ALTER COLUMN id_pengunjung SET DEFAULT nextva
 
 
 --
--- TOC entry 3312 (class 2604 OID 46966)
+-- TOC entry 3317 (class 2604 OID 46966)
 -- Name: produk id_produk; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1421,7 +1461,7 @@ ALTER TABLE ONLY public.produk ALTER COLUMN id_produk SET DEFAULT nextval('publi
 
 
 --
--- TOC entry 3322 (class 2604 OID 46967)
+-- TOC entry 3327 (class 2604 OID 46967)
 -- Name: ruang_lab id_ruang_lab; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1429,7 +1469,7 @@ ALTER TABLE ONLY public.ruang_lab ALTER COLUMN id_ruang_lab SET DEFAULT nextval(
 
 
 --
--- TOC entry 3326 (class 2604 OID 46589)
+-- TOC entry 3331 (class 2604 OID 46589)
 -- Name: settings id_setting; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1437,7 +1477,15 @@ ALTER TABLE ONLY public.settings ALTER COLUMN id_setting SET DEFAULT nextval('pu
 
 
 --
--- TOC entry 3332 (class 2604 OID 46968)
+-- TOC entry 3343 (class 2604 OID 47183)
+-- Name: video id_video; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.video ALTER COLUMN id_video SET DEFAULT nextval('public.video_id_video_seq'::regclass);
+
+
+--
+-- TOC entry 3337 (class 2604 OID 46968)
 -- Name: visitor id_visitor; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1445,7 +1493,7 @@ ALTER TABLE ONLY public.visitor ALTER COLUMN id_visitor SET DEFAULT nextval('pub
 
 
 --
--- TOC entry 3584 (class 0 OID 46534)
+-- TOC entry 3593 (class 0 OID 46534)
 -- Dependencies: 241
 -- Data for Name: absensi; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1457,7 +1505,7 @@ COPY public.absensi (id_absensi, id_mhs, waktu_datang, waktu_pulang, keterangan,
 
 
 --
--- TOC entry 3568 (class 0 OID 46457)
+-- TOC entry 3577 (class 0 OID 46457)
 -- Dependencies: 225
 -- Data for Name: admin; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1469,7 +1517,7 @@ COPY public.admin (id_admin, username, password_hash, role, created_at) FROM std
 
 
 --
--- TOC entry 3586 (class 0 OID 46544)
+-- TOC entry 3595 (class 0 OID 46544)
 -- Dependencies: 243
 -- Data for Name: alat_lab; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1481,7 +1529,7 @@ COPY public.alat_lab (id_alat_lab, nama_alat, deskripsi, stock, created_at, upda
 
 
 --
--- TOC entry 3578 (class 0 OID 46505)
+-- TOC entry 3587 (class 0 OID 46505)
 -- Dependencies: 235
 -- Data for Name: artikel; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1501,7 +1549,7 @@ COPY public.artikel (id_artikel, judul, tahun, konten) FROM stdin;
 
 
 --
--- TOC entry 3576 (class 0 OID 46495)
+-- TOC entry 3585 (class 0 OID 46495)
 -- Dependencies: 233
 -- Data for Name: berita; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1521,7 +1569,7 @@ COPY public.berita (id_berita, judul, konten, gambar_thumbnail, created_at, id_a
 
 
 --
--- TOC entry 3566 (class 0 OID 46443)
+-- TOC entry 3575 (class 0 OID 46443)
 -- Dependencies: 223
 -- Data for Name: buku_tamu; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1533,7 +1581,7 @@ COPY public.buku_tamu (id_buku_tamu, nama, email, institusi, no_hp, pesan, creat
 
 
 --
--- TOC entry 3599 (class 0 OID 46822)
+-- TOC entry 3608 (class 0 OID 46822)
 -- Dependencies: 259
 -- Data for Name: contact_info; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1544,7 +1592,7 @@ COPY public.contact_info (id_contact, contact_email, contact_phone, contact_addr
 
 
 --
--- TOC entry 3592 (class 0 OID 46577)
+-- TOC entry 3601 (class 0 OID 46577)
 -- Dependencies: 249
 -- Data for Name: fokus_penelitian; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1558,7 +1606,7 @@ COPY public.fokus_penelitian (id_fp, title, deskripsi, detail) FROM stdin;
 
 
 --
--- TOC entry 3601 (class 0 OID 46828)
+-- TOC entry 3610 (class 0 OID 46828)
 -- Dependencies: 261
 -- Data for Name: footer_settings; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1569,7 +1617,7 @@ COPY public.footer_settings (id_footer, footer_logo, footer_title, footer_subtit
 
 
 --
--- TOC entry 3564 (class 0 OID 46430)
+-- TOC entry 3573 (class 0 OID 46430)
 -- Dependencies: 221
 -- Data for Name: gallery; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1600,7 +1648,7 @@ COPY public.gallery (id_gallery, id_berita, gambar, judul, created_at, updated_a
 
 
 --
--- TOC entry 3570 (class 0 OID 46468)
+-- TOC entry 3579 (class 0 OID 46468)
 -- Dependencies: 227
 -- Data for Name: mahasiswa; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1612,7 +1660,7 @@ COPY public.mahasiswa (id_mahasiswa, nama, tahun, status, id_admin) FROM stdin;
 
 
 --
--- TOC entry 3572 (class 0 OID 46477)
+-- TOC entry 3581 (class 0 OID 46477)
 -- Dependencies: 229
 -- Data for Name: member; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1627,11 +1675,12 @@ COPY public.member (id_member, nama, email, jabatan, foto, bidang_keahlian, notl
 12	Putra Prima Arhandi, S.T.,M.Kom.	putraprima@polinema.ac.id	\N	https://let.polinema.ac.id/assets/images/prima-1.jpeg	\N	\N	\N	\N	\N
 14	Arief Prasetyo, S.Kom.,M.Kom.	arief.prasetyo@polinema.ac.id	\N	https://let.polinema.ac.id/assets/images/whatsapp-image-2024-01-12-at-10.57.00-35ebc528.jpeg	\N	\N	\N	\N	\N
 11	Moch. Zawaruddin Abdullah, S.ST., M.Kom	\N	\N	https://let.polinema.ac.id/assets/images/img-20240515.jpeg	\N	\N	\N	https://let.polinema.ac.id/assets/images/img-20240515.jpeg	\N
+15	Dr. Eng. Afif Supiyanto	\N	analyst	https://let.polinema.ac.id/assets/images/afif.jpg	\N	\N	\N	\N	\N
 \.
 
 
 --
--- TOC entry 3574 (class 0 OID 46486)
+-- TOC entry 3583 (class 0 OID 46486)
 -- Dependencies: 231
 -- Data for Name: mitra; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1645,7 +1694,7 @@ COPY public.mitra (id_mitra, nama_institusi, logo) FROM stdin;
 
 
 --
--- TOC entry 3588 (class 0 OID 46556)
+-- TOC entry 3597 (class 0 OID 46556)
 -- Dependencies: 245
 -- Data for Name: peminjaman; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1664,7 +1713,7 @@ COPY public.peminjaman (id_peminjaman, id_alat, nama_peminjam, tanggal_pinjam, t
 
 
 --
--- TOC entry 3580 (class 0 OID 46514)
+-- TOC entry 3589 (class 0 OID 46514)
 -- Dependencies: 237
 -- Data for Name: penelitian; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1674,7 +1723,7 @@ COPY public.penelitian (id_penelitian, id_artikel, id_mhs, judul, tahun, id_memb
 
 
 --
--- TOC entry 3596 (class 0 OID 46597)
+-- TOC entry 3605 (class 0 OID 46597)
 -- Dependencies: 253
 -- Data for Name: pengunjung; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1684,7 +1733,7 @@ COPY public.pengunjung (id_pengunjung, nama, email, asal_institusi, created_at, 
 
 
 --
--- TOC entry 3582 (class 0 OID 46525)
+-- TOC entry 3591 (class 0 OID 46525)
 -- Dependencies: 239
 -- Data for Name: produk; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1699,7 +1748,7 @@ COPY public.produk (id_produk, nama_produk, deskripsi, gambar) FROM stdin;
 
 
 --
--- TOC entry 3590 (class 0 OID 46568)
+-- TOC entry 3599 (class 0 OID 46568)
 -- Dependencies: 247
 -- Data for Name: ruang_lab; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1711,7 +1760,7 @@ COPY public.ruang_lab (id_ruang_lab, nama_ruang, status, id_admin, created_at) F
 
 
 --
--- TOC entry 3594 (class 0 OID 46586)
+-- TOC entry 3603 (class 0 OID 46586)
 -- Dependencies: 251
 -- Data for Name: settings; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1722,7 +1771,22 @@ COPY public.settings (id_setting, site_title, site_subtitle, site_logo, created_
 
 
 --
--- TOC entry 3598 (class 0 OID 46607)
+-- TOC entry 3614 (class 0 OID 47155)
+-- Dependencies: 265
+-- Data for Name: video; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.video (id_video, title, href_link, created_at) FROM stdin;
+1	VIAT-Map promotion Video JTI - POLINEMA	https://youtu.be/Fcv2-z0WXys	2025-12-08 09:02:44.74671+07
+2	Learning Engineering Technology Lab : What is TEL?	https://youtu.be/eis5aTweBHs	2025-12-08 09:12:23.38167+07
+3	Research Discussion part 4 : Dr. Eng A. Afif Supiyanto	https://youtu.be/3mX203WsBj8	2025-12-08 09:12:53.654839+07
+4	Research Discussion part 5 : Aryo Pinandito, Ph.D.	https://youtu.be/l011v6Z6Yok	2025-12-08 09:13:19.498416+07
+5	Learning Engineering Technology Lab : Are you ready for the new challenge?	https://youtu.be/AqYKnTCsz5A	2025-12-08 09:13:40.314615+07
+\.
+
+
+--
+-- TOC entry 3607 (class 0 OID 46607)
 -- Dependencies: 255
 -- Data for Name: visitor; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1732,7 +1796,7 @@ COPY public.visitor (id_visitor, id_pengunjung, visit_count, last_visit, first_v
 
 
 --
--- TOC entry 3630 (class 0 OID 0)
+-- TOC entry 3642 (class 0 OID 0)
 -- Dependencies: 240
 -- Name: absensi_id_absensi_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1741,7 +1805,7 @@ SELECT pg_catalog.setval('public.absensi_id_absensi_seq', 2, true);
 
 
 --
--- TOC entry 3631 (class 0 OID 0)
+-- TOC entry 3643 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: admin_id_admin_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1750,7 +1814,7 @@ SELECT pg_catalog.setval('public.admin_id_admin_seq', 4, true);
 
 
 --
--- TOC entry 3632 (class 0 OID 0)
+-- TOC entry 3644 (class 0 OID 0)
 -- Dependencies: 242
 -- Name: alat_lab_id_alat_lab_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1759,7 +1823,7 @@ SELECT pg_catalog.setval('public.alat_lab_id_alat_lab_seq', 8, true);
 
 
 --
--- TOC entry 3633 (class 0 OID 0)
+-- TOC entry 3645 (class 0 OID 0)
 -- Dependencies: 234
 -- Name: artikel_id_artikel_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1768,7 +1832,7 @@ SELECT pg_catalog.setval('public.artikel_id_artikel_seq', 14, true);
 
 
 --
--- TOC entry 3634 (class 0 OID 0)
+-- TOC entry 3646 (class 0 OID 0)
 -- Dependencies: 232
 -- Name: berita_id_berita_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1777,7 +1841,7 @@ SELECT pg_catalog.setval('public.berita_id_berita_seq', 12, true);
 
 
 --
--- TOC entry 3635 (class 0 OID 0)
+-- TOC entry 3647 (class 0 OID 0)
 -- Dependencies: 222
 -- Name: buku_tamu_id_buku_tamu_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1786,7 +1850,7 @@ SELECT pg_catalog.setval('public.buku_tamu_id_buku_tamu_seq', 5, true);
 
 
 --
--- TOC entry 3636 (class 0 OID 0)
+-- TOC entry 3648 (class 0 OID 0)
 -- Dependencies: 260
 -- Name: contact_info_id_contact_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1795,7 +1859,7 @@ SELECT pg_catalog.setval('public.contact_info_id_contact_seq', 1, true);
 
 
 --
--- TOC entry 3637 (class 0 OID 0)
+-- TOC entry 3649 (class 0 OID 0)
 -- Dependencies: 248
 -- Name: fokus_penelitian_id_fp_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1804,7 +1868,7 @@ SELECT pg_catalog.setval('public.fokus_penelitian_id_fp_seq', 5, true);
 
 
 --
--- TOC entry 3638 (class 0 OID 0)
+-- TOC entry 3650 (class 0 OID 0)
 -- Dependencies: 262
 -- Name: footer_settings_id_footer_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1813,7 +1877,7 @@ SELECT pg_catalog.setval('public.footer_settings_id_footer_seq', 1, true);
 
 
 --
--- TOC entry 3639 (class 0 OID 0)
+-- TOC entry 3651 (class 0 OID 0)
 -- Dependencies: 220
 -- Name: gallery_id_gallery_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1822,7 +1886,7 @@ SELECT pg_catalog.setval('public.gallery_id_gallery_seq', 25, true);
 
 
 --
--- TOC entry 3640 (class 0 OID 0)
+-- TOC entry 3652 (class 0 OID 0)
 -- Dependencies: 226
 -- Name: mahasiswa_id_mahasiswa_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1831,7 +1895,7 @@ SELECT pg_catalog.setval('public.mahasiswa_id_mahasiswa_seq', 5, true);
 
 
 --
--- TOC entry 3641 (class 0 OID 0)
+-- TOC entry 3653 (class 0 OID 0)
 -- Dependencies: 263
 -- Name: mahasiswa_nim_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1840,16 +1904,16 @@ SELECT pg_catalog.setval('public.mahasiswa_nim_seq', 1, false);
 
 
 --
--- TOC entry 3642 (class 0 OID 0)
+-- TOC entry 3654 (class 0 OID 0)
 -- Dependencies: 228
 -- Name: member_id_member_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.member_id_member_seq', 14, true);
+SELECT pg_catalog.setval('public.member_id_member_seq', 15, true);
 
 
 --
--- TOC entry 3643 (class 0 OID 0)
+-- TOC entry 3655 (class 0 OID 0)
 -- Dependencies: 230
 -- Name: mitra_id_mitra_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1858,7 +1922,7 @@ SELECT pg_catalog.setval('public.mitra_id_mitra_seq', 13, true);
 
 
 --
--- TOC entry 3644 (class 0 OID 0)
+-- TOC entry 3656 (class 0 OID 0)
 -- Dependencies: 244
 -- Name: peminjaman_id_peminjaman_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1867,7 +1931,7 @@ SELECT pg_catalog.setval('public.peminjaman_id_peminjaman_seq', 11, true);
 
 
 --
--- TOC entry 3645 (class 0 OID 0)
+-- TOC entry 3657 (class 0 OID 0)
 -- Dependencies: 236
 -- Name: penelitian_id_penelitian_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1876,7 +1940,7 @@ SELECT pg_catalog.setval('public.penelitian_id_penelitian_seq', 2, true);
 
 
 --
--- TOC entry 3646 (class 0 OID 0)
+-- TOC entry 3658 (class 0 OID 0)
 -- Dependencies: 252
 -- Name: pengunjung_id_pengunjung_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1885,7 +1949,7 @@ SELECT pg_catalog.setval('public.pengunjung_id_pengunjung_seq', 1, false);
 
 
 --
--- TOC entry 3647 (class 0 OID 0)
+-- TOC entry 3659 (class 0 OID 0)
 -- Dependencies: 238
 -- Name: produk_id_produk_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1894,7 +1958,7 @@ SELECT pg_catalog.setval('public.produk_id_produk_seq', 5, true);
 
 
 --
--- TOC entry 3648 (class 0 OID 0)
+-- TOC entry 3660 (class 0 OID 0)
 -- Dependencies: 246
 -- Name: ruang_lab_id_ruang_lab_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1903,7 +1967,7 @@ SELECT pg_catalog.setval('public.ruang_lab_id_ruang_lab_seq', 1, false);
 
 
 --
--- TOC entry 3649 (class 0 OID 0)
+-- TOC entry 3661 (class 0 OID 0)
 -- Dependencies: 250
 -- Name: settings_id_setting_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1912,7 +1976,16 @@ SELECT pg_catalog.setval('public.settings_id_setting_seq', 1, true);
 
 
 --
--- TOC entry 3650 (class 0 OID 0)
+-- TOC entry 3662 (class 0 OID 0)
+-- Dependencies: 264
+-- Name: video_id_video_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.video_id_video_seq', 5, true);
+
+
+--
+-- TOC entry 3663 (class 0 OID 0)
 -- Dependencies: 254
 -- Name: visitor_id_visitor_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -1921,7 +1994,7 @@ SELECT pg_catalog.setval('public.visitor_id_visitor_seq', 1, false);
 
 
 --
--- TOC entry 3377 (class 2606 OID 46542)
+-- TOC entry 3384 (class 2606 OID 46542)
 -- Name: absensi absensi_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1930,7 +2003,7 @@ ALTER TABLE ONLY public.absensi
 
 
 --
--- TOC entry 3350 (class 2606 OID 46464)
+-- TOC entry 3357 (class 2606 OID 46464)
 -- Name: admin admin_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1939,7 +2012,7 @@ ALTER TABLE ONLY public.admin
 
 
 --
--- TOC entry 3352 (class 2606 OID 46466)
+-- TOC entry 3359 (class 2606 OID 46466)
 -- Name: admin admin_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1948,7 +2021,7 @@ ALTER TABLE ONLY public.admin
 
 
 --
--- TOC entry 3379 (class 2606 OID 46554)
+-- TOC entry 3386 (class 2606 OID 46554)
 -- Name: alat_lab alat_lab_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1957,7 +2030,7 @@ ALTER TABLE ONLY public.alat_lab
 
 
 --
--- TOC entry 3367 (class 2606 OID 46512)
+-- TOC entry 3374 (class 2606 OID 46512)
 -- Name: artikel artikel_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1966,7 +2039,7 @@ ALTER TABLE ONLY public.artikel
 
 
 --
--- TOC entry 3363 (class 2606 OID 46503)
+-- TOC entry 3370 (class 2606 OID 46503)
 -- Name: berita berita_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1975,7 +2048,7 @@ ALTER TABLE ONLY public.berita
 
 
 --
--- TOC entry 3345 (class 2606 OID 46452)
+-- TOC entry 3352 (class 2606 OID 46452)
 -- Name: buku_tamu buku_tamu_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1984,7 +2057,7 @@ ALTER TABLE ONLY public.buku_tamu
 
 
 --
--- TOC entry 3398 (class 2606 OID 46854)
+-- TOC entry 3405 (class 2606 OID 46854)
 -- Name: contact_info contact_info_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1993,7 +2066,7 @@ ALTER TABLE ONLY public.contact_info
 
 
 --
--- TOC entry 3389 (class 2606 OID 46584)
+-- TOC entry 3396 (class 2606 OID 46584)
 -- Name: fokus_penelitian fokus_penelitian_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2002,7 +2075,7 @@ ALTER TABLE ONLY public.fokus_penelitian
 
 
 --
--- TOC entry 3400 (class 2606 OID 46856)
+-- TOC entry 3407 (class 2606 OID 46856)
 -- Name: footer_settings footer_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2011,7 +2084,7 @@ ALTER TABLE ONLY public.footer_settings
 
 
 --
--- TOC entry 3341 (class 2606 OID 46439)
+-- TOC entry 3348 (class 2606 OID 46439)
 -- Name: gallery gallery_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2020,7 +2093,7 @@ ALTER TABLE ONLY public.gallery
 
 
 --
--- TOC entry 3355 (class 2606 OID 46475)
+-- TOC entry 3362 (class 2606 OID 46475)
 -- Name: mahasiswa mahasiswa_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2029,7 +2102,7 @@ ALTER TABLE ONLY public.mahasiswa
 
 
 --
--- TOC entry 3359 (class 2606 OID 46484)
+-- TOC entry 3366 (class 2606 OID 46484)
 -- Name: member member_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2038,7 +2111,7 @@ ALTER TABLE ONLY public.member
 
 
 --
--- TOC entry 3361 (class 2606 OID 46493)
+-- TOC entry 3368 (class 2606 OID 46493)
 -- Name: mitra mitra_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2047,7 +2120,7 @@ ALTER TABLE ONLY public.mitra
 
 
 --
--- TOC entry 3384 (class 2606 OID 46566)
+-- TOC entry 3391 (class 2606 OID 46566)
 -- Name: peminjaman peminjaman_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2056,7 +2129,7 @@ ALTER TABLE ONLY public.peminjaman
 
 
 --
--- TOC entry 3372 (class 2606 OID 46523)
+-- TOC entry 3379 (class 2606 OID 46523)
 -- Name: penelitian penelitian_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2065,7 +2138,7 @@ ALTER TABLE ONLY public.penelitian
 
 
 --
--- TOC entry 3393 (class 2606 OID 46605)
+-- TOC entry 3400 (class 2606 OID 46605)
 -- Name: pengunjung pengunjung_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2074,7 +2147,7 @@ ALTER TABLE ONLY public.pengunjung
 
 
 --
--- TOC entry 3375 (class 2606 OID 46532)
+-- TOC entry 3382 (class 2606 OID 46532)
 -- Name: produk produk_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2083,7 +2156,7 @@ ALTER TABLE ONLY public.produk
 
 
 --
--- TOC entry 3387 (class 2606 OID 46575)
+-- TOC entry 3394 (class 2606 OID 46575)
 -- Name: ruang_lab ruang_lab_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2092,7 +2165,7 @@ ALTER TABLE ONLY public.ruang_lab
 
 
 --
--- TOC entry 3391 (class 2606 OID 46595)
+-- TOC entry 3398 (class 2606 OID 46595)
 -- Name: settings settings_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2101,7 +2174,16 @@ ALTER TABLE ONLY public.settings
 
 
 --
--- TOC entry 3396 (class 2606 OID 46617)
+-- TOC entry 3409 (class 2606 OID 47163)
+-- Name: video video_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.video
+    ADD CONSTRAINT video_pkey PRIMARY KEY (id_video);
+
+
+--
+-- TOC entry 3403 (class 2606 OID 46617)
 -- Name: visitor visitor_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2110,7 +2192,7 @@ ALTER TABLE ONLY public.visitor
 
 
 --
--- TOC entry 3380 (class 1259 OID 46623)
+-- TOC entry 3387 (class 1259 OID 46623)
 -- Name: idx_alatlab_id_admin; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2118,7 +2200,7 @@ CREATE INDEX idx_alatlab_id_admin ON public.alat_lab USING btree (id_admin);
 
 
 --
--- TOC entry 3364 (class 1259 OID 46619)
+-- TOC entry 3371 (class 1259 OID 46619)
 -- Name: idx_berita_created_at; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2126,7 +2208,7 @@ CREATE INDEX idx_berita_created_at ON public.berita USING btree (created_at DESC
 
 
 --
--- TOC entry 3365 (class 1259 OID 46618)
+-- TOC entry 3372 (class 1259 OID 46618)
 -- Name: idx_berita_id_admin; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2134,7 +2216,7 @@ CREATE INDEX idx_berita_id_admin ON public.berita USING btree (id_admin);
 
 
 --
--- TOC entry 3346 (class 1259 OID 46453)
+-- TOC entry 3353 (class 1259 OID 46453)
 -- Name: idx_buku_tamu_created_at; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2142,7 +2224,7 @@ CREATE INDEX idx_buku_tamu_created_at ON public.buku_tamu USING btree (created_a
 
 
 --
--- TOC entry 3347 (class 1259 OID 46455)
+-- TOC entry 3354 (class 1259 OID 46455)
 -- Name: idx_buku_tamu_email; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2150,7 +2232,7 @@ CREATE INDEX idx_buku_tamu_email ON public.buku_tamu USING btree (email);
 
 
 --
--- TOC entry 3348 (class 1259 OID 46454)
+-- TOC entry 3355 (class 1259 OID 46454)
 -- Name: idx_buku_tamu_is_read; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2158,7 +2240,7 @@ CREATE INDEX idx_buku_tamu_is_read ON public.buku_tamu USING btree (is_read);
 
 
 --
--- TOC entry 3342 (class 1259 OID 46440)
+-- TOC entry 3349 (class 1259 OID 46440)
 -- Name: idx_gallery_created; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2166,7 +2248,7 @@ CREATE INDEX idx_gallery_created ON public.gallery USING btree (created_at);
 
 
 --
--- TOC entry 3343 (class 1259 OID 46441)
+-- TOC entry 3350 (class 1259 OID 46441)
 -- Name: idx_gallery_id_berita; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2174,7 +2256,7 @@ CREATE INDEX idx_gallery_id_berita ON public.gallery USING btree (id_berita);
 
 
 --
--- TOC entry 3353 (class 1259 OID 46620)
+-- TOC entry 3360 (class 1259 OID 46620)
 -- Name: idx_mahasiswa_id_admin; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2182,7 +2264,7 @@ CREATE INDEX idx_mahasiswa_id_admin ON public.mahasiswa USING btree (id_admin);
 
 
 --
--- TOC entry 3356 (class 1259 OID 46621)
+-- TOC entry 3363 (class 1259 OID 46621)
 -- Name: idx_member_id_admin; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2190,7 +2272,7 @@ CREATE INDEX idx_member_id_admin ON public.member USING btree (id_admin);
 
 
 --
--- TOC entry 3357 (class 1259 OID 46622)
+-- TOC entry 3364 (class 1259 OID 46622)
 -- Name: idx_member_nama; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2198,7 +2280,7 @@ CREATE INDEX idx_member_nama ON public.member USING btree (nama);
 
 
 --
--- TOC entry 3381 (class 1259 OID 46624)
+-- TOC entry 3388 (class 1259 OID 46624)
 -- Name: idx_peminjaman_id_alat; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2206,7 +2288,7 @@ CREATE INDEX idx_peminjaman_id_alat ON public.peminjaman USING btree (id_alat);
 
 
 --
--- TOC entry 3382 (class 1259 OID 46625)
+-- TOC entry 3389 (class 1259 OID 46625)
 -- Name: idx_peminjaman_status; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2214,7 +2296,7 @@ CREATE INDEX idx_peminjaman_status ON public.peminjaman USING btree (status);
 
 
 --
--- TOC entry 3373 (class 1259 OID 46627)
+-- TOC entry 3380 (class 1259 OID 46627)
 -- Name: idx_produk_nama; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2222,7 +2304,7 @@ CREATE INDEX idx_produk_nama ON public.produk USING btree (nama_produk);
 
 
 --
--- TOC entry 3368 (class 1259 OID 46628)
+-- TOC entry 3375 (class 1259 OID 46628)
 -- Name: idx_progress_artikel; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2230,7 +2312,7 @@ CREATE INDEX idx_progress_artikel ON public.penelitian USING btree (id_artikel);
 
 
 --
--- TOC entry 3369 (class 1259 OID 46629)
+-- TOC entry 3376 (class 1259 OID 46629)
 -- Name: idx_progress_member; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2238,7 +2320,7 @@ CREATE INDEX idx_progress_member ON public.penelitian USING btree (id_member);
 
 
 --
--- TOC entry 3370 (class 1259 OID 46630)
+-- TOC entry 3377 (class 1259 OID 46630)
 -- Name: idx_progress_mhs; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2246,7 +2328,7 @@ CREATE INDEX idx_progress_mhs ON public.penelitian USING btree (id_mhs);
 
 
 --
--- TOC entry 3385 (class 1259 OID 46626)
+-- TOC entry 3392 (class 1259 OID 46626)
 -- Name: idx_ruanglab_nama; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2254,7 +2336,7 @@ CREATE INDEX idx_ruanglab_nama ON public.ruang_lab USING btree (nama_ruang);
 
 
 --
--- TOC entry 3394 (class 1259 OID 46631)
+-- TOC entry 3401 (class 1259 OID 46631)
 -- Name: idx_visitor_pengunjung; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2262,7 +2344,7 @@ CREATE INDEX idx_visitor_pengunjung ON public.visitor USING btree (id_pengunjung
 
 
 --
--- TOC entry 3411 (class 2606 OID 46718)
+-- TOC entry 3420 (class 2606 OID 46718)
 -- Name: absensi fk_absensi_mahasiswa; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2271,7 +2353,7 @@ ALTER TABLE ONLY public.absensi
 
 
 --
--- TOC entry 3412 (class 2606 OID 46723)
+-- TOC entry 3421 (class 2606 OID 46723)
 -- Name: alat_lab fk_alatlab_admin; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2280,7 +2362,7 @@ ALTER TABLE ONLY public.alat_lab
 
 
 --
--- TOC entry 3404 (class 2606 OID 46728)
+-- TOC entry 3413 (class 2606 OID 46728)
 -- Name: berita fk_berita_admin; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2289,7 +2371,7 @@ ALTER TABLE ONLY public.berita
 
 
 --
--- TOC entry 3401 (class 2606 OID 46733)
+-- TOC entry 3410 (class 2606 OID 46733)
 -- Name: gallery fk_gallery_berita; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2298,7 +2380,7 @@ ALTER TABLE ONLY public.gallery
 
 
 --
--- TOC entry 3402 (class 2606 OID 46738)
+-- TOC entry 3411 (class 2606 OID 46738)
 -- Name: mahasiswa fk_mahasiswa_admin; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2307,7 +2389,7 @@ ALTER TABLE ONLY public.mahasiswa
 
 
 --
--- TOC entry 3403 (class 2606 OID 46743)
+-- TOC entry 3412 (class 2606 OID 46743)
 -- Name: member fk_member_admin; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2316,7 +2398,7 @@ ALTER TABLE ONLY public.member
 
 
 --
--- TOC entry 3413 (class 2606 OID 46748)
+-- TOC entry 3422 (class 2606 OID 46748)
 -- Name: peminjaman fk_peminjaman_alat; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2325,7 +2407,7 @@ ALTER TABLE ONLY public.peminjaman
 
 
 --
--- TOC entry 3414 (class 2606 OID 46753)
+-- TOC entry 3423 (class 2606 OID 46753)
 -- Name: peminjaman fk_peminjaman_ruang; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2334,7 +2416,7 @@ ALTER TABLE ONLY public.peminjaman
 
 
 --
--- TOC entry 3405 (class 2606 OID 46758)
+-- TOC entry 3414 (class 2606 OID 46758)
 -- Name: penelitian fk_penelitian_fokus; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2343,7 +2425,7 @@ ALTER TABLE ONLY public.penelitian
 
 
 --
--- TOC entry 3406 (class 2606 OID 46763)
+-- TOC entry 3415 (class 2606 OID 46763)
 -- Name: penelitian fk_penelitian_mitra; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2352,7 +2434,7 @@ ALTER TABLE ONLY public.penelitian
 
 
 --
--- TOC entry 3407 (class 2606 OID 46768)
+-- TOC entry 3416 (class 2606 OID 46768)
 -- Name: penelitian fk_penelitian_produk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2361,7 +2443,7 @@ ALTER TABLE ONLY public.penelitian
 
 
 --
--- TOC entry 3415 (class 2606 OID 46788)
+-- TOC entry 3424 (class 2606 OID 46788)
 -- Name: ruang_lab fk_ruang_admin; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2370,7 +2452,7 @@ ALTER TABLE ONLY public.ruang_lab
 
 
 --
--- TOC entry 3416 (class 2606 OID 46793)
+-- TOC entry 3425 (class 2606 OID 46793)
 -- Name: settings fk_settings_admin; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2379,7 +2461,7 @@ ALTER TABLE ONLY public.settings
 
 
 --
--- TOC entry 3408 (class 2606 OID 46773)
+-- TOC entry 3417 (class 2606 OID 46773)
 -- Name: penelitian progress_id_artikel_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2388,7 +2470,7 @@ ALTER TABLE ONLY public.penelitian
 
 
 --
--- TOC entry 3409 (class 2606 OID 46778)
+-- TOC entry 3418 (class 2606 OID 46778)
 -- Name: penelitian progress_id_member_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2397,7 +2479,7 @@ ALTER TABLE ONLY public.penelitian
 
 
 --
--- TOC entry 3410 (class 2606 OID 46783)
+-- TOC entry 3419 (class 2606 OID 46783)
 -- Name: penelitian progress_id_mhs_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2406,7 +2488,7 @@ ALTER TABLE ONLY public.penelitian
 
 
 --
--- TOC entry 3417 (class 2606 OID 46798)
+-- TOC entry 3426 (class 2606 OID 46798)
 -- Name: visitor visitor_id_pengunjung_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2415,7 +2497,7 @@ ALTER TABLE ONLY public.visitor
 
 
 --
--- TOC entry 3609 (class 0 OID 0)
+-- TOC entry 3620 (class 0 OID 0)
 -- Dependencies: 9
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: pg_database_owner
 --
@@ -2425,7 +2507,7 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
 --
--- TOC entry 2153 (class 826 OID 46428)
+-- TOC entry 2158 (class 826 OID 46428)
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: postgres
 --
 
@@ -2433,18 +2515,18 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENC
 
 
 --
--- TOC entry 2154 (class 826 OID 46427)
+-- TOC entry 2159 (class 826 OID 46427)
 -- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: postgres
 --
 
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES  TO postgres;
 
 
--- Completed on 2025-12-08 08:17:43
+-- Completed on 2025-12-08 09:42:37
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 2rtB6HSBzVEPSvhLscfZo77ZeSJ7dqa8WCW2HUthAouhvZD8R5zqdZa5YhCAxf9
+\unrestrict Y5hFYutsZa6rHlDGvENXfTzHAUNpYIgBJDZeGclotgdL2mWdyOPPSfwEv3LEQrq
 

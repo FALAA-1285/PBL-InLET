@@ -85,6 +85,9 @@ $research_fields_paginated = array_slice($riset, $startRF, $perPage);
 // Fetch partners
 $partners = safeQueryAll($conn, "SELECT * FROM mitra ORDER BY nama_institusi");
 
+// Fetch videos
+$videos = safeQueryAll($conn, "SELECT * FROM video ORDER BY created_at DESC");
+
 // Fetch gallery
 $raw_gallery = safeQueryAll($conn, "SELECT gambar, judul FROM gallery ORDER BY created_at DESC");
 
@@ -269,6 +272,83 @@ function getInitials($name)
 
                         </ul>
                     </nav>
+                <?php endif; ?>
+            </div>
+        </section>
+
+        <!-- Video section -->
+        <section class="py-5 bg-light" id="video">
+            <div class="container">
+                <div class="section-title text-center mb-5">
+                    <h2 class="fw-bold">Our Videos</h2>
+                    <p class="text-muted">Watch our latest videos and content.</p>
+                    <div class="divider"></div>
+                </div>
+                <?php if (empty($videos)): ?>
+                    <div class="text-center">
+                        <div class="alert alert-light" role="alert">
+                            <i class="fas fa-video fa-3x mb-3 text-muted"></i>
+                            <p class="mb-0">No videos available yet.</p>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="video-container-wrapper">
+                        <div class="video-player-container">
+                            <div class="video-wrapper" id="videoWrapper">
+                                <button class="video-arrow arrow-left" id="prevVideo" title="Previous Video">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <?php 
+                                $first_video = $videos[0];
+                                $video_url = htmlspecialchars($first_video['href_link'] ?? '');
+                                $video_title = htmlspecialchars($first_video['title'] ?? '');
+                                ?>
+                                <div class="video-player" id="videoPlayer">
+                                    <?php if (!empty($video_url)): ?>
+                                        <?php if (preg_match('/youtube\.com|youtu\.be/i', $video_url)): ?>
+                                            <?php
+                                            // Extract YouTube video ID
+                                            $video_id = '';
+                                            if (preg_match('/youtu\.be\/([^\?\&]+)/', $video_url, $matches)) {
+                                                $video_id = $matches[1];
+                                            } elseif (preg_match('/youtube\.com\/watch\?v=([^\&\?]+)/', $video_url, $matches)) {
+                                                $video_id = $matches[1];
+                                            } elseif (preg_match('/youtube\.com\/embed\/([^\?\&]+)/', $video_url, $matches)) {
+                                                $video_id = $matches[1];
+                                            }
+                                            ?>
+                                            <?php if (!empty($video_id)): ?>
+                                                <iframe 
+                                                    id="videoFrame"
+                                                    src="https://www.youtube.com/embed/<?= $video_id ?>?enablejsapi=1" 
+                                                    frameborder="0" 
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                    allowfullscreen
+                                                    style="width: 100%; height: 100%; min-height: 400px; border-radius: 8px;">
+                                                </iframe>
+                                            <?php else: ?>
+                                                <div class="video-placeholder">
+                                                    <p>Invalid YouTube URL</p>
+                                                </div>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <video id="videoFrame" controls style="width: 100%; height: 100%; min-height: 400px; border-radius: 8px;">
+                                                <source src="<?= $video_url ?>" type="video/mp4">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <div class="video-placeholder">
+                                            <p>No video URL available</p>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                <button class="video-arrow arrow-right" id="nextVideo" title="Next Video">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 <?php endif; ?>
             </div>
         </section>
@@ -565,7 +645,249 @@ function getInitials($name)
                 resizeTimeout = setTimeout(masonryLayout, 150);
             });
         });
+
+        // Video Navigation with Auto-slide
+        <?php if (!empty($videos)): ?>
+        const videos = <?= json_encode($videos) ?>;
+        let currentVideoIndex = 0;
+        let autoSlideInterval = null;
+        let autoSlideCount = 0;
+        const maxAutoSlide = 5; // Auto-play 5 videos pertama
+        const slideDuration = 10000; // 10 detik per video
+
+        function loadVideo(index) {
+            // Handle circular navigation
+            if (index < 0) {
+                index = videos.length - 1; // Loop to last video
+            } else if (index >= videos.length) {
+                index = 0; // Loop to first video
+            }
+            
+            currentVideoIndex = index;
+            const video = videos[index];
+            const videoUrl = video.href_link || '';
+            
+            const videoPlayer = document.getElementById('videoPlayer');
+            
+            if (!videoUrl) {
+                videoPlayer.innerHTML = '<div class="video-placeholder"><p>No video URL available</p></div>';
+                return;
+            }
+            
+            // Check if YouTube URL
+            if (videoUrl.match(/youtube\.com|youtu\.be/i)) {
+                let videoId = '';
+                if (videoUrl.match(/youtu\.be\/([^\?\&]+)/)) {
+                    videoId = videoUrl.match(/youtu\.be\/([^\?\&]+)/)[1];
+                } else if (videoUrl.match(/youtube\.com\/watch\?v=([^\&\?]+)/)) {
+                    videoId = videoUrl.match(/youtube\.com\/watch\?v=([^\&\?]+)/)[1];
+                } else if (videoUrl.match(/youtube\.com\/embed\/([^\?\&]+)/)) {
+                    videoId = videoUrl.match(/youtube\.com\/embed\/([^\?\&]+)/)[1];
+                }
+                
+                if (videoId) {
+                    videoPlayer.innerHTML = `<iframe 
+                        id="videoFrame"
+                        src="https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen
+                        style="width: 100%; height: 100%; min-height: 400px; border-radius: 8px;">
+                    </iframe>`;
+                } else {
+                    videoPlayer.innerHTML = '<div class="video-placeholder"><p>Invalid YouTube URL</p></div>';
+                }
+            } else {
+                // Regular video file
+                videoPlayer.innerHTML = `<video id="videoFrame" controls autoplay style="width: 100%; height: 100%; min-height: 400px; border-radius: 8px;">
+                    <source src="${videoUrl}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>`;
+            }
+        }
+
+        function nextVideo() {
+            currentVideoIndex = (currentVideoIndex + 1) % videos.length; // Circular
+            loadVideo(currentVideoIndex);
+            autoSlideCount++;
+            
+            // Stop auto-slide after 5 videos
+            if (autoSlideCount >= maxAutoSlide) {
+                stopAutoSlide();
+            }
+        }
+
+        function prevVideo() {
+            currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length; // Circular
+            loadVideo(currentVideoIndex);
+            stopAutoSlide(); // Stop auto-slide when user manually navigates
+        }
+
+        function startAutoSlide() {
+            stopAutoSlide(); // Clear any existing interval
+            autoSlideCount = 0;
+            autoSlideInterval = setInterval(function() {
+                if (autoSlideCount < maxAutoSlide) {
+                    nextVideo();
+                } else {
+                    stopAutoSlide();
+                }
+            }, slideDuration);
+        }
+
+        function stopAutoSlide() {
+            if (autoSlideInterval) {
+                clearInterval(autoSlideInterval);
+                autoSlideInterval = null;
+            }
+        }
+
+        // Initialize first video
+        loadVideo(0);
+        
+        // Start auto-slide after a short delay
+        setTimeout(function() {
+            if (videos.length > 1) {
+                startAutoSlide();
+            }
+        }, 2000); // Start after 2 seconds
+
+        document.getElementById('prevVideo').addEventListener('click', function() {
+            prevVideo();
+        });
+
+        document.getElementById('nextVideo').addEventListener('click', function() {
+            nextVideo();
+        });
+
+        // Click navigation on video player
+        const videoWrapper = document.getElementById('videoWrapper');
+        videoWrapper.addEventListener('click', function(e) {
+            // Don't trigger if clicking on arrow buttons
+            if (e.target.closest('.video-arrow')) {
+                return;
+            }
+            
+            const rect = videoWrapper.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            const middle = width / 2;
+            
+            // Left click (left half) = previous video
+            if (clickX < middle) {
+                prevVideo();
+            }
+            // Right click (right half) = next video
+            else {
+                nextVideo();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                prevVideo();
+            } else if (e.key === 'ArrowRight') {
+                nextVideo();
+            }
+        });
+        <?php endif; ?>
     </script>
+    <style>
+        .video-container-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .video-player-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .video-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .video-wrapper::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            z-index: 1;
+            background: rgba(0,0,0,0);
+            transition: background 0.3s;
+        }
+        .video-wrapper::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            z-index: 1;
+            background: rgba(0,0,0,0);
+            transition: background 0.3s;
+        }
+        .video-wrapper:hover::before {
+            background: rgba(0,0,0,0.1);
+        }
+        .video-wrapper:hover::after {
+            background: rgba(0,0,0,0.1);
+        }
+        .video-player {
+            width: 100%;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .video-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            z-index: 10;
+            padding: 0;
+        }
+        .video-arrow:hover {
+            background: rgba(0, 0, 0, 0.8);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        .video-arrow:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+        .arrow-left {
+            left: 10px;
+        }
+        .arrow-right {
+            right: 10px;
+        }
+        .video-placeholder {
+            padding: 4rem;
+            text-align: center;
+            color: #999;
+            background: #f5f5f5;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
 </body>
 
 </html>
