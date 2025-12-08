@@ -1,4 +1,8 @@
 <?php
+// Prevent caching to ensure fresh data
+header("Cache-Control: no-cache, must-revalidate");
+header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+
 require_once 'config/database.php';
 require_once 'config/settings.php';
 
@@ -21,8 +25,44 @@ function safeQueryAll($conn, $sql)
 // Fetch team
 $team = safeQueryAll($conn, "SELECT * FROM member ORDER BY nama");
 
-// Research fields (placeholder)
-$riset = [];
+// Fetch products
+$products = safeQueryAll($conn, "SELECT * FROM produk ORDER BY id_produk");
+
+// Research fields from fokus_penelitian table - always get fresh data
+// Use prepared statement to ensure fresh data and prevent caching
+try {
+    $stmt = $conn->prepare("SELECT id_fp, title as judul, deskripsi, detail FROM fokus_penelitian ORDER BY id_fp");
+    $stmt->execute();
+    $riset = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $riset = [];
+}
+
+// Function to properly capitalize titles
+function formatTitle($title) {
+    if (empty($title)) return '';
+    $title = trim($title);
+    // Direct replacement for "information engineering" in any case variation
+    $title = preg_replace('/\binformation\s+engineering\b/i', 'Information Engineering', $title);
+    // If title contains "Information Engineering", preserve it and capitalize the rest
+    if (stripos($title, 'Information Engineering') !== false) {
+        // Split by "Information Engineering" and capitalize other parts
+        $parts = preg_split('/\bInformation\s+Engineering\b/i', $title, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $result = '';
+        foreach ($parts as $i => $part) {
+            if ($i % 2 == 0) {
+                // Regular text - capitalize normally
+                $result .= ucwords(strtolower($part));
+            } else {
+                // This is "Information Engineering"
+                $result .= 'Information Engineering';
+            }
+        }
+        return $result;
+    }
+    // For other titles, use ucwords
+    return ucwords(strtolower($title));
+}
 
 // Pagination for research fields
 $perPage = 9;
@@ -91,6 +131,9 @@ function getInitials($name)
 
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title><?= htmlspecialchars($page_info['title'] ?: 'Home - InLET'); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- CSS -->
@@ -120,10 +163,38 @@ function getInitials($name)
             <div class="container">
                 <div class="section-title">
                     <h2>Our Research</h2>
-                    <p>InLET's research focuses on developing learning technology.</p>
+                    <?php 
+                    // Re-query to ensure fresh data (in case of updates)
+                    if (empty($riset)) {
+                        try {
+                            $stmt = $conn->prepare("SELECT id_fp, title as judul, deskripsi, detail FROM fokus_penelitian ORDER BY id_fp");
+                            $stmt->execute();
+                            $riset = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                        } catch (PDOException $e) {
+                            $riset = [];
+                        }
+                    }
+                    
+                    if (!empty($riset)): 
+                        // Display all research items
+                        foreach ($riset as $research_item): 
+                            $formatted_title = formatTitle($research_item['judul'] ?? '');
+                    ?>
+                        <div style="margin-bottom: 2rem;">
+                            <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;"><?= htmlspecialchars($formatted_title); ?></h3>
+                            <?php if (!empty($research_item['deskripsi'])): ?>
+                                <p class="text-center"><?= htmlspecialchars($research_item['deskripsi']); ?></p>
+                            <?php else: ?>
+                                <p class="text-center">Pilar ini berfokus pada rekayasa sistem informasi dan pengambilan keputusan berbasis data. Subdomain seperti E-Government, Decision Support Systems, dan Civic Technology dipilih karena relevan dengan kebutuhan industri dan pemerintahan dalam membangun sistem digital yang transparan, efisien, dan etis. Pilar ini mendukung pengembangan solusi teknologi untuk tata kelola publik, manajemen pengetahuan, dan sistem informasi yang patuh terhadap regulasi.</p>
+                            <?php endif; ?>
+                        </div>
+                    <?php 
+                        endforeach;
+                    else: ?>
+                        <p>InLET's research focuses on developing learning technology.</p>
+                        <p class="text-center">Pilar ini berfokus pada rekayasa sistem informasi dan pengambilan keputusan berbasis data. Subdomain seperti E-Government, Decision Support Systems, dan Civic Technology dipilih karena relevan dengan kebutuhan industri dan pemerintahan dalam membangun sistem digital yang transparan, efisien, dan etis. Pilar ini mendukung pengembangan solusi teknologi untuk tata kelola publik, manajemen pengetahuan, dan sistem informasi yang patuh terhadap regulasi.</p>
+                    <?php endif; ?>
                 </div>
-                <p class="text-center">We develop AI-based learning technology, adaptive systems, and modern digital
-                    solutions.</p>
             </div>
         </section>
 
@@ -137,11 +208,32 @@ function getInitials($name)
                             <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
                                 <div class="rf-card p-4 shadow-sm rounded h-100">
                                     <h4 class="fw-bold mb-2 text-center">
-                                        <?= htmlspecialchars($r['judul']) ?>
+                                        <?= htmlspecialchars(formatTitle($r['judul'])) ?>
                                     </h4>
-                                    <p class="text-muted text-center mb-0">
-                                        <?= htmlspecialchars($r['deskripsi']) ?>
-                                    </p>
+                                    <div class="text-muted text-center">
+                                        <?php 
+                                        $detail_text = $r['detail'] ?? $r['deskripsi'] ?? '';
+                                        if (!empty($detail_text)) {
+                                            // Split by newlines and process each line
+                                            $lines = explode("\n", $detail_text);
+                                            echo '<ul class="list-unstyled mb-0" style="text-align: left; padding-left: 1.5rem;">';
+                                            foreach ($lines as $line) {
+                                                $line = trim($line);
+                                                if (!empty($line)) {
+                                                    // If line starts with "-", remove it and make it a bullet point
+                                                    if (strpos($line, '-') === 0) {
+                                                        $line = trim(substr($line, 1));
+                                                        echo '<li style="list-style-type: disc; margin-bottom: 0.5rem;">' . htmlspecialchars($line) . '</li>';
+                                                    } else {
+                                                        // Regular line without bullet
+                                                        echo '<li style="list-style-type: none; margin-bottom: 0.5rem;">' . htmlspecialchars($line) . '</li>';
+                                                    }
+                                                }
+                                            }
+                                            echo '</ul>';
+                                        }
+                                        ?>
+                                    </div>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -177,6 +269,49 @@ function getInitials($name)
 
                         </ul>
                     </nav>
+                <?php endif; ?>
+            </div>
+        </section>
+
+        <!-- Our Product section -->
+        <section class="py-5" id="product">
+            <div class="container">
+                <div class="section-title text-center mb-5">
+                    <h2 class="fw-bold">Our Products</h2>
+                    <p class="text-muted">Innovative solutions developed by InLET.</p>
+                    <div class="divider"></div>
+                </div>
+                <?php if (empty($products)): ?>
+                    <div class="text-center">
+                        <div class="alert alert-light" role="alert">
+                            <i class="fas fa-box fa-3x mb-3 text-muted"></i>
+                            <p class="mb-0">No products available yet.</p>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="row">
+                        <?php foreach ($products as $product): ?>
+                            <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                                <div class="card h-100 shadow-sm">
+                                    <?php if (!empty($product['gambar'])): ?>
+                                        <img src="<?= htmlspecialchars($product['gambar']); ?>" 
+                                             class="card-img-top" 
+                                             alt="<?= htmlspecialchars($product['nama_produk']); ?>"
+                                             style="height: 200px; object-fit: cover;"
+                                             onerror="this.style.display='none'">
+                                    <?php endif; ?>
+                                    <div class="card-body">
+                                        <h5 class="card-title fw-bold"><?= htmlspecialchars($product['nama_produk']); ?></h5>
+                                        <?php if (!empty($product['deskripsi'])): ?>
+                                            <p class="card-text text-muted"><?= nl2br(htmlspecialchars($product['deskripsi'])); ?></p>
+                                        <?php else: ?>
+                                            <p class="card-text text-muted">No description available.</p>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
                 <?php endif; ?>
             </div>
         </section>

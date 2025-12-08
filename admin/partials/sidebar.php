@@ -49,6 +49,12 @@ $menu_items = [
         'icon' => 'ri-tools-line',
     ],
     [
+        'id' => 'ruang_lab',
+        'label' => 'Lab Room',
+        'href' => 'ruang_lab.php',
+        'icon' => 'ri-building-line',
+    ],
+    [
         'id' => 'peminjaman',
         'label' => 'Tool Loan',
         'href' => 'peminjaman.php',
@@ -98,7 +104,10 @@ $active_page = $active_page ?? pathinfo($_SERVER['PHP_SELF'], PATHINFO_FILENAME)
 ?>
 
 <aside class="sidebar">
-    <div class="brand">InLet Polinema</div>
+    <div class="brand">
+        <img src="../assets/logo_inlet2.png" alt="InLET Logo" class="brand-logo">
+        <span class="brand-text">InLet Polinema</span>
+    </div>
     <div class="menu-scroll">
         <div class="menu">
         <?php foreach ($menu_items as $item): ?>

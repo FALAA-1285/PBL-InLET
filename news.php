@@ -138,7 +138,7 @@ function getPaginationUrl($page, $search = '')
 
                         <?php if (!empty($search_query)): ?>
                             <p class="mt-2 text-muted">
-                                Showing <?php echo $total_items; ?> results for
+                                Showing <?php echo $total_items_news; ?> results for
                                 "<?php echo htmlspecialchars($search_query); ?>"
                             </p>
                         <?php endif; ?>

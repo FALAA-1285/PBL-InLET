@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $judul = $_POST['judul'] ?? '';
         $konten = $_POST['konten'] ?? '';
         $gambar_thumbnail = $_POST['gambar_thumbnail'] ?? ''; // URL input
+        $tanggal = $_POST['tanggal'] ?? ''; // Date input
 
         // Handle file upload
         if (isset($_FILES['gambar_file']) && $_FILES['gambar_file']['error'] === UPLOAD_ERR_OK) {
@@ -29,11 +30,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($message)) {
             try {
-                $stmt = $conn->prepare("INSERT INTO berita (judul, konten, gambar_thumbnail) VALUES (:judul, :konten, :gambar_thumbnail)");
+                // Try to alter gambar_thumbnail column to TEXT if it's still VARCHAR(255)
+                try {
+                    $conn->exec("ALTER TABLE berita ALTER COLUMN gambar_thumbnail TYPE TEXT");
+                } catch (PDOException $e) {
+                    // Column might already be TEXT or error, continue anyway
+                }
+                
+                // Prepare created_at value
+                $created_at = null;
+                if (!empty($tanggal)) {
+                    // Convert date to timestamp format
+                    $created_at = date('Y-m-d H:i:s', strtotime($tanggal));
+                }
+                
+                $stmt = $conn->prepare("INSERT INTO berita (judul, konten, gambar_thumbnail, created_at) VALUES (:judul, :konten, :gambar_thumbnail, :created_at)");
                 $stmt->execute([
                     'judul' => $judul,
                     'konten' => $konten,
-                    'gambar_thumbnail' => $gambar_thumbnail ?: null
+                    'gambar_thumbnail' => $gambar_thumbnail ?: null,
+                    'created_at' => $created_at
                 ]);
                 $message = 'News successfully added!';
                 $message_type = 'success';
@@ -47,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $judul = $_POST['judul'] ?? '';
         $konten = $_POST['konten'] ?? '';
         $gambar_thumbnail = $_POST['gambar_thumbnail'] ?? '';
+        $tanggal = $_POST['tanggal'] ?? ''; // Date input
 
         // Handle file upload
         if (isset($_FILES['gambar_file']) && $_FILES['gambar_file']['error'] === UPLOAD_ERR_OK) {
@@ -61,12 +78,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($message)) {
             try {
-                $stmt = $conn->prepare("UPDATE berita SET judul = :judul, konten = :konten, gambar_thumbnail = :gambar_thumbnail WHERE id_berita = :id");
+                // Try to alter gambar_thumbnail column to TEXT if it's still VARCHAR(255)
+                try {
+                    $conn->exec("ALTER TABLE berita ALTER COLUMN gambar_thumbnail TYPE TEXT");
+                } catch (PDOException $e) {
+                    // Column might already be TEXT or error, continue anyway
+                }
+                
+                // Prepare created_at value
+                $created_at = null;
+                if (!empty($tanggal)) {
+                    // Convert date to timestamp format
+                    $created_at = date('Y-m-d H:i:s', strtotime($tanggal));
+                }
+                
+                $stmt = $conn->prepare("UPDATE berita SET judul = :judul, konten = :konten, gambar_thumbnail = :gambar_thumbnail, created_at = :created_at WHERE id_berita = :id");
                 $stmt->execute([
                     'id' => $id,
                     'judul' => $judul,
                     'konten' => $konten,
-                    'gambar_thumbnail' => $gambar_thumbnail ?: null
+                    'gambar_thumbnail' => $gambar_thumbnail ?: null,
+                    'created_at' => $created_at
                 ]);
                 $message = 'News successfully updated!';
                 $message_type = 'success';
@@ -427,6 +459,10 @@ $news_list = $stmt->fetchAll();
                             <small class="d-block mt-2 text-muted small">If file upload is used, URL will be
                                 ignored</small>
                         </div>
+                        <div class="form-group">
+                            <label>Tanggal *</label>
+                            <input type="date" name="tanggal" id="edit_tanggal" required>
+                        </div>
                         <button type="submit" class="btn-submit">Update News</button>
                         <button type="button" class="btn-cancel" onclick="cancelEdit()">Cancel</button>
                     </form>
@@ -456,6 +492,10 @@ $news_list = $stmt->fetchAll();
                             <input type="text" name="gambar_thumbnail" placeholder="https://example.com/image.jpg">
                             <small class="d-block mt-2 text-muted small">If file upload is used, URL will be
                                 ignored</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Tanggal *</label>
+                            <input type="date" name="tanggal" required>
                         </div>
                         <button type="submit" class="btn-submit">Add News</button>
                     </form>
@@ -574,6 +614,18 @@ $news_list = $stmt->fetchAll();
             document.getElementById('edit_judul').value = news.judul || '';
             document.getElementById('edit_konten').value = news.konten || '';
             document.getElementById('edit_gambar_thumbnail').value = news.gambar_thumbnail || '';
+            
+            // Set tanggal from created_at
+            if (news.created_at) {
+                // Convert timestamp to date format (YYYY-MM-DD)
+                const date = new Date(news.created_at);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                document.getElementById('edit_tanggal').value = `${year}-${month}-${day}`;
+            } else {
+                document.getElementById('edit_tanggal').value = '';
+            }
 
             // Show edit form, hide add form
             document.getElementById('edit-form-section').classList.add('active');

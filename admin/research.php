@@ -1,10 +1,47 @@
 <?php
 require_once '../config/auth.php';
+require_once '../config/upload.php';
 requireAdmin();
 
 $conn = getDBConnection();
 $message = '';
 $message_type = '';
+
+// Helper function to get student identifier column name for penelitian table
+function getPenelitianStudentCol($conn) {
+    static $student_col = null;
+    if ($student_col === null) {
+        try {
+            $check_cols = $conn->query("SELECT column_name FROM information_schema.columns WHERE table_name = 'penelitian' AND table_schema = 'public'");
+            $columns = $check_cols->fetchAll(PDO::FETCH_COLUMN);
+            if (in_array('nim', $columns)) {
+                $student_col = 'nim';
+            } elseif (in_array('id_mhs', $columns)) {
+                $student_col = 'id_mhs';
+            } else {
+                $student_col = false; // No student identifier column
+            }
+        } catch (PDOException $e) {
+            error_log("Error checking penelitian columns: " . $e->getMessage());
+            $student_col = false;
+        }
+    }
+    return $student_col;
+}
+
+// Handle GET requests for delete (before POST handler)
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'delete_fokus_penelitian') {
+    $id = $_GET['id'] ?? 0;
+    try {
+        $stmt = $conn->prepare("DELETE FROM fokus_penelitian WHERE id_fp = :id");
+        $stmt->execute(['id' => $id]);
+        header('Location: research.php?tab=research_detail&deleted=1');
+        exit;
+    } catch (PDOException $e) {
+        $message = 'Error: ' . $e->getMessage();
+        $message_type = 'error';
+    }
+}
 
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -41,19 +78,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tgl_selesai = $_POST['tgl_selesai'] ?? null;
 
         try {
-            $stmt = $conn->prepare("INSERT INTO penelitian (judul, tahun, deskripsi, id_artikel, nim, id_member, id_produk, id_mitra, tgl_mulai, tgl_selesai) VALUES (:judul, :tahun, :deskripsi, :id_artikel, :nim, :id_member, :id_produk, :id_mitra, :tgl_mulai, :tgl_selesai)");
-            $stmt->execute([
-                'judul' => $judul,
-                'tahun' => $tahun ?: null,
-                'deskripsi' => $deskripsi ?: null,
-                'id_artikel' => $id_artikel ?: null,
-                'nim' => $nim ?: null,
-                'id_member' => $id_member ?: null,
-                'id_produk' => $id_produk ?: null,
-                'id_mitra' => $id_mitra ?: null,
-                'tgl_mulai' => $tgl_mulai ?: null,
-                'tgl_selesai' => $tgl_selesai ?: null
-            ]);
+            $student_col = getPenelitianStudentCol($conn);
+            if ($student_col) {
+                $query = "INSERT INTO penelitian (judul, tahun, deskripsi, id_artikel, " . $student_col . ", id_member, id_produk, id_mitra, tgl_mulai, tgl_selesai) VALUES (:judul, :tahun, :deskripsi, :id_artikel, :student_id, :id_member, :id_produk, :id_mitra, :tgl_mulai, :tgl_selesai)";
+                $params = [
+                    'judul' => $judul,
+                    'tahun' => $tahun ?: null,
+                    'deskripsi' => $deskripsi ?: null,
+                    'id_artikel' => $id_artikel ?: null,
+                    'student_id' => $nim ?: null,
+                    'id_member' => $id_member ?: null,
+                    'id_produk' => $id_produk ?: null,
+                    'id_mitra' => $id_mitra ?: null,
+                    'tgl_mulai' => $tgl_mulai ?: null,
+                    'tgl_selesai' => $tgl_selesai ?: null
+                ];
+            } else {
+                // No student identifier column, skip it
+                $query = "INSERT INTO penelitian (judul, tahun, deskripsi, id_artikel, id_member, id_produk, id_mitra, tgl_mulai, tgl_selesai) VALUES (:judul, :tahun, :deskripsi, :id_artikel, :id_member, :id_produk, :id_mitra, :tgl_mulai, :tgl_selesai)";
+                $params = [
+                    'judul' => $judul,
+                    'tahun' => $tahun ?: null,
+                    'deskripsi' => $deskripsi ?: null,
+                    'id_artikel' => $id_artikel ?: null,
+                    'id_member' => $id_member ?: null,
+                    'id_produk' => $id_produk ?: null,
+                    'id_mitra' => $id_mitra ?: null,
+                    'tgl_mulai' => $tgl_mulai ?: null,
+                    'tgl_selesai' => $tgl_selesai ?: null
+                ];
+            }
+            $stmt = $conn->prepare($query);
+            $stmt->execute($params);
             $message = 'Research successfully added!';
             $message_type = 'success';
         } catch (PDOException $e) {
@@ -94,20 +150,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tgl_selesai = $_POST['tgl_selesai'] ?? null;
 
         try {
-            $stmt = $conn->prepare("UPDATE penelitian SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, id_artikel = :id_artikel, nim = :nim, id_member = :id_member, id_produk = :id_produk, id_mitra = :id_mitra, tgl_mulai = :tgl_mulai, tgl_selesai = :tgl_selesai WHERE id_penelitian = :id");
-            $stmt->execute([
-                'id' => $id,
-                'judul' => $judul,
-                'tahun' => $tahun ?: null,
-                'deskripsi' => $deskripsi ?: null,
-                'id_artikel' => $id_artikel ?: null,
-                'nim' => $nim ?: null,
-                'id_member' => $id_member ?: null,
-                'id_produk' => $id_produk ?: null,
-                'id_mitra' => $id_mitra ?: null,
-                'tgl_mulai' => $tgl_mulai ?: null,
-                'tgl_selesai' => $tgl_selesai ?: null
-            ]);
+            $student_col = getPenelitianStudentCol($conn);
+            if ($student_col) {
+                $query = "UPDATE penelitian SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, id_artikel = :id_artikel, " . $student_col . " = :student_id, id_member = :id_member, id_produk = :id_produk, id_mitra = :id_mitra, tgl_mulai = :tgl_mulai, tgl_selesai = :tgl_selesai WHERE id_penelitian = :id";
+                $params = [
+                    'id' => $id,
+                    'judul' => $judul,
+                    'tahun' => $tahun ?: null,
+                    'deskripsi' => $deskripsi ?: null,
+                    'id_artikel' => $id_artikel ?: null,
+                    'student_id' => $nim ?: null,
+                    'id_member' => $id_member ?: null,
+                    'id_produk' => $id_produk ?: null,
+                    'id_mitra' => $id_mitra ?: null,
+                    'tgl_mulai' => $tgl_mulai ?: null,
+                    'tgl_selesai' => $tgl_selesai ?: null
+                ];
+            } else {
+                // No student identifier column, skip it
+                $query = "UPDATE penelitian SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, id_artikel = :id_artikel, id_member = :id_member, id_produk = :id_produk, id_mitra = :id_mitra, tgl_mulai = :tgl_mulai, tgl_selesai = :tgl_selesai WHERE id_penelitian = :id";
+                $params = [
+                    'id' => $id,
+                    'judul' => $judul,
+                    'tahun' => $tahun ?: null,
+                    'deskripsi' => $deskripsi ?: null,
+                    'id_artikel' => $id_artikel ?: null,
+                    'id_member' => $id_member ?: null,
+                    'id_produk' => $id_produk ?: null,
+                    'id_mitra' => $id_mitra ?: null,
+                    'tgl_mulai' => $tgl_mulai ?: null,
+                    'tgl_selesai' => $tgl_selesai ?: null
+                ];
+            }
+            $stmt = $conn->prepare($query);
+            $stmt->execute($params);
             $message = 'Research successfully updated!';
             $message_type = 'success';
         } catch (PDOException $e) {
@@ -136,12 +212,239 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
         }
+    } elseif ($action === 'add_fokus_penelitian') {
+        $title = $_POST['title'] ?? '';
+        $deskripsi = $_POST['deskripsi'] ?? '';
+        $detail = $_POST['detail'] ?? '';
+
+        // Truncate title to 200 chars to match database constraints
+        $title = mb_substr($title, 0, 200);
+        // Try to alter detail column to TEXT if it's still VARCHAR(150)
+        try {
+            $conn->exec("ALTER TABLE fokus_penelitian ALTER COLUMN detail TYPE TEXT");
+        } catch (PDOException $e) {
+            // Column might already be TEXT or error, continue anyway
+        }
+
+        try {
+            $stmt = $conn->prepare("INSERT INTO fokus_penelitian (title, deskripsi, detail) VALUES (:title, :deskripsi, :detail)");
+            $stmt->execute([
+                'title' => $title,
+                'deskripsi' => $deskripsi ?: null,
+                'detail' => $detail ?: null
+            ]);
+            // Redirect to prevent resubmission and show single success message
+            header('Location: research.php?tab=research_detail&added=1');
+            exit;
+        } catch (PDOException $e) {
+            $message = 'Error: ' . $e->getMessage();
+            $message_type = 'error';
+        }
+    } elseif ($action === 'update_fokus_penelitian') {
+        $id = $_POST['id'] ?? 0;
+        $title = $_POST['title'] ?? '';
+        $deskripsi = $_POST['deskripsi'] ?? '';
+        $detail = $_POST['detail'] ?? '';
+
+        // Truncate title to 200 chars to match database constraints
+        $title = mb_substr($title, 0, 200);
+        // Try to alter detail column to TEXT if it's still VARCHAR(150)
+        try {
+            $conn->exec("ALTER TABLE fokus_penelitian ALTER COLUMN detail TYPE TEXT");
+        } catch (PDOException $e) {
+            // Column might already be TEXT or error, continue anyway
+        }
+
+        try {
+            $stmt = $conn->prepare("UPDATE fokus_penelitian SET title = :title, deskripsi = :deskripsi, detail = :detail WHERE id_fp = :id");
+            $stmt->execute([
+                'id' => $id,
+                'title' => $title,
+                'deskripsi' => $deskripsi ?: null,
+                'detail' => $detail ?: null
+            ]);
+            // Redirect to prevent resubmission and show single success message
+            header('Location: research.php?tab=research_detail&updated=1');
+            exit;
+        } catch (PDOException $e) {
+            $message = 'Error: ' . $e->getMessage();
+            $message_type = 'error';
+        }
+    } elseif ($action === 'delete_fokus_penelitian') {
+        $id = $_POST['id'] ?? 0;
+
+        try {
+            $stmt = $conn->prepare("DELETE FROM fokus_penelitian WHERE id_fp = :id");
+            $stmt->execute(['id' => $id]);
+            $message = 'Research detail successfully deleted!';
+            $message_type = 'success';
+            // Redirect to prevent resubmission
+            header('Location: research.php?tab=research_detail&deleted=1');
+            exit;
+        } catch (PDOException $e) {
+            $message = 'Error: ' . $e->getMessage();
+            $message_type = 'error';
+        }
+    } elseif ($action === 'add_produk') {
+        $nama_produk = trim($_POST['nama_produk'] ?? '');
+        $deskripsi = trim($_POST['deskripsi'] ?? '');
+        $gambar = $_POST['gambar'] ?? ''; // URL input
+
+        // Handle file upload
+        if (isset($_FILES['gambar_file']) && $_FILES['gambar_file']['error'] === UPLOAD_ERR_OK) {
+            $uploadResult = uploadImage($_FILES['gambar_file'], 'produk/');
+            if ($uploadResult['success']) {
+                $gambar = $uploadResult['path'];
+            } else {
+                $message = $uploadResult['message'];
+                $message_type = 'error';
+            }
+        }
+
+        if (empty($nama_produk)) {
+            $message = 'Product name is required!';
+            $message_type = 'error';
+        } else {
+            try {
+                // Try to add gambar column if it doesn't exist
+                try {
+                    $conn->exec("ALTER TABLE produk ADD COLUMN IF NOT EXISTS gambar TEXT");
+                } catch (PDOException $e) {
+                    // Column might already exist, continue anyway
+                }
+                
+                // Fix sequence if it's out of sync
+                try {
+                    $max_id_stmt = $conn->query("SELECT COALESCE(MAX(id_produk), 0) as max_id FROM produk");
+                    $max_id = $max_id_stmt->fetch()['max_id'];
+                    $conn->exec("SELECT setval('produk_id_produk_seq', " . ($max_id + 1) . ", false)");
+                } catch (PDOException $seq_e) {
+                    // Sequence might not exist or error, continue anyway
+                }
+                
+                $stmt = $conn->prepare("INSERT INTO produk (nama_produk, deskripsi, gambar) VALUES (:nama_produk, :deskripsi, :gambar)");
+                $stmt->execute([
+                    'nama_produk' => $nama_produk,
+                    'deskripsi' => $deskripsi ?: null,
+                    'gambar' => $gambar ?: null
+                ]);
+                header('Location: research.php?tab=product&added=1');
+                exit;
+            } catch (PDOException $e) {
+                $message = 'Error: ' . $e->getMessage();
+                $message_type = 'error';
+            }
+        }
+    } elseif ($action === 'update_produk') {
+        $id = $_POST['id'] ?? 0;
+        $nama_produk = trim($_POST['nama_produk'] ?? '');
+        $deskripsi = trim($_POST['deskripsi'] ?? '');
+        $gambar = $_POST['gambar'] ?? '';
+        $current_gambar = $_POST['current_gambar'] ?? '';
+
+        // Handle file upload
+        if (isset($_FILES['gambar_file']) && $_FILES['gambar_file']['error'] === UPLOAD_ERR_OK) {
+            $uploadResult = uploadImage($_FILES['gambar_file'], 'produk/');
+            if ($uploadResult['success']) {
+                // Delete old image if it's a local file
+                if ($current_gambar && strpos($current_gambar, 'uploads/produk/') === 0) {
+                    deleteUploadedFile($current_gambar);
+                }
+                $gambar = $uploadResult['path'];
+            } else {
+                $message = $uploadResult['message'];
+                $message_type = 'error';
+            }
+        } elseif (empty($gambar) && !empty($current_gambar)) {
+            // Keep current image if no new image provided
+            $gambar = $current_gambar;
+        }
+
+        if (empty($nama_produk)) {
+            $message = 'Product name is required!';
+            $message_type = 'error';
+        } else {
+            try {
+                // Try to add gambar column if it doesn't exist
+                try {
+                    $conn->exec("ALTER TABLE produk ADD COLUMN IF NOT EXISTS gambar TEXT");
+                } catch (PDOException $e) {
+                    // Column might already exist, continue anyway
+                }
+                
+                if ($gambar) {
+                    $stmt = $conn->prepare("UPDATE produk SET nama_produk = :nama_produk, deskripsi = :deskripsi, gambar = :gambar WHERE id_produk = :id");
+                    $stmt->execute([
+                        'id' => $id,
+                        'nama_produk' => $nama_produk,
+                        'deskripsi' => $deskripsi ?: null,
+                        'gambar' => $gambar
+                    ]);
+                } else {
+                    $stmt = $conn->prepare("UPDATE produk SET nama_produk = :nama_produk, deskripsi = :deskripsi WHERE id_produk = :id");
+                    $stmt->execute([
+                        'id' => $id,
+                        'nama_produk' => $nama_produk,
+                        'deskripsi' => $deskripsi ?: null
+                    ]);
+                }
+                header('Location: research.php?tab=product&updated=1');
+                exit;
+            } catch (PDOException $e) {
+                $message = 'Error: ' . $e->getMessage();
+                $message_type = 'error';
+            }
+        }
+    } elseif ($action === 'delete_produk') {
+        $id = $_POST['id'] ?? 0;
+
+        try {
+            $stmt = $conn->prepare("DELETE FROM produk WHERE id_produk = :id");
+            $stmt->execute(['id' => $id]);
+            header('Location: research.php?tab=product&deleted=1');
+            exit;
+        } catch (PDOException $e) {
+            $message = 'Error: ' . $e->getMessage();
+            $message_type = 'error';
+        }
     }
 }
 
 // Pagination setup for articles
 $items_per_page = 10;
 $current_tab = isset($_GET['tab']) ? $_GET['tab'] : 'artikel';
+
+// Try to alter detail column to TEXT if it's still VARCHAR(150) - run once
+try {
+    $conn->exec("ALTER TABLE fokus_penelitian ALTER COLUMN detail TYPE TEXT");
+} catch (PDOException $e) {
+    // Column might already be TEXT or error, continue anyway
+}
+
+// Get fokus_penelitian data
+try {
+    $stmt = $conn->query("SELECT * FROM fokus_penelitian ORDER BY id_fp");
+    $fokus_penelitian_list = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $fokus_penelitian_list = [];
+}
+
+// Get produk data
+try {
+    $stmt = $conn->query("SELECT * FROM produk ORDER BY id_produk");
+    $produk_list = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $produk_list = [];
+}
+
+// Get produk for edit
+$edit_produk = null;
+if (isset($_GET['edit_produk'])) {
+    $edit_id = intval($_GET['edit_produk']);
+    $stmt = $conn->prepare("SELECT * FROM produk WHERE id_produk = :id");
+    $stmt->execute(['id' => $edit_id]);
+    $edit_produk = $stmt->fetch();
+}
 
 // Get page numbers - check if we're on the correct tab
 $current_page_artikel = 1;
@@ -183,23 +486,121 @@ $total_pages_progress = ceil($total_items_progress / $items_per_page);
 $offset_progress = ($current_page_progress - 1) * $items_per_page;
 
 // Get penelitian with pagination
-$stmt = $conn->prepare("SELECT p.*, a.judul as artikel_judul, m.nama as mahasiswa_nama, mem.nama as member_nama, pr.nama_produk, mt.nama_institusi as mitra_nama
+// Check what columns exist in penelitian table for student reference
+try {
+    $check_cols = $conn->query("SELECT column_name FROM information_schema.columns WHERE table_name = 'penelitian' AND table_schema = 'public'");
+    $penelitian_columns = $check_cols->fetchAll(PDO::FETCH_COLUMN);
+    
+    // Determine which column to use for student identifier
+    $student_col = null;
+    if (in_array('nim', $penelitian_columns)) {
+        $student_col = 'nim';
+    } elseif (in_array('id_mhs', $penelitian_columns)) {
+        $student_col = 'id_mhs';
+    }
+    
+    if ($student_col) {
+        // Build query with student info if we can identify the student column
+        // Ensure 'nim' column is always available in result for JavaScript compatibility
+        $query = "SELECT p.*, 
+                      " . ($student_col === 'nim' ? "p.nim" : "p." . $student_col . " as nim") . ",
+                      a.judul as artikel_judul, 
+                      " . ($student_col === 'nim' 
+                          ? "COALESCE((SELECT nama FROM mahasiswa WHERE nim = p.nim LIMIT 1), 'N/A') as mahasiswa_nama"
+                          : "COALESCE((SELECT nama FROM mahasiswa WHERE id_mahasiswa = p.id_mhs LIMIT 1), 'N/A') as mahasiswa_nama") . ",
+                      mem.nama as member_nama, 
+                      pr.nama_produk, 
+                      mt.nama_institusi as mitra_nama
+                  FROM penelitian p
+                  LEFT JOIN artikel a ON p.id_artikel = a.id_artikel
+                  LEFT JOIN member mem ON p.id_member = mem.id_member
+                  LEFT JOIN produk pr ON p.id_produk = pr.id_produk
+                  LEFT JOIN mitra mt ON p.id_mitra = mt.id_mitra
+                  ORDER BY p.created_at DESC
+                  LIMIT :limit OFFSET :offset";
+    } else {
+        // No student identifier column found
+        $query = "SELECT p.*, 
+                      NULL as nim,
+                      a.judul as artikel_judul, 
+                      'N/A' as mahasiswa_nama,
+                      mem.nama as member_nama, 
+                      pr.nama_produk, 
+                      mt.nama_institusi as mitra_nama
+                  FROM penelitian p
+                  LEFT JOIN artikel a ON p.id_artikel = a.id_artikel
+                  LEFT JOIN member mem ON p.id_member = mem.id_member
+                  LEFT JOIN produk pr ON p.id_produk = pr.id_produk
+                  LEFT JOIN mitra mt ON p.id_mitra = mt.id_mitra
+                  ORDER BY p.created_at DESC
+                  LIMIT :limit OFFSET :offset";
+    }
+    
+    $stmt = $conn->prepare($query);
+    $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset_progress, PDO::PARAM_INT);
+    $stmt->execute();
+    $progress_list = $stmt->fetchAll();
+} catch (PDOException $e) {
+    // Fallback query without student info
+    error_log("Error in penelitian query: " . $e->getMessage());
+    $query_fallback = "SELECT p.*, 
+                          NULL as nim,
+                          a.judul as artikel_judul, 
+                          'N/A' as mahasiswa_nama,
+                          mem.nama as member_nama, 
+                          pr.nama_produk, 
+                          mt.nama_institusi as mitra_nama
                       FROM penelitian p
                       LEFT JOIN artikel a ON p.id_artikel = a.id_artikel
-                      LEFT JOIN mahasiswa m ON p.nim = m.nim
                       LEFT JOIN member mem ON p.id_member = mem.id_member
                       LEFT JOIN produk pr ON p.id_produk = pr.id_produk
                       LEFT JOIN mitra mt ON p.id_mitra = mt.id_mitra
                       ORDER BY p.created_at DESC
-                      LIMIT :limit OFFSET :offset");
-$stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset_progress, PDO::PARAM_INT);
-$stmt->execute();
-$progress_list = $stmt->fetchAll();
+                      LIMIT :limit OFFSET :offset";
+    $stmt = $conn->prepare($query_fallback);
+    $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset_progress, PDO::PARAM_INT);
+    $stmt->execute();
+    $progress_list = $stmt->fetchAll();
+}
 
 // Get dropdown options
-$stmt = $conn->query("SELECT nim, nama FROM mahasiswa ORDER BY nama");
-$mahasiswa_list = $stmt->fetchAll();
+// Check what columns exist in mahasiswa table
+try {
+    $check_cols = $conn->query("SELECT column_name FROM information_schema.columns WHERE table_name = 'mahasiswa' AND table_schema = 'public'");
+    $mahasiswa_columns = $check_cols->fetchAll(PDO::FETCH_COLUMN);
+    
+    // Determine which columns to use
+    $id_col = 'id_mahasiswa'; // Default to id_mahasiswa
+    $identifier_col = null;
+    
+    if (in_array('nim', $mahasiswa_columns)) {
+        $identifier_col = 'nim';
+    } elseif (in_array('id_mahasiswa', $mahasiswa_columns)) {
+        $identifier_col = 'id_mahasiswa';
+    }
+    
+    if ($identifier_col) {
+        $query = "SELECT " . $identifier_col . " as nim, nama FROM mahasiswa ORDER BY nama";
+    } else {
+        // Fallback: use id_mahasiswa if available, otherwise use first column
+        $query = "SELECT id_mahasiswa as nim, nama FROM mahasiswa ORDER BY nama";
+    }
+    
+    $stmt = $conn->query($query);
+    $mahasiswa_list = $stmt->fetchAll();
+} catch (PDOException $e) {
+    error_log("Error fetching mahasiswa list: " . $e->getMessage());
+    // Fallback: try with id_mahasiswa
+    try {
+        $stmt = $conn->query("SELECT id_mahasiswa as nim, nama FROM mahasiswa ORDER BY nama");
+        $mahasiswa_list = $stmt->fetchAll();
+    } catch (PDOException $e2) {
+        error_log("Error in fallback query: " . $e2->getMessage());
+        $mahasiswa_list = [];
+    }
+}
 
 $stmt = $conn->query("SELECT id_member, nama FROM member ORDER BY nama");
 $member_list = $stmt->fetchAll();
@@ -377,10 +778,14 @@ $member_list = $stmt->fetchAll();
             cursor: pointer;
             font-size: 0.9rem;
             transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .btn-delete:hover {
             background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
         }
 
         .btn-edit {
@@ -393,10 +798,25 @@ $member_list = $stmt->fetchAll();
             font-size: 0.9rem;
             transition: all 0.3s;
             margin-right: 0.5rem;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .btn-edit:hover {
             background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .data-table td:last-child {
+            white-space: nowrap;
         }
 
         .edit-form-section {
@@ -511,7 +931,21 @@ $member_list = $stmt->fetchAll();
             <h1 class="text-primary mb-4"><i class="ri-flask-line"></i> Kelola Data Member</h1>
 
             <div class="cms-content">
-                <?php if ($message): ?>
+                <?php 
+                // Show message from URL parameter first (for redirects), then from $message variable
+                if (isset($_GET['added']) && $_GET['added'] == 1): ?>
+                    <div class="message success">
+                        Research detail successfully added!
+                    </div>
+                <?php elseif (isset($_GET['updated']) && $_GET['updated'] == 1): ?>
+                    <div class="message success">
+                        Research detail successfully updated!
+                    </div>
+                <?php elseif (isset($_GET['deleted']) && $_GET['deleted'] == 1): ?>
+                    <div class="message success">
+                        Research detail successfully deleted!
+                    </div>
+                <?php elseif ($message): ?>
                     <div class="message <?php echo $message_type; ?>">
                         <?php echo htmlspecialchars($message); ?>
                     </div>
@@ -522,6 +956,10 @@ $member_list = $stmt->fetchAll();
                         class="tab <?php echo ($current_tab === 'artikel') ? 'active' : ''; ?>">Artikel</a>
                     <a href="?tab=penelitian&page=1"
                         class="tab <?php echo ($current_tab === 'penelitian') ? 'active' : ''; ?>">Penelitian</a>
+                    <a href="?tab=research_detail"
+                        class="tab <?php echo ($current_tab === 'research_detail') ? 'active' : ''; ?>">Research Detail</a>
+                    <a href="?tab=product"
+                        class="tab <?php echo ($current_tab === 'product') ? 'active' : ''; ?>">Product</a>
                 </div>
 
                 <!-- Artikel Tab -->
@@ -577,14 +1015,13 @@ $member_list = $stmt->fetchAll();
                                     <th>ID</th>
                                     <th>Judul</th>
                                     <th>Tahun</th>
-                                    <th>Konten</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($artikels)): ?>
                                     <tr>
-                                        <td colspan="5" class="text-center muted-gray">Belum ada artikel</td>
+                                        <td colspan="4" class="text-center muted-gray">Belum ada artikel</td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($artikels as $artikel): ?>
@@ -592,21 +1029,22 @@ $member_list = $stmt->fetchAll();
                                             <td><?php echo $artikel['id_artikel']; ?></td>
                                             <td><?php echo htmlspecialchars($artikel['judul']); ?></td>
                                             <td><?php echo $artikel['tahun'] ?? '-'; ?></td>
-                                            <td><?php echo htmlspecialchars(substr($artikel['konten'], 0, 50)) . '...'; ?></td>
                                             <td>
-                                                <button type="button" class="btn-edit"
-                                                    onclick="editArtikel(<?php echo htmlspecialchars(json_encode($artikel)); ?>)">
-                                                    <i class="ri-edit-line"></i> Edit
-                                                </button>
-                                                <form method="POST" class="d-inline"
-                                                    onsubmit="return confirm('Yakin hapus artikel ini?');">
-                                                    <input type="hidden" name="action" value="delete_artikel">
-                                                    <input type="hidden" name="id"
-                                                        value="<?php echo $artikel['id_artikel']; ?>">
-                                                    <button type="submit" class="btn-delete">
-                                                        <i class="ri-delete-bin-line"></i> Hapus
+                                                <div class="action-buttons">
+                                                    <button type="button" class="btn-edit"
+                                                        onclick="editArtikel(<?php echo htmlspecialchars(json_encode($artikel)); ?>)">
+                                                        <i class="ri-edit-line"></i> Edit
                                                     </button>
-                                                </form>
+                                                    <form method="POST" class="d-inline"
+                                                        onsubmit="return confirm('Are you sure you want to delete this article?');">
+                                                        <input type="hidden" name="action" value="delete_artikel">
+                                                        <input type="hidden" name="id"
+                                                            value="<?php echo $artikel['id_artikel']; ?>">
+                                                        <button type="submit" class="btn-delete">
+                                                            <i class="ri-delete-bin-line"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -889,19 +1327,21 @@ $member_list = $stmt->fetchAll();
                                             <td><?php echo $penelitian['tgl_mulai'] ? date('d M Y', strtotime($penelitian['tgl_mulai'])) : '-'; ?>
                                             </td>
                                             <td>
-                                                <button type="button" class="btn-edit"
-                                                    onclick="editPenelitian(<?php echo htmlspecialchars(json_encode($penelitian)); ?>)">
-                                                    <i class="ri-edit-line"></i> Edit
-                                                </button>
-                                                <form method="POST" class="d-inline"
-                                                    onsubmit="return confirm('Yakin hapus penelitian ini?');">
-                                                    <input type="hidden" name="action" value="delete_penelitian">
-                                                    <input type="hidden" name="id"
-                                                        value="<?php echo $penelitian['id_penelitian']; ?>">
-                                                    <button type="submit" class="btn-delete">
-                                                        <i class="ri-delete-bin-line"></i> Hapus
+                                                <div class="action-buttons">
+                                                    <button type="button" class="btn-edit"
+                                                        onclick="editPenelitian(<?php echo htmlspecialchars(json_encode($penelitian)); ?>)">
+                                                        <i class="ri-edit-line"></i> Edit
                                                     </button>
-                                                </form>
+                                                    <form method="POST" class="d-inline"
+                                                        onsubmit="return confirm('Are you sure you want to delete this research?');">
+                                                        <input type="hidden" name="action" value="delete_penelitian">
+                                                        <input type="hidden" name="id"
+                                                            value="<?php echo $penelitian['id_penelitian']; ?>">
+                                                        <button type="submit" class="btn-delete">
+                                                            <i class="ri-delete-bin-line"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -960,6 +1400,256 @@ $member_list = $stmt->fetchAll();
                         <?php endif; ?>
                     </div>
                 </div>
+
+                <!-- Research Detail Tab -->
+                <div id="research_detail-tab"
+                    class="tab-content <?php echo ($current_tab === 'research_detail') ? 'active' : ''; ?>">
+                    <!-- Edit Research Detail Form (Hidden by default) -->
+                    <div id="edit-research-detail-section" class="form-section edit-form-section">
+                        <h2>Edit Research Detail</h2>
+                        <form method="POST" action="" id="edit-research-detail-form">
+                            <input type="hidden" name="action" value="update_fokus_penelitian">
+                            <input type="hidden" name="id" id="edit_research_detail_id">
+                            <div class="form-group">
+                                <label>Title * (Max 200 characters)</label>
+                                <input type="text" name="title" id="edit_research_detail_title" maxlength="200" required>
+                                <small class="text-muted">Used for "Our Research" section</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea name="deskripsi" id="edit_research_detail_deskripsi" rows="3"></textarea>
+                                <small class="text-muted">Used for "Our Research" section</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Detail</label>
+                                <textarea name="detail" id="edit_research_detail_detail" rows="12" style="min-height: 200px;"></textarea>
+                                <small class="text-muted">Used for "Research Fields" section. Use "-" at the start of each line for bullet points.</small>
+                                <div class="char-counter" id="edit_detail_counter" style="text-align: right; color: #64748b; font-size: 0.875rem; margin-top: 0.25rem;">
+                                    <span id="edit_detail_count">0</span> characters
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-submit">Update Research Detail</button>
+                            <button type="button" class="btn-cancel" onclick="cancelEditResearchDetail()">Batal</button>
+                        </form>
+                    </div>
+
+                    <div class="form-section">
+                        <h2>Tambah Research Detail Baru</h2>
+                        <form method="POST" action="">
+                            <input type="hidden" name="action" value="add_fokus_penelitian">
+                            <div class="form-group">
+                                <label>Title * (Max 200 characters)</label>
+                                <input type="text" name="title" maxlength="200" required>
+                                <small class="text-muted">Used for "Our Research" section</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea name="deskripsi" rows="3"></textarea>
+                                <small class="text-muted">Used for "Our Research" section</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Detail</label>
+                                <textarea name="detail" id="add_research_detail_detail" rows="12" style="min-height: 200px;"></textarea>
+                                <small class="text-muted">Used for "Research Fields" section. Use "-" at the start of each line for bullet points.</small>
+                                <div class="char-counter" id="add_detail_counter" style="text-align: right; color: #64748b; font-size: 0.875rem; margin-top: 0.25rem;">
+                                    <span id="add_detail_count">0</span> characters
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-submit">Tambah Research Detail</button>
+                        </form>
+                    </div>
+
+                    <div class="data-section">
+                        <h2>Daftar Research Detail (<?php echo count($fokus_penelitian_list); ?>)</h2>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Detail</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($fokus_penelitian_list)): ?>
+                                    <tr>
+                                        <td colspan="5" class="text-center muted-gray">Belum ada research detail</td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($fokus_penelitian_list as $fp): ?>
+                                        <tr>
+                                            <td><?php echo $fp['id_fp']; ?></td>
+                                            <td><?php echo htmlspecialchars($fp['title']); ?></td>
+                                            <td><?php echo htmlspecialchars($fp['deskripsi'] ?? '-'); ?></td>
+                                            <td><?php echo htmlspecialchars($fp['detail'] ?? '-'); ?></td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button type="button" class="btn-edit"
+                                                        onclick="editResearchDetail(<?php echo htmlspecialchars(json_encode($fp)); ?>)">
+                                                        <i class="ri-edit-line"></i> Edit
+                                                    </button>
+                                                    <a href="?tab=research_detail&action=delete_fokus_penelitian&id=<?php echo $fp['id_fp']; ?>"
+                                                        class="btn-delete"
+                                                        onclick="return confirm('Are you sure you want to delete this research detail?');">
+                                                        <i class="ri-delete-bin-line"></i> Delete
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Product Tab -->
+                <div id="product-tab"
+                    class="tab-content <?php echo ($current_tab === 'product') ? 'active' : ''; ?>">
+                    <?php if (isset($_GET['added']) && $_GET['added'] == 1): ?>
+                        <div class="message success">
+                            Product successfully added!
+                        </div>
+                    <?php elseif (isset($_GET['updated']) && $_GET['updated'] == 1): ?>
+                        <div class="message success">
+                            Product successfully updated!
+                        </div>
+                    <?php elseif (isset($_GET['deleted']) && $_GET['deleted'] == 1): ?>
+                        <div class="message success">
+                            Product successfully deleted!
+                        </div>
+                    <?php elseif ($message && $current_tab === 'product'): ?>
+                        <div class="message <?php echo $message_type; ?>">
+                            <?php echo htmlspecialchars($message); ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Edit Product Form (Hidden by default) -->
+                    <div id="edit-product-section" class="form-section edit-form-section">
+                        <h2>Edit Product</h2>
+                        <form method="POST" id="edit-product-form" enctype="multipart/form-data">
+                            <input type="hidden" name="action" value="update_produk">
+                            <input type="hidden" name="id" id="edit_product_id">
+                            <input type="hidden" name="current_gambar" id="edit_product_current_gambar">
+                            <div class="form-group">
+                                <label for="edit_product_nama">Product Name *</label>
+                                <input type="text" id="edit_product_nama" name="nama_produk" required
+                                    maxlength="255">
+                            </div>
+                            <div class="form-group">
+                                <label for="edit_product_deskripsi">Description</label>
+                                <textarea id="edit_product_deskripsi" name="deskripsi" rows="5"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit_product_gambar_file">Upload Product Image (File)</label>
+                                <input type="file" id="edit_product_gambar_file" name="gambar_file"
+                                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
+                                <small class="d-block mt-2 text-muted small">Max 5MB. Format: JPG, PNG, GIF, WEBP</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit_product_gambar">Or Enter Image URL</label>
+                                <input type="text" id="edit_product_gambar" name="gambar"
+                                    placeholder="https://example.com/image.jpg">
+                                <small class="d-block mt-2 text-muted small">If file upload is used, URL will be ignored</small>
+                            </div>
+                            <div id="edit_product_image_preview" class="mb-3" style="display: none;">
+                                <label>Current Image:</label>
+                                <div>
+                                    <img id="edit_product_image_preview_img" src="" alt="Current image" style="max-width: 200px; max-height: 200px; border-radius: 8px;">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-submit">Update Product</button>
+                            <button type="button" class="btn-cancel" onclick="cancelEditProduct()">Cancel</button>
+                        </form>
+                    </div>
+
+                    <!-- Add Product Form -->
+                    <div class="form-section <?php echo $edit_produk ? 'edit-form-section' : ''; ?>">
+                        <h2>Add New Product</h2>
+                        <form method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="action" value="add_produk">
+                            <div class="form-group">
+                                <label for="product_nama">Product Name *</label>
+                                <input type="text" id="product_nama" name="nama_produk" required maxlength="255"
+                                    value="<?php echo htmlspecialchars($edit_produk['nama_produk'] ?? ''); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="product_deskripsi">Description</label>
+                                <textarea id="product_deskripsi" name="deskripsi" rows="5"><?php echo htmlspecialchars($edit_produk['deskripsi'] ?? ''); ?></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="product_gambar_file">Upload Product Image (File)</label>
+                                <input type="file" id="product_gambar_file" name="gambar_file"
+                                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
+                                <small class="d-block mt-2 text-muted small">Max 5MB. Format: JPG, PNG, GIF, WEBP</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="product_gambar">Or Enter Image URL</label>
+                                <input type="text" id="product_gambar" name="gambar"
+                                    placeholder="https://example.com/image.jpg">
+                                <small class="d-block mt-2 text-muted small">If file upload is used, URL will be ignored</small>
+                            </div>
+                            <button type="submit" class="btn-submit">Add Product</button>
+                        </form>
+                    </div>
+
+                    <div class="data-section">
+                        <h2>Product List (<?php echo count($produk_list); ?>)</h2>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Image</th>
+                                    <th>Product Name</th>
+                                    <th>Description</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($produk_list)): ?>
+                                    <tr>
+                                        <td colspan="5" class="text-center muted-gray">No products yet</td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($produk_list as $produk): ?>
+                                        <tr>
+                                            <td><?php echo $produk['id_produk']; ?></td>
+                                            <td>
+                                                <?php if (!empty($produk['gambar'])): ?>
+                                                    <img src="<?php echo htmlspecialchars($produk['gambar']); ?>" 
+                                                         alt="<?php echo htmlspecialchars($produk['nama_produk']); ?>"
+                                                         style="max-width: 100px; max-height: 100px; object-fit: contain; border-radius: 8px;"
+                                                         onerror="this.style.display='none'">
+                                                <?php else: ?>
+                                                    <span class="muted-gray">-</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($produk['nama_produk']); ?></td>
+                                            <td><?php echo htmlspecialchars($produk['deskripsi'] ?? '-'); ?></td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button type="button" class="btn-edit"
+                                                        onclick="editProduct(<?php echo htmlspecialchars(json_encode($produk)); ?>)">
+                                                        <i class="ri-edit-line"></i> Edit
+                                                    </button>
+                                                    <form method="POST" class="d-inline"
+                                                        onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                                        <input type="hidden" name="action" value="delete_produk">
+                                                        <input type="hidden" name="id" value="<?php echo $produk['id_produk']; ?>">
+                                                        <button type="submit" class="btn-delete">
+                                                            <i class="ri-delete-bin-line"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -978,8 +1668,12 @@ $member_list = $stmt->fetchAll();
             document.getElementById(tabName + '-tab').classList.add('active');
             event.target.classList.add('active');
 
-            // Redirect to first page of selected tab
-            window.location.href = '?tab=' + tabName + '&page=1';
+            // Redirect to first page of selected tab (only for artikel and penelitian)
+            if (tabName === 'artikel' || tabName === 'penelitian') {
+                window.location.href = '?tab=' + tabName + '&page=1';
+            } else {
+                window.location.href = '?tab=' + tabName;
+            }
         }
 
         // Set active tab based on URL parameter
@@ -992,10 +1686,14 @@ $member_list = $stmt->fetchAll();
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
 
             // Show selected tab
-            document.getElementById(tab + '-tab').classList.add('active');
+            const tabElement = document.getElementById(tab + '-tab');
+            if (tabElement) {
+                tabElement.classList.add('active');
+            }
             const tabButtons = document.querySelectorAll('.tab');
             tabButtons.forEach(btn => {
-                if (btn.textContent.toLowerCase().includes(tab)) {
+                const href = btn.getAttribute('href') || '';
+                if (href.includes('tab=' + tab)) {
                     btn.classList.add('active');
                 }
             });
@@ -1043,6 +1741,92 @@ $member_list = $stmt->fetchAll();
             document.querySelector('#penelitian-tab .form-section:not(.edit-form-section)').style.display = 'block';
             document.getElementById('edit-penelitian-form').reset();
         }
+
+        function editResearchDetail(researchDetail) {
+            document.getElementById('edit_research_detail_id').value = researchDetail.id_fp;
+            document.getElementById('edit_research_detail_title').value = researchDetail.title || '';
+            document.getElementById('edit_research_detail_deskripsi').value = researchDetail.deskripsi || '';
+            const detailTextarea = document.getElementById('edit_research_detail_detail');
+            detailTextarea.value = researchDetail.detail || '';
+            // Update character counter
+            updateCharCounter('edit_research_detail_detail', 'edit_detail_count');
+
+            document.getElementById('edit-research-detail-section').classList.add('active');
+            document.querySelector('#research_detail-tab .form-section:not(.edit-form-section)').style.display = 'none';
+
+            document.getElementById('edit-research-detail-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function cancelEditResearchDetail() {
+            document.getElementById('edit-research-detail-section').classList.remove('active');
+            document.querySelector('#research_detail-tab .form-section:not(.edit-form-section)').style.display = 'block';
+            document.getElementById('edit-research-detail-form').reset();
+            // Reset counters
+            updateCharCounter('edit_research_detail_detail', 'edit_detail_count');
+        }
+
+        function editProduct(product) {
+            document.getElementById('edit_product_id').value = product.id_produk;
+            document.getElementById('edit_product_nama').value = product.nama_produk || '';
+            document.getElementById('edit_product_deskripsi').value = product.deskripsi || '';
+            document.getElementById('edit_product_gambar').value = product.gambar || '';
+            document.getElementById('edit_product_current_gambar').value = product.gambar || '';
+
+            // Show current image preview if exists
+            const previewDiv = document.getElementById('edit_product_image_preview');
+            const previewImg = document.getElementById('edit_product_image_preview_img');
+            if (product.gambar) {
+                previewImg.src = product.gambar;
+                previewDiv.style.display = 'block';
+            } else {
+                previewDiv.style.display = 'none';
+            }
+
+            document.querySelector('#product-tab .form-section:not(.edit-form-section)').style.display = 'none';
+            document.getElementById('edit-product-section').style.display = 'block';
+            document.getElementById('edit-product-section').classList.add('active');
+            document.getElementById('edit-product-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function cancelEditProduct() {
+            document.querySelector('#product-tab .form-section:not(.edit-form-section)').style.display = 'block';
+            document.getElementById('edit-product-section').style.display = 'none';
+            document.getElementById('edit-product-section').classList.remove('active');
+            document.getElementById('edit-product-form').reset();
+        }
+
+        // Character counter function
+        function updateCharCounter(textareaId, counterId) {
+            const textarea = document.getElementById(textareaId);
+            const counter = document.getElementById(counterId);
+            if (textarea && counter) {
+                const length = textarea.value.length;
+                counter.textContent = length.toLocaleString();
+            }
+        }
+
+        // Initialize character counters
+        document.addEventListener('DOMContentLoaded', function() {
+            // Edit form counter
+            const editDetailTextarea = document.getElementById('edit_research_detail_detail');
+            if (editDetailTextarea) {
+                editDetailTextarea.addEventListener('input', function() {
+                    updateCharCounter('edit_research_detail_detail', 'edit_detail_count');
+                });
+                // Initial count
+                updateCharCounter('edit_research_detail_detail', 'edit_detail_count');
+            }
+
+            // Add form counter
+            const addDetailTextarea = document.getElementById('add_research_detail_detail');
+            if (addDetailTextarea) {
+                addDetailTextarea.addEventListener('input', function() {
+                    updateCharCounter('add_research_detail_detail', 'add_detail_count');
+                });
+                // Initial count
+                updateCharCounter('add_research_detail_detail', 'add_detail_count');
+            }
+        });
     </script>
 </body>
 

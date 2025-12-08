@@ -90,6 +90,14 @@ $stats['penelitian'] = $stmt->fetch()['count'];
 $stmt = $conn->query("SELECT SUM(visit_count) as total FROM visitor");
 $stats['visitors'] = $stmt->fetch()['total'] ?? 0;
 
+// Unread Messages
+try {
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM buku_tamu WHERE is_read = false");
+    $stats['unread_messages'] = $stmt->fetch()['count'] ?? 0;
+} catch (PDOException $e) {
+    $stats['unread_messages'] = 0;
+}
+
 // Recent News
 $stmt = $conn->query("SELECT * FROM berita ORDER BY created_at DESC LIMIT 5");
 $recent_news = $stmt->fetchAll();
@@ -137,6 +145,16 @@ $recent_news = $stmt->fetchAll();
 
         .stat-card:hover {
             transform: translateY(-5px);
+        }
+
+        .stat-card a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .stat-card a:hover {
+            text-decoration: none;
         }
 
         .stat-card h3 {
@@ -238,7 +256,7 @@ $recent_news = $stmt->fetchAll();
                     } catch (PDOException $e) {
                         // Fallback to direct query if view error
                         try {
-                            $stmt = $conn->query("SELECT COUNT(*) as count FROM peminjaman WHERE status = 'dipinjam'");
+                            $stmt = $conn->query("SELECT COUNT(*) as count FROM peminjaman WHERE status = 'dipinjam' AND id_alat IS NOT NULL");
                             $result = $stmt->fetch();
                             echo $result ? $result['count'] : '0';
                         } catch (PDOException $e2) {
@@ -257,6 +275,12 @@ $recent_news = $stmt->fetchAll();
                 <div class="stat-card">
                     <h3>Total Visits</h3>
                     <div class="stat-number"><?= $stats['visitors']; ?></div>
+                </div>
+                <div class="stat-card">
+                    <a href="buku_tamu.php?filter=unread">
+                        <h3>Unread Messages</h3>
+                        <div class="stat-number"><?= $stats['unread_messages']; ?></div>
+                    </a>
                 </div>
             </div>
 

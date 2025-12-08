@@ -74,6 +74,28 @@ function parseYoutubeTimecode($value)
     return null;
 }
 
+// Function to extract URL from content
+function extractUrlFromContent($content)
+{
+    if (empty($content)) {
+        return null;
+    }
+    
+    // Pattern to match URLs (http, https, www)
+    $pattern = '/(https?:\/\/[^\s]+|www\.[^\s]+)/i';
+    
+    if (preg_match($pattern, $content, $matches)) {
+        $url = trim($matches[1]);
+        // Add http:// if URL starts with www.
+        if (preg_match('/^www\./i', $url)) {
+            $url = 'http://' . $url;
+        }
+        return $url;
+    }
+    
+    return null;
+}
+
 // Search by year
 $search_year = isset($_GET['year']) ? trim($_GET['year']) : '';
 
@@ -121,7 +143,7 @@ $total_pages_progress = ceil($total_items_progress / $items_per_page);
 $stmt = $conn->prepare("SELECT p.*, a.judul as artikel_judul, m.nama as mahasiswa_nama, mem.nama as member_nama
                       FROM penelitian p
                       LEFT JOIN artikel a ON p.id_artikel = a.id_artikel
-                      LEFT JOIN mahasiswa m ON p.nim = m.nim
+                      LEFT JOIN mahasiswa m ON p.id_mhs = m.id_mahasiswa
                       LEFT JOIN member mem ON p.id_member = mem.id_member
                       ORDER BY p.created_at DESC
                       LIMIT :limit OFFSET :offset");
@@ -200,15 +222,27 @@ $progress_list = $stmt->fetchAll();
                 <?php else: ?>
                     <div class="row g-4 justify-content-center">
                         <?php foreach ($artikels as $artikel): ?>
+                            <?php
+                            // Extract URL from konten
+                            $url = extractUrlFromContent($artikel['konten'] ?? '');
+                            ?>
                             <div class="col-xl-4 col-md-6">
                                 <div class="card-surface research-card h-100">
                                     <div>
-                                        <h4><?php echo htmlspecialchars($artikel['judul']); ?></h4>
+                                        <?php if ($url): ?>
+                                            <h4>
+                                                <a href="<?php echo htmlspecialchars($url); ?>" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;">
+                                                    <?php echo htmlspecialchars($artikel['judul']); ?>
+                                                </a>
+                                            </h4>
+                                        <?php else: ?>
+                                            <h4><?php echo htmlspecialchars($artikel['judul']); ?></h4>
+                                        <?php endif; ?>
                                         <?php if ($artikel['tahun']): ?>
                                             <div class="research-meta">Year: <?php echo $artikel['tahun']; ?></div>
                                         <?php endif; ?>
                                     </div>
-                                    <p><?php echo htmlspecialchars($artikel['konten']); ?></p>
+                                    <!-- Konten tidak ditampilkan, hanya digunakan untuk extract URL -->
                                 </div>
                             </div>
                         <?php endforeach; ?>
