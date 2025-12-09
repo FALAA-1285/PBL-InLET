@@ -23,7 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
     }
 
     try {
-        $stmt = $conn->prepare("SELECT nim as nim, nama, status FROM mahasiswa WHERE CAST(nim AS TEXT) ILIKE :search ORDER BY nim LIMIT 10");
+        // Use id_mahasiswa instead of nim
+        $stmt = $conn->prepare("SELECT id_mahasiswa as nim, nama, status FROM mahasiswa WHERE CAST(id_mahasiswa AS TEXT) ILIKE :search ORDER BY id_mahasiswa LIMIT 10");
         $stmt->execute([':search' => '%' . $search_term . '%']);
         $results = $stmt->fetchAll();
 
@@ -54,7 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
     }
 
     try {
-        $stmt = $conn->prepare("SELECT nim as nim, nama, status FROM mahasiswa WHERE nim = :nim LIMIT 1");
+        // Use id_mahasiswa instead of nim
+        $stmt = $conn->prepare("SELECT id_mahasiswa as nim, nama, status FROM mahasiswa WHERE id_mahasiswa = :nim LIMIT 1");
         $stmt->execute(['nim' => $nim]);
         $mahasiswa = $stmt->fetch();
 
@@ -92,8 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message_type = 'error';
     } else {
         try {
-            // Check student
-            $check_mhs = $conn->prepare("SELECT nim as nim, nama FROM mahasiswa WHERE nim = :nim LIMIT 1");
+            // Check student - use id_mahasiswa instead of nim
+            $check_mhs = $conn->prepare("SELECT id_mahasiswa as nim, nama FROM mahasiswa WHERE id_mahasiswa = :nim LIMIT 1");
             $check_mhs->execute(['nim' => $nim]);
             $mahasiswa = $check_mhs->fetch();
 
@@ -101,109 +103,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = 'Student ID not found in database!';
                 $message_type = 'error';
             } else {
-                $today = date('Y-m-d');
-
-                if ($tipe_absen === 'masuk') {
-                    // Check check-in status
-                    $check_stmt = $conn->prepare("SELECT id_absensi FROM absensi 
-                                                 WHERE nim = :nim 
-                                                 AND tanggal = :tanggal 
-                                                 AND waktu_datang IS NOT NULL");
-                    $check_stmt->execute([
-                        'nim' => $mahasiswa['nim'],
-                        'tanggal' => $today
-                    ]);
-
-                    if ($check_stmt->fetch()) {
-                        $message = 'You have already checked in today!';
-                        $message_type = 'error';
-                    } else {
-                        // Check record
-                        $check_stmt = $conn->prepare("SELECT id_absensi FROM absensi 
-                                                     WHERE nim = :nim 
-                                                     AND tanggal = :tanggal");
-                        $check_stmt->execute([
-                            'nim' => $mahasiswa['nim'],
-                            'tanggal' => $today
-                        ]);
-                        $existing = $check_stmt->fetch();
-
-                        // Build note
-                        $keterangan_full = 'Status: ' . ucfirst($status);
-                        if (!empty($keterangan)) {
-                            $keterangan_full .= ' | ' . $keterangan;
-                        }
-
-                        if ($existing) {
-                            // Update record
-                            $stmt = $conn->prepare("UPDATE absensi
-                                                   SET waktu_datang = CURRENT_TIMESTAMP, 
-                                                       keterangan = :keterangan 
-                                                   WHERE id_absensi = :id");
-                            $stmt->execute([
-                                'id' => $existing['id_absensi'],
-                                'keterangan' => $keterangan_full
-                            ]);
-                        } else {
-                            // Insert record
-                            $stmt = $conn->prepare("INSERT INTO absensi (nim, tanggal, waktu_datang, keterangan)
-                                                   VALUES (:nim, :tanggal, CURRENT_TIMESTAMP, :keterangan)");
-                            $stmt->execute([
-                                'nim' => $mahasiswa['nim'],
-                                'tanggal' => $today,
-                                'keterangan' => $keterangan_full
-                            ]);
-                        }
-
+                // Menggunakan prosedur proc_update_absensi
+                require_once __DIR__ . '/../config/procedures.php';
+                
+                $action = ($tipe_absen === 'masuk') ? 'checkin' : 'checkout';
+                
+                // Build keterangan
+                $keterangan_full = 'Status: ' . ucfirst($status);
+                if (!empty($keterangan)) {
+                    $keterangan_full .= ' | ' . $keterangan;
+                }
+                
+                $result = callUpdateAbsensi($mahasiswa['nim'], $action, $keterangan_full);
+                
+                if ($result['success']) {
+                    if ($action === 'checkin') {
                         $message = 'Check-in successful! Welcome, ' . htmlspecialchars($mahasiswa['nama']) . '.';
-                        $message_type = 'success';
-                    }
-                } elseif ($tipe_absen === 'keluar') {
-                    // Check check-in status
-                    $check_stmt = $conn->prepare("SELECT id_absensi FROM absensi
-                                                 WHERE nim = :nim 
-                                                 AND tanggal = :tanggal 
-                                                 AND waktu_datang IS NOT NULL");
-                    $check_stmt->execute([
-                        'nim' => $mahasiswa['nim'],
-                        'tanggal' => $today
-                    ]);
-
-                    $existing = $check_stmt->fetch();
-                    if (!$existing) {
-                        $message = 'You have not checked in today!';
-                        $message_type = 'error';
                     } else {
-                        // Check checkout status
-                        $check_stmt = $conn->prepare("SELECT id_absensi FROM absensi
-                                                     WHERE id_absensi = :id 
-                                                     AND waktu_pulang IS NOT NULL");
-                        $check_stmt->execute(['id' => $existing['id_absensi']]);
-
-                        if ($check_stmt->fetch()) {
-                            $message = 'You have already checked out today!';
-                            $message_type = 'error';
-                        } else {
-                            // Prepare note
-                            $keterangan_full = $keterangan;
-                            if (!empty($keterangan)) {
-                                $keterangan_full = 'Status: ' . ucfirst($status) . ' | ' . $keterangan;
-                            }
-
-                            // Update checkout
-                            $stmt = $conn->prepare("UPDATE absensi 
-                                                   SET waktu_pulang = CURRENT_TIMESTAMP,
-                                                       keterangan = COALESCE(:keterangan, keterangan)
-                                                   WHERE id_absensi = :id");
-                            $stmt->execute([
-                                'id' => $existing['id_absensi'],
-                                'keterangan' => $keterangan_full ?: null
-                            ]);
-
-                            $message = 'Check-out successful! Thank you, ' . htmlspecialchars($mahasiswa['nama']) . '.';
-                            $message_type = 'success';
-                        }
+                        $message = 'Check-out successful! Thank you, ' . htmlspecialchars($mahasiswa['nama']) . '.';
                     }
+                    $message_type = 'success';
+                } else {
+                    $message = $result['message'];
+                    $message_type = 'error';
                 }
             }
         } catch (PDOException $e) {

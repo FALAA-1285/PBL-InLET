@@ -96,6 +96,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($message)) {
             try {
+                // Try to alter gambar column to TEXT if it's still VARCHAR
+                try {
+                    $conn->exec("ALTER TABLE gallery ALTER COLUMN gambar TYPE TEXT");
+                } catch (PDOException $e) {
+                    // Column might already be TEXT or error, continue anyway
+                }
+                
                 $stmt = $conn->prepare("INSERT INTO gallery (id_berita, judul, gambar, created_at, updated_at) VALUES (:id_news, :title, :image, NOW(), NOW())");
                 $stmt->execute([
                     'id_news' => $id_news,
@@ -162,6 +169,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($message)) {
             try {
+                // Try to alter gambar column to TEXT if it's still VARCHAR
+                try {
+                    $conn->exec("ALTER TABLE gallery ALTER COLUMN gambar TYPE TEXT");
+                } catch (PDOException $e) {
+                    // Column might already be TEXT or error, continue anyway
+                }
+                
                 $stmt = $conn->prepare("UPDATE gallery SET id_berita = :id_news, judul = :title, gambar = :image, updated_at = NOW() WHERE id_gallery = :id");
                 $stmt->execute([
                     'id' => $id,

@@ -179,6 +179,17 @@ main {
     font-size: 1.25rem;
 }
 
+.card-surface h4 a {
+    color: #2563eb;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.card-surface h4 a:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
 .card-surface p {
     margin-top: 0.7rem;
     line-height: 1.55;

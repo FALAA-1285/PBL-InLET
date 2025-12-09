@@ -122,9 +122,13 @@ $unread_count = $stmt->fetchColumn();
         }
 
         .content-header h1 {
-            color: var(--primary);
+            color: #000000;
             font-size: 2rem;
             margin: 0;
+        }
+
+        .content-header h1 i {
+            color: #000000;
         }
 
         .filter-tabs {
@@ -259,14 +263,6 @@ $unread_count = $stmt->fetchColumn();
             margin: 0;
         }
 
-        .message-panel {
-            margin-top: 0.6rem;
-            display: none;
-        }
-
-        .message-panel.active {
-            display: block;
-        }
 
         .btn-action {
             padding: 0.45rem 0.85rem;
@@ -443,18 +439,18 @@ $unread_count = $stmt->fetchColumn();
                                             <span><i class="ri-phone-line"></i>
                                                 <?= htmlspecialchars($msg['no_hp'] ?? 'N/A'); ?></span>
                                         </div>
+                                        <div id="message-display-<?= $msg['id_buku_tamu']; ?>" style="display: none; margin-top: 0.75rem;">
+                                            <div class="message-text">
+                                                <?= nl2br(htmlspecialchars($msg['pesan'])); ?>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td>
                                         <?php if (!empty($msg['pesan'])): ?>
-                                            <button type="button" class="btn-action btn-view"
+                                            <button type="button" class="btn-action btn-view" id="view-btn-<?= $msg['id_buku_tamu']; ?>"
                                                 onclick="toggleMessage(<?= $msg['id_buku_tamu']; ?>)">
                                                 <i class="ri-eye-line"></i> View Message
                                             </button>
-                                            <div id="message-<?= $msg['id_buku_tamu']; ?>" class="message-panel">
-                                                <div class="message-text">
-                                                    <?= nl2br(htmlspecialchars($msg['pesan'])); ?>
-                                                </div>
-                                            </div>
                                         <?php else: ?>
                                             <div class="message-text empty">
                                                 <i class="ri-user-line"></i> Attendance only - No message
@@ -539,12 +535,25 @@ $unread_count = $stmt->fetchColumn();
 
     <script>
         function toggleMessage(id) {
-            const panel = document.getElementById('message-' + id);
-            if (!panel) {
+            const messageDisplay = document.getElementById('message-display-' + id);
+            const button = document.getElementById('view-btn-' + id);
+            
+            if (!messageDisplay || !button) {
                 return;
             }
-            panel.classList.toggle('active');
 
+            // Toggle message display
+            if (messageDisplay.style.display === 'none') {
+                // Show message
+                messageDisplay.style.display = 'block';
+                button.innerHTML = '<i class="ri-eye-off-line"></i> Hide Message';
+            } else {
+                // Hide message
+                messageDisplay.style.display = 'none';
+                button.innerHTML = '<i class="ri-eye-line"></i> View Message';
+            }
+
+            // Mark as read if unread
             const row = document.getElementById('row-' + id);
             if (row && row.dataset.isRead === '0') {
                 markMessageAsRead(id, row);

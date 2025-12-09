@@ -19,8 +19,13 @@ function getSettings() {
             $stmt = $conn->query("SELECT * FROM settings ORDER BY id_setting LIMIT 1");
             $settings = $stmt->fetch();
             
+            // If no settings found, initialize as empty array
+            if ($settings === false) {
+                $settings = [];
+            }
+            
             // Parse page_titles JSON if exists
-            if ($settings && !empty($settings['page_titles'])) {
+            if (!empty($settings['page_titles'])) {
                 if (is_string($settings['page_titles'])) {
                     $settings['page_titles'] = json_decode($settings['page_titles'], true) ?: [];
                 }
@@ -29,7 +34,8 @@ function getSettings() {
             }
         } catch (PDOException $e) {
             error_log("Error fetching settings: " . $e->getMessage());
-            $settings = false;
+            // Return empty array instead of false
+            $settings = [];
         }
     }
     
@@ -44,7 +50,8 @@ function getSettings() {
 function getPageTitle($page_name) {
     $settings = getSettings();
     
-    if (!$settings) {
+    // Check if settings is empty array
+    if (empty($settings)) {
         // Default fallback
         return [
             'title' => 'InLET - Information And Learning Engineering Technology',
@@ -74,7 +81,7 @@ function getPageTitle($page_name) {
  */
 function getSiteLogo() {
     $settings = getSettings();
-    if ($settings && !empty($settings['site_logo'])) {
+    if (!empty($settings['site_logo'])) {
         return $settings['site_logo'];
     }
     return 'assets/logo.png'; // Default fallback
@@ -86,7 +93,7 @@ function getSiteLogo() {
  */
 function getFooterLogo() {
     $settings = getSettings();
-    if ($settings && !empty($settings['footer_logo'])) {
+    if (!empty($settings['footer_logo'])) {
         return $settings['footer_logo'];
     }
     return 'assets/logoPutih.png'; // Default fallback
@@ -98,7 +105,7 @@ function getFooterLogo() {
  */
 function getFooterSettings() {
     $settings = getSettings();
-    if (!$settings) {
+    if (empty($settings)) {
         return [
             'title' => '',
             'copyright' => '',
@@ -119,7 +126,7 @@ function getFooterSettings() {
  */
 function getContactInfo() {
     $settings = getSettings();
-    if (!$settings) {
+    if (empty($settings)) {
         return [
             'email' => '',
             'phone' => '',
