@@ -27,9 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message_type = 'error';
         } else {
             try {
-                $stmt = $conn->prepare("INSERT INTO mahasiswa (nim, nama, tahun, status) VALUES (:nim, :nama, :tahun, :status)");
+                // Use id_mahasiswa instead of nim
+                $stmt = $conn->prepare("INSERT INTO mahasiswa (id_mahasiswa, nama, tahun, status) VALUES (:id_mahasiswa, :nama, :tahun, :status)");
                 $stmt->execute([
-                    'nim' => $nim,
+                    'id_mahasiswa' => $nim, // Use nim input value as id_mahasiswa
                     'nama' => $nama,
                     'tahun' => $tahun ?: null,
                     'status' => $status
@@ -38,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message_type = 'success';
             } catch (PDOException $e) {
                 if ($e->getCode() == 23000) {
-                    $message = 'NIM already exists!';
+                    $message = 'Student ID already exists!';
                     $message_type = 'error';
                 } else {
                     $message = 'Error: ' . $e->getMessage();
@@ -57,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message_type = 'error';
         } else {
             try {
-                $stmt = $conn->prepare("UPDATE mahasiswa SET nama = :nama, tahun = :tahun, status = :status WHERE nim = :id");
+                $stmt = $conn->prepare("UPDATE mahasiswa SET nama = :nama, tahun = :tahun, status = :status WHERE id_mahasiswa = :id");
                 $stmt->execute([
                     'id' => $id,
                     'nama' => $nama,
@@ -74,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($action === 'delete_mahasiswa') {
         $id = $_POST['id'] ?? 0;
         try {
-            $stmt = $conn->prepare("DELETE FROM mahasiswa WHERE nim = :id");
+            $stmt = $conn->prepare("DELETE FROM mahasiswa WHERE id_mahasiswa = :id");
             $stmt->execute(['id' => $id]);
             $message = 'Student successfully deleted!';
             $message_type = 'success';
@@ -85,15 +86,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Get all mahasiswa
-$stmt = $conn->query("SELECT * FROM mahasiswa ORDER BY nama");
+// Pagination setup
+$items_per_page = 10;
+$current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$offset = ($current_page - 1) * $items_per_page;
+
+// Get total count
+$count_stmt = $conn->query("SELECT COUNT(*) FROM mahasiswa");
+$total_items = $count_stmt->fetchColumn();
+$total_pages = ceil($total_items / $items_per_page);
+
+// Get mahasiswa with pagination - use id_mahasiswa as nim for compatibility
+$stmt = $conn->prepare("SELECT id_mahasiswa as nim, nama, tahun, status, id_admin FROM mahasiswa ORDER BY nama LIMIT :limit OFFSET :offset");
+$stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
 $mahasiswa_list = $stmt->fetchAll();
 
 // Get mahasiswa for edit
 $edit_mahasiswa = null;
 if (isset($_GET['edit'])) {
-    $edit_id = $_GET['edit'];
-    $stmt = $conn->prepare("SELECT * FROM mahasiswa WHERE nim = :id");
+    $edit_id = intval($_GET['edit']);
+    $stmt = $conn->prepare("SELECT id_mahasiswa as nim, nama, tahun, status, id_admin FROM mahasiswa WHERE id_mahasiswa = :id");
     $stmt->execute(['id' => $edit_id]);
     $edit_mahasiswa = $stmt->fetch();
 }
@@ -345,7 +359,7 @@ if (isset($_GET['edit'])) {
                         <input type="hidden" name="action"
                             value="<?php echo $edit_mahasiswa ? 'update_mahasiswa' : 'add_mahasiswa'; ?>">
                         <?php if ($edit_mahasiswa): ?>
-                            <input type="hidden" name="id" value="<?php echo $edit_mahasiswa['nim']; ?>">
+                            <input type="hidden" name="id" value="<?php echo $edit_mahasiswa['nim'] ?? ''; ?>">
                         <?php endif; ?>
 
                         <div class="form-group">
@@ -392,7 +406,7 @@ if (isset($_GET['edit'])) {
 
                 <!-- Data List -->
                 <div class="data-section">
-                    <h2>Student List (<?php echo count($mahasiswa_list); ?>)</h2>
+                    <h2>Student List (<?php echo $total_items; ?>)</h2>
 
                     <?php if (empty($mahasiswa_list)): ?>
                         <p class="muted-gray">No students registered yet.</p>
@@ -411,7 +425,7 @@ if (isset($_GET['edit'])) {
                                 <tbody>
                                     <?php foreach ($mahasiswa_list as $mhs): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($mhs['nim']); ?></td>
+                                            <td><?php echo htmlspecialchars($mhs['nim'] ?? $mhs['id_mahasiswa'] ?? ''); ?></td>
                                             <td><?php echo htmlspecialchars($mhs['nama']); ?></td>
                                             <td><?php echo $mhs['tahun'] ?? '-'; ?></td>
                                             <td>
@@ -422,13 +436,13 @@ if (isset($_GET['edit'])) {
                                                 </span>
                                             </td>
                                             <td>
-                                                <a href="?edit=<?php echo urlencode($mhs['nim']); ?>" class="btn-edit">
+                                                <a href="?edit=<?php echo $mhs['nim'] ?? ''; ?>" class="btn-edit">
                                                     <i class="ri-edit-line"></i> Edit
                                                 </a>
                                                 <form method="POST" class="d-inline"
                                                     onsubmit="return confirm('Are you sure you want to delete this student?');">
                                                     <input type="hidden" name="action" value="delete_mahasiswa">
-                                                    <input type="hidden" name="id" value="<?php echo htmlspecialchars($mhs['nim']); ?>">
+                                                    <input type="hidden" name="id" value="<?php echo $mhs['nim'] ?? ''; ?>">
                                                     <button type="submit" class="btn-delete">
                                                         <i class="ri-delete-bin-line"></i> Delete
                                                     </button>
@@ -439,6 +453,51 @@ if (isset($_GET['edit'])) {
                                 </tbody>
                             </table>
                         </div>
+                        
+                        <?php if ($total_pages > 1): ?>
+                            <div class="pagination">
+                                <?php if ($current_page > 1): ?>
+                                    <a href="?page=<?php echo $current_page - 1; ?>">&laquo; Previous</a>
+                                <?php else: ?>
+                                    <span class="disabled">&laquo; Previous</span>
+                                <?php endif; ?>
+                                
+                                <?php
+                                $start_page = max(1, $current_page - 2);
+                                $end_page = min($total_pages, $current_page + 2);
+                                
+                                if ($start_page > 1): ?>
+                                    <a href="?page=1">1</a>
+                                    <?php if ($start_page > 2): ?>
+                                        <span>...</span>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                                
+                                <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                                    <?php if ($i == $current_page): ?>
+                                        <span class="active"><?php echo $i; ?></span>
+                                    <?php else: ?>
+                                        <a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                    <?php endif; ?>
+                                <?php endfor; ?>
+                                
+                                <?php if ($end_page < $total_pages): ?>
+                                    <?php if ($end_page < $total_pages - 1): ?>
+                                        <span>...</span>
+                                    <?php endif; ?>
+                                    <a href="?page=<?php echo $total_pages; ?>"><?php echo $total_pages; ?></a>
+                                <?php endif; ?>
+                                
+                                <?php if ($current_page < $total_pages): ?>
+                                    <a href="?page=<?php echo $current_page + 1; ?>">Next &raquo;</a>
+                                <?php else: ?>
+                                    <span class="disabled">Next &raquo;</span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="pagination-info">
+                                Showing <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> of <?php echo $total_items; ?> students
+                            </div>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>

@@ -1,115 +1,111 @@
 <?php
 require_once '../config/auth.php';
-require_once '../config/upload.php';
 requireAdmin();
 
 $conn = getDBConnection();
 $message = '';
 $message_type = '';
 
+// Get current admin ID and validate it exists in admin table
+$admin_id = $_SESSION['id_admin'] ?? null;
+if ($admin_id) {
+    try {
+        $check_admin = $conn->prepare("SELECT id_admin FROM admin WHERE id_admin = :id_admin LIMIT 1");
+        $check_admin->execute(['id_admin' => $admin_id]);
+        if (!$check_admin->fetch()) {
+            // Admin ID doesn't exist, set to null
+            $admin_id = null;
+        }
+    } catch (PDOException $e) {
+        // If error checking, set to null to be safe
+        $admin_id = null;
+    }
+}
+
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
-    if ($action === 'add_mitra') {
-        $nama_institusi = trim($_POST['nama_institusi'] ?? '');
-        $logo = $_POST['logo'] ?? ''; // URL input
+    if ($action === 'add_ruang') {
+        $nama_ruang = trim($_POST['nama_ruang'] ?? '');
 
-        // Handle file upload
-        if (isset($_FILES['logo_file']) && $_FILES['logo_file']['error'] === UPLOAD_ERR_OK) {
-            $uploadResult = uploadImage($_FILES['logo_file'], 'mitra/');
-            if ($uploadResult['success']) {
-                $logo = $uploadResult['path'];
-            } else {
-                $message = $uploadResult['message'];
-                $message_type = 'error';
-            }
-        }
-
-        if (empty($message)) {
-            if (empty($nama_institusi)) {
-                $message = 'Nama institusi harus diisi!';
-                $message_type = 'error';
-            } else {
-                try {
-                    // Fix sequence if it's out of sync
-                    try {
-                        $max_id_stmt = $conn->query("SELECT COALESCE(MAX(id_mitra), 0) as max_id FROM mitra");
-                        $max_id = $max_id_stmt->fetch()['max_id'];
-                        $conn->exec("SELECT setval('mitra_id_mitra_seq', " . ($max_id + 1) . ", false)");
-                    } catch (PDOException $seq_e) {
-                        // Sequence might not exist or error, continue anyway
-                    }
-                    
-                    $stmt = $conn->prepare("INSERT INTO mitra (nama_institusi, logo) VALUES (:nama_institusi, :logo)");
+        if (empty($nama_ruang)) {
+            $message = 'Nama ruang harus diisi!';
+            $message_type = 'error';
+        } else {
+            try {
+                if ($admin_id) {
+                    $stmt = $conn->prepare("INSERT INTO ruang_lab (nama_ruang, id_admin) VALUES (:nama_ruang, :id_admin)");
                     $stmt->execute([
-                        'nama_institusi' => $nama_institusi,
-                        'logo' => $logo ?: null
+                        'nama_ruang' => $nama_ruang,
+                        'id_admin' => $admin_id
                     ]);
-                    $message = 'Mitra berhasil ditambahkan!';
-                    $message_type = 'success';
-                } catch (PDOException $e) {
-                    $message = 'Error: ' . $e->getMessage();
-                    $message_type = 'error';
+                } else {
+                    // If no valid admin ID, insert without id_admin (will be NULL)
+                    $stmt = $conn->prepare("INSERT INTO ruang_lab (nama_ruang) VALUES (:nama_ruang)");
+                    $stmt->execute([
+                        'nama_ruang' => $nama_ruang
+                    ]);
                 }
+                $message = 'Lab room successfully added!';
+                $message_type = 'success';
+            } catch (PDOException $e) {
+                $message = 'Error: ' . $e->getMessage();
+                $message_type = 'error';
             }
         }
-    } elseif ($action === 'update_mitra') {
+    } elseif ($action === 'update_ruang') {
         $id = $_POST['id'] ?? 0;
-        $nama_institusi = trim($_POST['nama_institusi'] ?? '');
-        $logo = $_POST['logo'] ?? '';
+        $nama_ruang = trim($_POST['nama_ruang'] ?? '');
+        $status = trim($_POST['status'] ?? 'tersedia');
 
-        // Handle file upload
-        if (isset($_FILES['logo_file']) && $_FILES['logo_file']['error'] === UPLOAD_ERR_OK) {
-            $uploadResult = uploadImage($_FILES['logo_file'], 'mitra/');
-            if ($uploadResult['success']) {
-                $logo = $uploadResult['path'];
-            } else {
-                $message = $uploadResult['message'];
+        if (empty($nama_ruang)) {
+            $message = 'Nama ruang harus diisi!';
+            $message_type = 'error';
+        } else {
+            try {
+                $stmt = $conn->prepare("UPDATE ruang_lab SET nama_ruang = :nama_ruang, status = :status WHERE id_ruang_lab = :id");
+                $stmt->execute([
+                    'id' => $id,
+                    'nama_ruang' => $nama_ruang,
+                    'status' => $status
+                ]);
+                // Redirect to add form after successful update
+                header('Location: ruang_lab.php?updated=1');
+                exit;
+            } catch (PDOException $e) {
+                $message = 'Error: ' . $e->getMessage();
                 $message_type = 'error';
             }
         }
-
-        if (empty($message)) {
-            if (empty($nama_institusi)) {
-                $message = 'Nama institusi harus diisi!';
-                $message_type = 'error';
-            } else {
-                try {
-                    if ($logo) {
-                        $stmt = $conn->prepare("UPDATE mitra SET nama_institusi = :nama_institusi, logo = :logo WHERE id_mitra = :id");
-                        $stmt->execute([
-                            'id' => $id,
-                            'nama_institusi' => $nama_institusi,
-                            'logo' => $logo
-                        ]);
-                    } else {
-                        $stmt = $conn->prepare("UPDATE mitra SET nama_institusi = :nama_institusi WHERE id_mitra = :id");
-                        $stmt->execute([
-                            'id' => $id,
-                            'nama_institusi' => $nama_institusi
-                        ]);
-                    }
-                    $message = 'Mitra berhasil diupdate!';
-                    $message_type = 'success';
-                } catch (PDOException $e) {
-                    $message = 'Error: ' . $e->getMessage();
-                    $message_type = 'error';
-                }
-            }
-        }
-    } elseif ($action === 'delete_mitra') {
+    } elseif ($action === 'delete_ruang') {
         $id = $_POST['id'] ?? 0;
         try {
-            $stmt = $conn->prepare("DELETE FROM mitra WHERE id_mitra = :id");
-            $stmt->execute(['id' => $id]);
-            $message = 'Mitra berhasil dihapus!';
-            $message_type = 'success';
+            // Check if room is being borrowed
+            $check_stmt = $conn->prepare("SELECT COUNT(*) FROM peminjaman WHERE id_ruang = :id AND status = 'dipinjam'");
+            $check_stmt->execute(['id' => $id]);
+            $borrowed_count = $check_stmt->fetchColumn();
+
+            if ($borrowed_count > 0) {
+                $message = 'Room cannot be deleted because it is currently borrowed!';
+                $message_type = 'error';
+            } else {
+                $stmt = $conn->prepare("DELETE FROM ruang_lab WHERE id_ruang_lab = :id");
+                $stmt->execute(['id' => $id]);
+                $message = 'Lab room successfully deleted!';
+                $message_type = 'success';
+            }
         } catch (PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
         }
     }
+}
+
+// Check if redirected from update
+if (isset($_GET['updated']) && $_GET['updated'] == '1') {
+    $message = 'Lab room successfully updated!';
+    $message_type = 'success';
 }
 
 // Pagination setup
@@ -118,24 +114,28 @@ $current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
 // Get total count
-$count_stmt = $conn->query("SELECT COUNT(*) FROM mitra");
+$count_stmt = $conn->query("SELECT COUNT(*) FROM ruang_lab");
 $total_items = $count_stmt->fetchColumn();
 $total_pages = ceil($total_items / $items_per_page);
 
-// Get mitra with pagination
-$stmt = $conn->prepare("SELECT * FROM mitra ORDER BY nama_institusi LIMIT :limit OFFSET :offset");
+// Get ruang lab with pagination
+$stmt = $conn->prepare("SELECT r.*, 
+    (SELECT COUNT(*) FROM peminjaman WHERE id_ruang = r.id_ruang_lab AND status = 'dipinjam') as jumlah_dipinjam
+    FROM ruang_lab r 
+    ORDER BY nama_ruang
+    LIMIT :limit OFFSET :offset");
 $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
-$mitra_list = $stmt->fetchAll();
+$ruang_list = $stmt->fetchAll();
 
-// Get mitra for edit
-$edit_mitra = null;
+// Get ruang for edit
+$edit_ruang = null;
 if (isset($_GET['edit'])) {
     $edit_id = intval($_GET['edit']);
-    $stmt = $conn->prepare("SELECT * FROM mitra WHERE id_mitra = :id");
+    $stmt = $conn->prepare("SELECT * FROM ruang_lab WHERE id_ruang_lab = :id");
     $stmt->execute(['id' => $edit_id]);
-    $edit_mitra = $stmt->fetch();
+    $edit_ruang = $stmt->fetch();
 }
 ?>
 <!DOCTYPE html>
@@ -144,7 +144,7 @@ if (isset($_GET['edit'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Partners - CMS InLET</title>
+    <title>Lab Room Management - CMS InLET</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="admin.css">
@@ -197,7 +197,8 @@ if (isset($_GET['edit'])) {
             font-weight: 500;
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group select {
             width: 100%;
             padding: 0.75rem;
             border: 2px solid #e2e8f0;
@@ -207,7 +208,8 @@ if (isset($_GET['edit'])) {
             transition: border-color 0.3s;
         }
 
-        .form-group input:focus {
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             border-color: var(--primary);
         }
@@ -268,15 +270,32 @@ if (isset($_GET['edit'])) {
             background: var(--light);
         }
 
-        .logo-cell {
-            max-width: 120px;
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
         }
 
-        .logo-cell img {
-            max-width: 100px;
-            max-height: 60px;
-            object-fit: contain;
-            border-radius: 8px;
+        .status-tersedia {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-maintenance {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-tidak-tersedia {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-dipinjam {
+            background: #fef3c7;
+            color: #92400e;
         }
 
         .btn-delete {
@@ -305,6 +324,7 @@ if (isset($_GET['edit'])) {
             transition: all 0.3s;
             text-decoration: none;
             display: inline-block;
+            margin-right: 0.5rem;
         }
 
         .btn-edit:hover {
@@ -326,6 +346,12 @@ if (isset($_GET['edit'])) {
             border: none;
             border-radius: 8px;
             cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 0.5rem;
+        }
+
+        .btn-cancel:hover {
+            background: #4b5563;
         }
 
         .pagination {
@@ -369,24 +395,18 @@ if (isset($_GET['edit'])) {
             text-align: center;
             color: var(--gray);
             margin-top: 1rem;
-            font-size: 0.9rem;
-            margin-left: 0.5rem;
-        }
-
-        .btn-cancel:hover {
-            background: #4b5563;
         }
     </style>
 </head>
 
 <body>
-    <?php $active_page = 'mitra';
+    <?php $active_page = 'ruang_lab';
     include __DIR__ . '/partials/sidebar.php'; ?>
 
     <main class="content">
         <div class="content-inner">
             <div class="cms-content">
-                <h1 class="text-primary mb-4"><i class="ri-community-line"></i> Kelola Mitra Lab</h1>
+                <h1 class="text-primary mb-4"><i class="ri-building-line"></i> Manage Lab Rooms</h1>
 
                 <?php if ($message): ?>
                     <div class="message <?php echo $message_type; ?>">
@@ -395,81 +415,109 @@ if (isset($_GET['edit'])) {
                 <?php endif; ?>
 
                 <!-- Add/Edit Form -->
-                <div class="form-section <?php echo $edit_mitra ? 'edit-form-section active' : ''; ?>">
-                    <h2><?php echo $edit_mitra ? 'Edit Partner' : 'Add New Partner'; ?></h2>
-                    <form method="POST" enctype="multipart/form-data">
+                <div class="form-section <?php echo $edit_ruang ? 'edit-form-section active' : ''; ?>">
+                    <h2><?php echo $edit_ruang ? 'Edit Lab Room' : 'Add New Lab Room'; ?></h2>
+                    <form method="POST">
                         <input type="hidden" name="action"
-                            value="<?php echo $edit_mitra ? 'update_mitra' : 'add_mitra'; ?>">
-                        <?php if ($edit_mitra): ?>
-                            <input type="hidden" name="id" value="<?php echo $edit_mitra['id_mitra']; ?>">
+                            value="<?php echo $edit_ruang ? 'update_ruang' : 'add_ruang'; ?>">
+                        <?php if ($edit_ruang): ?>
+                            <input type="hidden" name="id" value="<?php echo $edit_ruang['id_ruang_lab']; ?>">
                         <?php endif; ?>
 
                         <div class="form-group">
-                            <label for="nama_institusi">Nama Institusi *</label>
-                            <input type="text" id="nama_institusi" name="nama_institusi"
-                                value="<?php echo htmlspecialchars($edit_mitra['nama_institusi'] ?? ''); ?>" required>
+                            <label for="nama_ruang">Room Name *</label>
+                            <input type="text" id="nama_ruang" name="nama_ruang"
+                                value="<?php echo htmlspecialchars($edit_ruang['nama_ruang'] ?? ''); ?>" required>
                         </div>
 
+                        <?php if ($edit_ruang): ?>
                         <div class="form-group">
-                            <label for="logo">Logo URL (optional)</label>
-                            <input type="url" id="logo" name="logo"
-                                value="<?php echo htmlspecialchars($edit_mitra['logo'] ?? ''); ?>"
-                                placeholder="https://example.com/logo.png">
+                            <label for="status">Status *</label>
+                            <select id="status" name="status" required>
+                                <option value="tersedia" <?php echo (($edit_ruang['status'] ?? 'tersedia') === 'tersedia') ? 'selected' : ''; ?>>Available</option>
+                                <option value="maintenance" <?php echo (($edit_ruang['status'] ?? '') === 'maintenance') ? 'selected' : ''; ?>>Maintenance</option>
+                                <option value="tidak_tersedia" <?php echo (($edit_ruang['status'] ?? '') === 'tidak_tersedia') ? 'selected' : ''; ?>>Not Available</option>
+                            </select>
                         </div>
-
-                        <div class="form-group">
-                            <label for="logo_file">Atau Upload Logo</label>
-                            <input type="file" id="logo_file" name="logo_file" accept="image/*">
-                        </div>
+                        <?php endif; ?>
 
                         <button type="submit" class="btn-submit">
-                            <?php echo $edit_mitra ? 'Update Partner' : 'Add Partner'; ?>
+                            <?php echo $edit_ruang ? 'Update Lab Room' : 'Add Lab Room'; ?>
                         </button>
-                        <?php if ($edit_mitra): ?>
-                            <a href="mitra.php" class="btn-cancel">Batal</a>
+                        <?php if ($edit_ruang): ?>
+                            <a href="ruang_lab.php" class="btn-cancel">Cancel</a>
                         <?php endif; ?>
                     </form>
                 </div>
 
                 <!-- Data List -->
                 <div class="data-section">
-                    <h2>Daftar Mitra (<?php echo $total_items; ?>)</h2>
+                    <h2>Lab Rooms List (<?php echo $total_items; ?>)</h2>
 
-                    <?php if (empty($mitra_list)): ?>
-                        <p class="muted-gray">No partners registered yet.</p>
+                    <?php if (empty($ruang_list)): ?>
+                        <p class="muted-gray">No lab rooms registered yet.</p>
                     <?php else: ?>
                         <div class="table-container">
                             <table>
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Logo</th>
-                                        <th>Nama Institusi</th>
-                                        <th>Aksi</th>
+                                        <th>Room Name</th>
+                                        <th>Status</th>
+                                        <th>Currently Borrowed</th>
+                                        <th>Created At</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($mitra_list as $mitra): ?>
+                                    <?php foreach ($ruang_list as $ruang): ?>
                                         <tr>
-                                            <td><?php echo $mitra['id_mitra']; ?></td>
-                                            <td class="logo-cell">
-                                                <?php if (!empty($mitra['logo'])): ?>
-                                                    <img src="<?php echo htmlspecialchars($mitra['logo']); ?>"
-                                                        alt="<?php echo htmlspecialchars($mitra['nama_institusi']); ?>"
-                                                        onerror="this.style.display='none'">
+                                            <td><?php echo $ruang['id_ruang_lab']; ?></td>
+                                            <td><?php echo htmlspecialchars($ruang['nama_ruang']); ?></td>
+                                            <td>
+                                                <?php 
+                                                // Calculate status: if borrowed, show "Borrowed", otherwise show status from database
+                                                $jumlah_dipinjam = (int)($ruang['jumlah_dipinjam'] ?? 0);
+                                                $db_status = $ruang['status'] ?? 'tersedia';
+                                                
+                                                if ($jumlah_dipinjam > 0) {
+                                                    // If there's active loan, show "Borrowed"
+                                                    $status_class = 'status-dipinjam';
+                                                    $status_text = 'Borrowed';
+                                                } else {
+                                                    // Otherwise, show status from database
+                                                    $status_map = [
+                                                        'tersedia' => ['class' => 'status-tersedia', 'text' => 'Available'],
+                                                        'maintenance' => ['class' => 'status-maintenance', 'text' => 'Maintenance'],
+                                                        'tidak_tersedia' => ['class' => 'status-tidak-tersedia', 'text' => 'Not Available']
+                                                    ];
+                                                    $status_info = $status_map[$db_status] ?? ['class' => 'status-tersedia', 'text' => 'Available'];
+                                                    $status_class = $status_info['class'];
+                                                    $status_text = $status_info['text'];
+                                                }
+                                                ?>
+                                                <span class="status-badge <?php echo $status_class; ?>">
+                                                    <?php echo $status_text; ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <?php if ($jumlah_dipinjam > 0): ?>
+                                                    <span class="status-badge status-dipinjam">
+                                                        <?php echo $jumlah_dipinjam; ?> active loan(s)
+                                                    </span>
                                                 <?php else: ?>
-                                                    <span class="muted-gray">-</span>
+                                                    <span class="muted-gray">None</span>
                                                 <?php endif; ?>
                                             </td>
-                                            <td><?php echo htmlspecialchars($mitra['nama_institusi']); ?></td>
+                                            <td><?php echo date('d M Y', strtotime($ruang['created_at'])); ?></td>
                                             <td>
-                                                <a href="?edit=<?php echo $mitra['id_mitra']; ?>" class="btn-edit">
+                                                <a href="?edit=<?php echo $ruang['id_ruang_lab']; ?>" class="btn-edit">
                                                     <i class="ri-edit-line"></i> Edit
                                                 </a>
                                                 <form method="POST" class="d-inline"
-                                                    onsubmit="return confirm('Are you sure you want to delete this partner?');">
-                                                    <input type="hidden" name="action" value="delete_mitra">
-                                                    <input type="hidden" name="id" value="<?php echo $mitra['id_mitra']; ?>">
+                                                    onsubmit="return confirm('Are you sure you want to delete this room?');">
+                                                    <input type="hidden" name="action" value="delete_ruang">
+                                                    <input type="hidden" name="id" value="<?php echo $ruang['id_ruang_lab']; ?>">
                                                     <button type="submit" class="btn-delete">
                                                         <i class="ri-delete-bin-line"></i> Delete
                                                     </button>
@@ -522,7 +570,7 @@ if (isset($_GET['edit'])) {
                                 <?php endif; ?>
                             </div>
                             <div class="pagination-info">
-                                Showing <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> of <?php echo $total_items; ?> partners
+                                Showing <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> of <?php echo $total_items; ?> rooms
                             </div>
                         <?php endif; ?>
                     <?php endif; ?>
@@ -531,4 +579,6 @@ if (isset($_GET['edit'])) {
         </div>
     </main>
 </body>
+
 </html>
+

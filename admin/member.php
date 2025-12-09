@@ -50,6 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $message = 'Member successfully added!';
                 $message_type = 'success';
+                
+                // Redirect to prevent resubmission
+                header('Location: member.php?added=1');
+                exit;
             } catch (PDOException $e) {
                 $message = 'Error: ' . $e->getMessage();
                 $message_type = 'error';
@@ -79,13 +83,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $no_tlp = $_POST['no_tlp'] ?? '';
                 $deskripsi = $_POST['deskripsi'] ?? '';
 
-                $stmt = $conn->prepare("UPDATE member SET nama = :nama, email = :email, jabatan = :jabatan, foto = :foto, alamat = :alamat, notlp = :notlp, deskripsi = :deskripsi WHERE id_member = :id");
+                $bidang_keahlian = $_POST['bidang_keahlian'] ?? '';
+                
+                $stmt = $conn->prepare("UPDATE member SET nama = :nama, email = :email, jabatan = :jabatan, foto = :foto, bidang_keahlian = :keahlian, alamat = :alamat, notlp = :notlp, deskripsi = :deskripsi WHERE id_member = :id");
                 $stmt->execute([
                     'id' => $id,
                     'nama' => $nama,
                     'email' => $email ?: null,
                     'jabatan' => $jabatan ?: null,
                     'foto' => $foto ?: null,
+                    'keahlian' => $bidang_keahlian ?: null,
                     'alamat' => $alamat ?: null,
                     'notlp' => $no_tlp ?: null,
                     'deskripsi' => $deskripsi ?: null
@@ -93,6 +100,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $message = 'Member successfully updated!';
                 $message_type = 'success';
+                
+                // Redirect to prevent resubmission
+                $page = isset($_GET['page']) ? '&page=' . intval($_GET['page']) : '';
+                header('Location: member.php?updated=1' . $page);
+                exit;
             } catch (PDOException $e) {
                 $message = 'Error: ' . $e->getMessage();
                 $message_type = 'error';
@@ -105,11 +117,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute(['id' => $id]);
             $message = 'Member successfully deleted!';
             $message_type = 'success';
+            
+            // Redirect to prevent resubmission
+            $page = isset($_GET['page']) ? '&page=' . intval($_GET['page']) : '';
+            header('Location: member.php?deleted=1' . $page);
+            exit;
         } catch (PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
             $message_type = 'error';
         }
     }
+}
+
+// Check for success messages from redirect
+if (isset($_GET['updated'])) {
+    $message = 'Member successfully updated!';
+    $message_type = 'success';
+} elseif (isset($_GET['deleted'])) {
+    $message = 'Member successfully deleted!';
+    $message_type = 'success';
+} elseif (isset($_GET['added'])) {
+    $message = 'Member successfully added!';
+    $message_type = 'success';
 }
 
 // Pagination setup
@@ -313,6 +342,12 @@ $members = $stmt->fetchAll();
             background: #dc2626;
         }
 
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
         .btn-edit {
             background: #3b82f6;
             color: white;
@@ -322,11 +357,21 @@ $members = $stmt->fetchAll();
             cursor: pointer;
             font-size: 0.9rem;
             transition: all 0.3s;
-            margin-right: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .btn-edit:hover {
             background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-delete {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .edit-form-section {
@@ -517,7 +562,7 @@ $members = $stmt->fetchAll();
                 </div>
 
                 <div class="data-section">
-                    <h2>Member List (<?php echo count($members); ?>)</h2>
+                    <h2>Member List (<?php echo $total_items; ?>)</h2>
                     <?php if (empty($members)): ?>
                         <p class="text-center p-4 muted-gray">No members yet</p>
                     <?php else: ?>
@@ -542,18 +587,20 @@ $members = $stmt->fetchAll();
                                             <td><?php echo htmlspecialchars($member['jabatan'] ?? '-'); ?></td>
                                             <td><?php echo htmlspecialchars($member['notlp'] ?? '-'); ?></td>
                                             <td>
-                                                <button type="button" class="btn-edit"
-                                                    onclick="editMember(<?php echo htmlspecialchars(json_encode($member)); ?>)">
-                                                    <i class="ri-edit-line"></i> Edit
-                                                </button>
-                                                <form method="POST" class="d-inline"
-                                                    onsubmit="return confirm('Are you sure you want to delete this member?');">
-                                                    <input type="hidden" name="action" value="delete_member">
-                                                    <input type="hidden" name="id" value="<?php echo $member['id_member']; ?>">
-                                                    <button type="submit" class="btn-delete">
-                                                        <i class="ri-delete-bin-line"></i> Delete
+                                                <div class="action-buttons">
+                                                    <button type="button" class="btn-edit"
+                                                        onclick="editMember(<?php echo htmlspecialchars(json_encode($member)); ?>)">
+                                                        <i class="ri-edit-line"></i> Edit
                                                     </button>
-                                                </form>
+                                                    <form method="POST" class="d-inline"
+                                                        onsubmit="return confirm('Are you sure you want to delete this member?');">
+                                                        <input type="hidden" name="action" value="delete_member">
+                                                        <input type="hidden" name="id" value="<?php echo $member['id_member']; ?>">
+                                                        <button type="submit" class="btn-delete">
+                                                            <i class="ri-delete-bin-line"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -606,7 +653,7 @@ $members = $stmt->fetchAll();
                         <div class="pagination-info">
                             Showing <?php echo ($offset + 1); ?> -
                             <?php echo min($offset + $items_per_page, $total_items); ?> of <?php echo $total_items; ?>
-                            members
+                            members (Page <?php echo $current_page; ?> of <?php echo $total_pages; ?>)
                         </div>
                     <?php endif; ?>
                 </div>

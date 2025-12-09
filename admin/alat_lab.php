@@ -131,22 +131,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Get all alat lab dengan informasi stok tersedia
-$stmt = $conn->query("SELECT
-    alat.id_alat_lab,
-    alat.nama_alat,
-    alat.deskripsi,
-    alat.stock,
-    COALESCE(pj.jumlah_dipinjam, 0) AS jumlah_dipinjam,
-    (alat.stock - COALESCE(pj.jumlah_dipinjam, 0)) AS stok_tersedia
-FROM alat_lab alat
-LEFT JOIN (
-    SELECT id_alat, COUNT(*) AS jumlah_dipinjam
-    FROM peminjaman
-    WHERE status = 'dipinjam'
-    GROUP BY id_alat
-) pj ON pj.id_alat = alat.id_alat_lab
-ORDER BY nama_alat");
+// Pagination setup
+$items_per_page = 10;
+$current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$offset = ($current_page - 1) * $items_per_page;
+
+// Get total count
+$count_stmt = $conn->query("SELECT COUNT(*) FROM view_alat_tersedia");
+$total_items = $count_stmt->fetchColumn();
+$total_pages = ceil($total_items / $items_per_page);
+
+// Get alat lab dengan informasi stok tersedia - menggunakan view_alat_tersedia dengan pagination
+$stmt = $conn->prepare("SELECT * FROM view_alat_tersedia ORDER BY nama_alat LIMIT :limit OFFSET :offset");
+$stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
 $alat_list = $stmt->fetchAll();
 
 // Get alat for edit - perlu ambil dari tabel karena view tidak memiliki semua field untuk edit
@@ -372,6 +371,49 @@ if (isset($_GET['edit'])) {
         .btn-cancel:hover {
             background: #4b5563;
         }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 1rem;
+        }
+
+        .pagination a,
+        .pagination span {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--dark);
+            transition: all 0.3s;
+        }
+
+        .pagination a:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .pagination .active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .pagination .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .pagination-info {
+            text-align: center;
+            color: var(--gray);
+            margin-top: 1rem;
+        }
     </style>
 </head>
 
@@ -429,7 +471,7 @@ if (isset($_GET['edit'])) {
 
                 <!-- Data List -->
                 <div class="data-section">
-                    <h2>Lab Tools List (<?php echo count($alat_list); ?>)</h2>
+                    <h2>Lab Tools List (<?php echo $total_items; ?>)</h2>
 
                     <?php if (empty($alat_list)): ?>
                         <p class="muted-gray">No lab tools registered yet.</p>
@@ -483,6 +525,51 @@ if (isset($_GET['edit'])) {
                                 </tbody>
                             </table>
                         </div>
+                        
+                        <?php if ($total_pages > 1): ?>
+                            <div class="pagination">
+                                <?php if ($current_page > 1): ?>
+                                    <a href="?page=<?php echo $current_page - 1; ?>">&laquo; Previous</a>
+                                <?php else: ?>
+                                    <span class="disabled">&laquo; Previous</span>
+                                <?php endif; ?>
+                                
+                                <?php
+                                $start_page = max(1, $current_page - 2);
+                                $end_page = min($total_pages, $current_page + 2);
+                                
+                                if ($start_page > 1): ?>
+                                    <a href="?page=1">1</a>
+                                    <?php if ($start_page > 2): ?>
+                                        <span>...</span>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                                
+                                <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                                    <?php if ($i == $current_page): ?>
+                                        <span class="active"><?php echo $i; ?></span>
+                                    <?php else: ?>
+                                        <a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                    <?php endif; ?>
+                                <?php endfor; ?>
+                                
+                                <?php if ($end_page < $total_pages): ?>
+                                    <?php if ($end_page < $total_pages - 1): ?>
+                                        <span>...</span>
+                                    <?php endif; ?>
+                                    <a href="?page=<?php echo $total_pages; ?>"><?php echo $total_pages; ?></a>
+                                <?php endif; ?>
+                                
+                                <?php if ($current_page < $total_pages): ?>
+                                    <a href="?page=<?php echo $current_page + 1; ?>">Next &raquo;</a>
+                                <?php else: ?>
+                                    <span class="disabled">Next &raquo;</span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="pagination-info">
+                                Showing <?php echo ($offset + 1); ?> - <?php echo min($offset + $items_per_page, $total_items); ?> of <?php echo $total_items; ?> tools
+                            </div>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>
