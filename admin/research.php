@@ -383,6 +383,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nama_produk = trim($_POST['nama_produk'] ?? '');
         $deskripsi = trim($_POST['deskripsi'] ?? '');
         $gambar = $_POST['gambar'] ?? ''; // URL input
+        $try = trim($_POST['try'] ?? ''); // Try URL
 
         // Handle file upload
         if (isset($_FILES['gambar_file']) && $_FILES['gambar_file']['error'] === UPLOAD_ERR_OK) {
@@ -407,6 +408,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Column might already exist, continue anyway
                 }
                 
+                // Try to add try column if it doesn't exist
+                try {
+                    $conn->exec("ALTER TABLE produk ADD COLUMN IF NOT EXISTS try TEXT");
+                } catch (PDOException $e) {
+                    // Column might already exist, continue anyway
+                }
+                
                 // Fix sequence if it's out of sync
                 try {
                     $max_id_stmt = $conn->query("SELECT COALESCE(MAX(id_produk), 0) as max_id FROM produk");
@@ -416,11 +424,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Sequence might not exist or error, continue anyway
                 }
                 
-                $stmt = $conn->prepare("INSERT INTO produk (nama_produk, deskripsi, gambar) VALUES (:nama_produk, :deskripsi, :gambar)");
+                $stmt = $conn->prepare("INSERT INTO produk (nama_produk, deskripsi, gambar, try) VALUES (:nama_produk, :deskripsi, :gambar, :try)");
                 $stmt->execute([
                     'nama_produk' => $nama_produk,
                     'deskripsi' => $deskripsi ?: null,
-                    'gambar' => $gambar ?: null
+                    'gambar' => $gambar ?: null,
+                    'try' => $try ?: null
                 ]);
                 header('Location: research.php?tab=product&added=1');
                 exit;
@@ -435,6 +444,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $deskripsi = trim($_POST['deskripsi'] ?? '');
         $gambar = $_POST['gambar'] ?? '';
         $current_gambar = $_POST['current_gambar'] ?? '';
+        $try = trim($_POST['try'] ?? ''); // Try URL
 
         // Handle file upload
         if (isset($_FILES['gambar_file']) && $_FILES['gambar_file']['error'] === UPLOAD_ERR_OK) {
@@ -466,20 +476,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Column might already exist, continue anyway
                 }
                 
+                // Try to add try column if it doesn't exist
+                try {
+                    $conn->exec("ALTER TABLE produk ADD COLUMN IF NOT EXISTS try TEXT");
+                } catch (PDOException $e) {
+                    // Column might already exist, continue anyway
+                }
+                
+                // Always update all columns including try
                 if ($gambar) {
-                    $stmt = $conn->prepare("UPDATE produk SET nama_produk = :nama_produk, deskripsi = :deskripsi, gambar = :gambar WHERE id_produk = :id");
+                    $stmt = $conn->prepare("UPDATE produk SET nama_produk = :nama_produk, deskripsi = :deskripsi, gambar = :gambar, try = :try WHERE id_produk = :id");
+                    $stmt->execute([
+                        'id' => $id,
+                        'nama_produk' => $nama_produk,
+                        'deskripsi' => $deskripsi,
+                        'gambar' => $gambar,
+                        'try' => $try
+                    ]);
+                } else {
+                    $stmt = $conn->prepare("UPDATE produk SET nama_produk = :nama_produk, deskripsi = :deskripsi, try = :try WHERE id_produk = :id");
                     $stmt->execute([
                         'id' => $id,
                         'nama_produk' => $nama_produk,
                         'deskripsi' => $deskripsi ?: null,
-                        'gambar' => $gambar
-                    ]);
-                } else {
-                    $stmt = $conn->prepare("UPDATE produk SET nama_produk = :nama_produk, deskripsi = :deskripsi WHERE id_produk = :id");
-                    $stmt->execute([
-                        'id' => $id,
-                        'nama_produk' => $nama_produk,
-                        'deskripsi' => $deskripsi ?: null
+                        'try' => $try ?: null
                     ]);
                 }
                 header('Location: research.php?tab=product&updated=1');
@@ -529,15 +549,6 @@ try {
     $produk_list = $stmt->fetchAll();
 } catch (PDOException $e) {
     $produk_list = [];
-}
-
-// Get produk for edit
-$edit_produk = null;
-if (isset($_GET['edit_produk'])) {
-    $edit_id = intval($_GET['edit_produk']);
-    $stmt = $conn->prepare("SELECT * FROM produk WHERE id_produk = :id");
-    $stmt->execute(['id' => $edit_id]);
-    $edit_produk = $stmt->fetch();
 }
 
 // Get page numbers - check if we're on the correct tab
@@ -1661,6 +1672,12 @@ $member_list = $stmt->fetchAll();
                                     placeholder="https://example.com/image.jpg">
                                 <small class="d-block mt-2 text-muted small">If file upload is used, URL will be ignored</small>
                             </div>
+                            <div class="form-group">
+                                <label for="edit_product_try">Try URL (Optional)</label>
+                                <input type="text" id="edit_product_try" name="try"
+                                    placeholder="https://example.com/try-now">
+                                <small class="d-block mt-2 text-muted small">URL untuk tombol "Try Now" pada produk</small>
+                            </div>
                             <div id="edit_product_image_preview" class="mb-3" style="display: none;">
                                 <label>Current Image:</label>
                                 <div>
@@ -1673,18 +1690,17 @@ $member_list = $stmt->fetchAll();
                     </div>
 
                     <!-- Add Product Form -->
-                    <div class="form-section <?php echo $edit_produk ? 'edit-form-section' : ''; ?>">
+                    <div class="form-section">
                         <h2>Add New Product</h2>
                         <form method="POST" enctype="multipart/form-data">
                             <input type="hidden" name="action" value="add_produk">
                             <div class="form-group">
                                 <label for="product_nama">Product Name *</label>
-                                <input type="text" id="product_nama" name="nama_produk" required maxlength="255"
-                                    value="<?php echo htmlspecialchars($edit_produk['nama_produk'] ?? ''); ?>">
+                                <input type="text" id="product_nama" name="nama_produk" required maxlength="255">
                             </div>
                             <div class="form-group">
                                 <label for="product_deskripsi">Description</label>
-                                <textarea id="product_deskripsi" name="deskripsi" rows="5"><?php echo htmlspecialchars($edit_produk['deskripsi'] ?? ''); ?></textarea>
+                                <textarea id="product_deskripsi" name="deskripsi" rows="5"></textarea>
                             </div>
                             <div class="form-group">
                                 <label for="product_gambar_file">Upload Product Image (File)</label>
@@ -1697,6 +1713,12 @@ $member_list = $stmt->fetchAll();
                                 <input type="text" id="product_gambar" name="gambar"
                                     placeholder="https://example.com/image.jpg">
                                 <small class="d-block mt-2 text-muted small">If file upload is used, URL will be ignored</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="product_try">Try URL (Optional)</label>
+                                <input type="text" id="product_try" name="try"
+                                    placeholder="https://example.com/try-now">
+                                <small class="d-block mt-2 text-muted small">URL untuk tombol "Try Now" pada produk</small>
                             </div>
                             <button type="submit" class="btn-submit">Add Product</button>
                         </form>
@@ -1738,7 +1760,17 @@ $member_list = $stmt->fetchAll();
                                             <td>
                                                 <div class="action-buttons">
                                                     <button type="button" class="btn-edit"
-                                                        onclick="editProduct(<?php echo htmlspecialchars(json_encode($produk)); ?>)">
+                                                        onclick="editProduct(<?php 
+                                                            // Convert null to empty string to prevent "undefined" in JavaScript
+                                                            $produk_json = [
+                                                                'id_produk' => $produk['id_produk'] ?? 0,
+                                                                'nama_produk' => $produk['nama_produk'] ?? '',
+                                                                'deskripsi' => $produk['deskripsi'] ?? '',
+                                                                'gambar' => $produk['gambar'] ?? '',
+                                                                'try' => $produk['try'] ?? ''
+                                                            ];
+                                                            echo htmlspecialchars(json_encode($produk_json, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8');
+                                                        ?>)">
                                                         <i class="ri-edit-line"></i> Edit
                                                     </button>
                                                     <form method="POST" class="d-inline"
@@ -1882,12 +1914,14 @@ $member_list = $stmt->fetchAll();
         }
 
         function editProduct(product) {
-            document.getElementById('edit_product_id').value = product.id_produk;
+            // Populate edit form - handle null/undefined to prevent "undefined" text
+            document.getElementById('edit_product_id').value = product.id_produk || '';
             document.getElementById('edit_product_nama').value = product.nama_produk || '';
             document.getElementById('edit_product_deskripsi').value = product.deskripsi || '';
             document.getElementById('edit_product_gambar').value = product.gambar || '';
             document.getElementById('edit_product_current_gambar').value = product.gambar || '';
-
+            document.getElementById('edit_product_try').value = product.try || '';
+            
             // Show current image preview if exists
             const previewDiv = document.getElementById('edit_product_image_preview');
             const previewImg = document.getElementById('edit_product_image_preview_img');

@@ -228,16 +228,56 @@ main {
 }
 
 .member-desc {
+    margin-top: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #444;
+}
+
+.member-email {
+    font-size: 14px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.member-scholar {
+    margin: 10px 0;
+}
+
+.member-scholar img {
+    transition: transform 0.2s ease;
+}
+
+.member-scholar img:hover {
+    transform: scale(1.1);
+}
+
+.member-toggle {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a5cff;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.member-toggle:hover {
+    text-decoration: underline;
+}
+
+/* Profile Description Toggle */
+.profile-description {
+    display: none;
     font-size: 0.9rem;
     color: #666;
     line-height: 1.6;
-    margin-bottom: 1.5rem;
-    
-    /* Membatasi teks menjadi 3 baris dengan '...' */
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    margin-top: 0.5rem;
+    padding: 0 1rem;
+}
+
+.profile-description.show {
+    display: block;
 }
 
 /* Footer Card (Email) */

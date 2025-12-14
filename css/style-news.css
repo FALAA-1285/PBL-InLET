@@ -167,10 +167,19 @@ main {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
+.pin-img-wrapper {
+    overflow: hidden;
+}
+
 .pin-img-wrapper img {
     width: 100%;
     display: block;
     border-radius: 16px;
+    transition: transform 0.3s ease;
+}
+
+.pin-img-wrapper:hover img {
+    transform: scale(1.1);
 }
 
 .pin-overlay {

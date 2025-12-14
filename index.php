@@ -356,76 +356,65 @@ function getInitials($name)
                     <p class="text-muted">Watch our latest videos and content.</p>
                     <div class="divider"></div>
                 </div>
-                <?php if (empty($videos)): ?>
+                <?php 
+                // Filter only YouTube videos
+                $youtube_videos = array_filter($videos, function($v) {
+                    $url = strtolower($v['href_link'] ?? '');
+                    return strpos($url, 'youtube.com') !== false || strpos($url, 'youtu.be') !== false;
+                });
+                $youtube_videos = array_values($youtube_videos); // Re-index array
+                
+                if (empty($youtube_videos)): ?>
                     <div class="text-center">
                         <div class="alert alert-light" role="alert">
                             <i class="fas fa-video fa-3x mb-3 text-muted"></i>
-                            <p class="mb-0">No videos available yet.</p>
+                            <p class="mb-0">No YouTube videos available yet.</p>
                         </div>
                     </div>
-                <?php else: ?>
-                    <div class="video-container-wrapper">
-                        <div class="video-player-container">
-                            <div class="video-wrapper" id="videoWrapper">
-                                <?php 
-                                // Filter only YouTube videos
-                                $youtube_videos = array_filter($videos, function($v) {
-                                    $url = strtolower($v['href_link'] ?? '');
-                                    return strpos($url, 'youtube.com') !== false || strpos($url, 'youtu.be') !== false;
-                                });
-                                $youtube_videos = array_values($youtube_videos); // Re-index array
+                <?php else:
+                    // Duplicate videos for smooth looping if less than 3
+                    $videosForSlider = $youtube_videos;
+                    if (count($youtube_videos) < 3) {
+                        $videosForSlider = array_merge($youtube_videos, $youtube_videos, $youtube_videos);
+                    }
+                ?>
+                    <div class="swiper videoSwiper">
+                        <div class="swiper-wrapper">
+                            <?php foreach ($videosForSlider as $v): 
+                                $video_url = htmlspecialchars($v['href_link'] ?? '');
                                 
-                                if (!empty($youtube_videos)):
-                                    $first_video = $youtube_videos[0];
-                                    $video_url = htmlspecialchars($first_video['href_link'] ?? '');
-                                    
-                                    // Extract YouTube video ID
-                                    $video_id = '';
-                                    if (preg_match('/youtu\.be\/([^\?\&]+)/', $video_url, $matches)) {
-                                        $video_id = $matches[1];
-                                    } elseif (preg_match('/youtube\.com\/watch\?v=([^\&\?]+)/', $video_url, $matches)) {
-                                        $video_id = $matches[1];
-                                    } elseif (preg_match('/youtube\.com\/embed\/([^\?\&]+)/', $video_url, $matches)) {
-                                        $video_id = $matches[1];
-                                    }
-                                ?>
-                                <button class="video-arrow arrow-left" id="prevVideo" title="Previous Video">
-                                    <i class="fas fa-chevron-left"></i>
-                                </button>
-                                <div class="video-player" id="videoPlayer">
-                                    <?php if (!empty($video_id)): ?>
-                                        <iframe 
-                                            id="videoFrame"
-                                            src="https://www.youtube.com/embed/<?= $video_id ?>?enablejsapi=1" 
-                                            frameborder="0" 
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                            allowfullscreen
-                                            style="width: 100%; height: 100%; min-height: 400px; border-radius: 8px;">
-                                        </iframe>
-                                    <?php else: ?>
-                                        <div class="video-placeholder">
-                                            <p>Invalid YouTube URL</p>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                                <button class="video-arrow arrow-right" id="nextVideo" title="Next Video">
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
-                                <?php else: ?>
-                                <button class="video-arrow arrow-left" id="prevVideo" title="Previous Video" style="display: none;">
-                                    <i class="fas fa-chevron-left"></i>
-                                </button>
-                                <div class="video-player" id="videoPlayer">
-                                    <div class="video-placeholder">
-                                        <p>No YouTube videos available</p>
+                                // Extract YouTube video ID
+                                $video_id = '';
+                                if (preg_match('/youtu\.be\/([^\?\&]+)/', $video_url, $matches)) {
+                                    $video_id = $matches[1];
+                                } elseif (preg_match('/youtube\.com\/watch\?v=([^\&\?]+)/', $video_url, $matches)) {
+                                    $video_id = $matches[1];
+                                } elseif (preg_match('/youtube\.com\/embed\/([^\?\&]+)/', $video_url, $matches)) {
+                                    $video_id = $matches[1];
+                                }
+                            ?>
+                                <div class="swiper-slide">
+                                    <div class="video-slide-wrapper">
+                                        <?php if (!empty($video_id)): ?>
+                                            <iframe 
+                                                class="video-iframe"
+                                                src="https://www.youtube.com/embed/<?= $video_id ?>?enablejsapi=1" 
+                                                frameborder="0" 
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                allowfullscreen>
+                                            </iframe>
+                                        <?php else: ?>
+                                            <div class="video-placeholder">
+                                                <p>Invalid YouTube URL</p>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
-                                <button class="video-arrow arrow-right" id="nextVideo" title="Next Video" style="display: none;">
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
-                                <?php endif; ?>
-                            </div>
+                            <?php endforeach; ?>
                         </div>
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-button-prev"></div>
+                        <div class="swiper-pagination"></div>
                     </div>
                 <?php endif; ?>
             </div>
@@ -464,6 +453,13 @@ function getInitials($name)
                                             <p class="card-text text-muted"><?= nl2br(htmlspecialchars($product['deskripsi'])); ?></p>
                                         <?php else: ?>
                                             <p class="card-text text-muted">No description available.</p>
+                                        <?php endif; ?>
+                                        <?php if (!empty($product['try'])): ?>
+                                            <div class="mt-3">
+                                                <a href="<?= htmlspecialchars($product['try']) ?>" target="_blank" class="btn btn-primary">
+                                                    <i class="fas fa-external-link-alt me-2"></i>Try Now
+                                                </a>
+                                            </div>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -528,8 +524,7 @@ function getInitials($name)
                     <p class="text-muted">The brilliant minds behind our research.</p>
                     <div class="divider"></div>
                 </div>
-                <?php if (!empty($team)): 
-                    // Duplicate team members if less than 5 to ensure smooth infinite loop
+                <?php if (!empty($team)):
                     $teamForSlider = $team;
                     if (count($team) < 5) {
                         $teamForSlider = array_merge($team, $team, $team);
@@ -547,37 +542,48 @@ function getInitials($name)
                                         }
                                     }
                                 }
-                                ?>
+                            ?>
                                 <div class="swiper-slide">
-                                    <div class="member-card card-surface h-100">
+                                    <div class="member-card card-surface h-100 text-center">
                                         <div class="member-img-wrapper">
                                             <?php if (!empty($foto_url)): ?>
                                                 <img src="<?= htmlspecialchars($foto_url) ?>"
-                                                    alt="<?= htmlspecialchars($t['nama']) ?>" class="member-img"
-                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                     alt="<?= htmlspecialchars($t['nama']) ?>"
+                                                     class="member-img"
+                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                                 <div class="member-initials d-none">
-                                                    <?= htmlspecialchars(getInitials($t["nama"])) ?>
+                                                    <?= htmlspecialchars(getInitials($t['nama'])) ?>
                                                 </div>
                                             <?php else: ?>
                                                 <div class="member-initials">
-                                                    <?= htmlspecialchars(getInitials($t["nama"])) ?>
+                                                    <?= htmlspecialchars(getInitials($t['nama'])) ?>
                                                 </div>
                                             <?php endif; ?>
                                         </div>
-                                        <div class="member-info">
-                                            <h3 class="member-name"><?= htmlspecialchars($t["nama"]) ?></h3>
-                                            <div class="member-role"><?= htmlspecialchars($t["jabatan"] ?: 'Member') ?></div>
-                                            <?php if (!empty($t["deskripsi"])): ?>
-                                                <p class="member-desc" title="<?= htmlspecialchars($t["deskripsi"]) ?>"><?= htmlspecialchars($t["deskripsi"]) ?></p>
+                                        <div class="member-info text-center">
+                                            <h3 class="member-name"><?= htmlspecialchars($t['nama']) ?></h3>
+                                            <div class="member-role"><?= htmlspecialchars($t['jabatan'] ?: 'Member') ?></div>
+                                            <?php if (!empty($t['email'])): ?>
+                                                <div class="member-email">
+                                                    <?= htmlspecialchars($t['email']) ?>
+                                                </div>
+                                            <?php endif; ?>
+                                            <?php if (!empty($t['google_scholar'])): ?>
+                                                <div class="member-scholar">
+                                                    <a href="<?= htmlspecialchars($t['google_scholar']) ?>" target="_blank" title="Google Scholar">
+                                                        <img src="assets/google-scholar.png" alt="Google Scholar" width="28">
+                                                    </a>
+                                                </div>
+                                            <?php endif; ?>
+                                            <?php if (!empty($t['deskripsi'])): ?>
+                                                <p class="member-desc" style="display:none;">
+                                                    <?= htmlspecialchars($t['deskripsi']) ?>
+                                                </p>
+                                                <a href="javascript:void(0)" class="member-toggle">
+                                                    More Info
+                                                </a>
                                             <?php endif; ?>
                                         </div>
-                                        <?php if (!empty($t['email'])): ?>
-                                            <div class="member-footer">
-                                                <a href="mailto:<?php echo htmlspecialchars($t['email']); ?>" class="btn-email">
-                                                    <i class="fas fa-envelope me-2"></i>Contact via Email
-                                                </a>
-                                            </div>
-                                        <?php endif; ?>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -829,163 +835,35 @@ function getInitials($name)
             });
         });
 
-        // Video Navigation (Manual Only - No Auto-slide)
-        <?php if (!empty($videos)): ?>
-        // Filter only YouTube videos
-        const allVideos = <?= json_encode($videos) ?>;
-        const videos = allVideos.filter(v => {
-            const url = (v.href_link || '').toLowerCase();
-            return url.includes('youtube.com') || url.includes('youtu.be');
+        // Video Swiper
+        new Swiper(".videoSwiper", {
+            slidesPerView: 1,
+            spaceBetween: 30,
+            centeredSlides: true,
+            loop: true, // Always loop for infinite effect
+            loopAdditionalSlides: 2, // Add extra slides for smooth looping
+            autoplay: false, // No autoplay for videos (user might be watching)
+            navigation: { 
+                nextEl: ".videoSwiper .swiper-button-next", 
+                prevEl: ".videoSwiper .swiper-button-prev" 
+            },
+            pagination: {
+                el: ".videoSwiper .swiper-pagination",
+                clickable: true
+            },
+            breakpoints: {
+                0: { 
+                    slidesPerView: 1, 
+                    spaceBetween: 20,
+                    centeredSlides: true
+                },
+                768: { 
+                    slidesPerView: 1, 
+                    spaceBetween: 30,
+                    centeredSlides: true
+                }
+            }
         });
-        
-        let currentVideoIndex = 0;
-
-        function loadVideo(index) {
-            if (videos.length === 0) {
-                const videoPlayer = document.getElementById('videoPlayer');
-                if (videoPlayer) {
-                    // Remove iframe if exists
-                    const iframe = videoPlayer.querySelector('iframe');
-                    if (iframe) iframe.remove();
-                    // Remove placeholder if exists
-                    const placeholder = videoPlayer.querySelector('.video-placeholder');
-                    if (placeholder) placeholder.remove();
-                    // Add placeholder
-                    const newPlaceholder = document.createElement('div');
-                    newPlaceholder.className = 'video-placeholder';
-                    newPlaceholder.innerHTML = '<p>No YouTube videos available</p>';
-                    videoPlayer.appendChild(newPlaceholder);
-                }
-                return;
-            }
-            
-            // Handle circular navigation
-            if (index < 0) {
-                index = videos.length - 1; // Loop to last video
-            } else if (index >= videos.length) {
-                index = 0; // Loop to first video
-            }
-            
-            currentVideoIndex = index;
-            const video = videos[index];
-            const videoUrl = video.href_link || '';
-            
-            const videoPlayer = document.getElementById('videoPlayer');
-            if (!videoPlayer) return;
-            
-            if (!videoUrl) {
-                // Remove iframe if exists
-                const iframe = videoPlayer.querySelector('iframe');
-                if (iframe) iframe.remove();
-                // Remove placeholder if exists
-                const placeholder = videoPlayer.querySelector('.video-placeholder');
-                if (placeholder) placeholder.remove();
-                // Add placeholder
-                const newPlaceholder = document.createElement('div');
-                newPlaceholder.className = 'video-placeholder';
-                newPlaceholder.innerHTML = '<p>No video URL available</p>';
-                videoPlayer.appendChild(newPlaceholder);
-                return;
-            }
-            
-            // Extract YouTube video ID
-            let videoId = '';
-            if (videoUrl.match(/youtu\.be\/([^\?\&]+)/)) {
-                videoId = videoUrl.match(/youtu\.be\/([^\?\&]+)/)[1];
-            } else if (videoUrl.match(/youtube\.com\/watch\?v=([^\&\?]+)/)) {
-                videoId = videoUrl.match(/youtube\.com\/watch\?v=([^\&\?]+)/)[1];
-            } else if (videoUrl.match(/youtube\.com\/embed\/([^\?\&]+)/)) {
-                videoId = videoUrl.match(/youtube\.com\/embed\/([^\?\&]+)/)[1];
-            }
-            
-            // Remove existing placeholder
-            const placeholder = videoPlayer.querySelector('.video-placeholder');
-            if (placeholder) placeholder.remove();
-            
-            // Remove existing iframe
-            const existingIframe = videoPlayer.querySelector('iframe');
-            if (existingIframe) existingIframe.remove();
-            
-            if (videoId) {
-                // Create new iframe
-                const iframe = document.createElement('iframe');
-                iframe.id = 'videoFrame';
-                iframe.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
-                iframe.frameBorder = '0';
-                iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-                iframe.allowFullscreen = true;
-                iframe.style.cssText = 'width: 100%; height: 100%; min-height: 400px; border-radius: 8px;';
-                
-                // Add iframe to video player
-                videoPlayer.appendChild(iframe);
-            } else {
-                // Add placeholder for invalid URL
-                const newPlaceholder = document.createElement('div');
-                newPlaceholder.className = 'video-placeholder';
-                newPlaceholder.innerHTML = '<p>Invalid YouTube URL</p>';
-                videoPlayer.appendChild(newPlaceholder);
-            }
-        }
-
-        function nextVideo() {
-            if (videos.length === 0) return;
-            currentVideoIndex = (currentVideoIndex + 1) % videos.length; // Circular
-            loadVideo(currentVideoIndex);
-        }
-
-        function prevVideo() {
-            if (videos.length === 0) return;
-            currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length; // Circular
-            loadVideo(currentVideoIndex);
-        }
-
-        // Wait for DOM to be ready
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize first YouTube video
-            if (videos.length > 0) {
-                loadVideo(0);
-                // Show navigation buttons if there are multiple videos
-                const prevBtn = document.getElementById('prevVideo');
-                const nextBtn = document.getElementById('nextVideo');
-                if (prevBtn && videos.length > 1) prevBtn.style.display = 'flex';
-                if (nextBtn && videos.length > 1) nextBtn.style.display = 'flex';
-            } else {
-                const videoPlayer = document.getElementById('videoPlayer');
-                if (videoPlayer) {
-                    // Keep buttons but hide them if no videos
-                    const prevBtn = document.getElementById('prevVideo');
-                    const nextBtn = document.getElementById('nextVideo');
-                    if (prevBtn) prevBtn.style.display = 'none';
-                    if (nextBtn) nextBtn.style.display = 'none';
-                }
-            }
-
-            // Add event listeners for prev/next buttons
-            const prevBtn = document.getElementById('prevVideo');
-            const nextBtn = document.getElementById('nextVideo');
-            
-            if (prevBtn) {
-                prevBtn.addEventListener('click', function() {
-                    prevVideo();
-                });
-            }
-            
-            if (nextBtn) {
-                nextBtn.addEventListener('click', function() {
-                    nextVideo();
-                });
-            }
-
-            // Keyboard navigation
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'ArrowLeft') {
-                    prevVideo();
-                } else if (e.key === 'ArrowRight') {
-                    nextVideo();
-                }
-            });
-        });
-        <?php endif; ?>
         
         // Read More functionality for Research
         function toggleResearchDescription(btn) {
@@ -1048,86 +926,94 @@ function getInitials($name)
         }
     </script>
     <style>
-        .video-container-wrapper {
-            max-width: 1200px;
-            margin: 0 auto;
+        .videoSwiper {
+            padding: 2rem 0 4rem 0;
         }
-        .video-player-container {
-            background: white;
+        .video-slide-wrapper {
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            position: relative;
+            background: #000;
             border-radius: 12px;
-            padding: 2rem;
+            overflow: hidden;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        .video-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-        }
-        .video-player {
-            flex: 1;
-            background: #000;
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-        }
-        .video-arrow {
-            width: 56px;
-            height: 56px;
-            background: #1a1a1a;
-            background-image: 
-                linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%),
-                linear-gradient(-45deg, rgba(255,255,255,0.05) 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.05) 75%),
-                linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.05) 75%);
-            background-size: 8px 8px;
-            background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+        .video-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             border: none;
-            border-radius: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 20px;
-            z-index: 10;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            padding: 0;
-            flex-shrink: 0;
-        }
-        .video-arrow i {
-            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
-        }
-        .video-arrow:hover {
-            background: #2a2a2a;
-            transform: scale(1.05);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-        }
-        .video-arrow:active {
-            transform: scale(0.98);
-        }
-        .arrow-left {
-            order: 1;
-        }
-        .video-player {
-            order: 2;
-        }
-        .arrow-right {
-            order: 3;
+            border-radius: 12px;
         }
         .video-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             padding: 4rem;
             text-align: center;
             color: #999;
             background: #f5f5f5;
-            min-height: 400px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
+        .member-email {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .member-scholar {
+            margin: 10px 0;
+        }
+        .member-scholar img {
+            transition: transform 0.2s ease;
+        }
+        .member-scholar img:hover {
+            transform: scale(1.1);
+        }
+        .member-toggle {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a5cff;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .member-toggle:hover {
+            text-decoration: underline;
+        }
+        .member-desc {
+            margin-top: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #444;
+        }
     </style>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".member-toggle").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    const desc = btn.previousElementSibling;
+                    if (!desc) return;
+
+                    if (desc.style.display === "block") {
+                        desc.style.display = "none";
+                        btn.textContent = "More Info";
+                    } else {
+                        desc.style.display = "block";
+                        btn.textContent = "Less Info";
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>

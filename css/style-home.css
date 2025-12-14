@@ -161,6 +161,11 @@ main {
     display: block;
     object-fit: cover;
     border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.pin-img-wrapper:hover img {
+    transform: scale(1.1);
 }
 
 .pin-overlay {
@@ -789,6 +794,20 @@ main {
 
 .btn-readmore:active {
     transform: translateY(0);
+}
+
+/* Profile Description Toggle */
+.profile-description {
+    display: none;
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.6;
+    margin-top: 0.5rem;
+    padding: 0 1rem;
+}
+
+.profile-description.show {
+    display: block;
 }
 
 /* Divider */

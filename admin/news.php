@@ -637,7 +637,7 @@ if (!in_array($active_tab, ['news', 'video'])) {
     include __DIR__ . '/partials/sidebar.php'; ?>
     <main class="content">
         <div class="content-inner">
-            <h1 class="text-primary mb-4"><i class="ri-newspaper-line"></i> Manage Members</h1>
+            <h1 class="text-primary mb-4"><i class="ri-newspaper-line"></i> Manage News</h1>
 
 
             <div class="cms-content">

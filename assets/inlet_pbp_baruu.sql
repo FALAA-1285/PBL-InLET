@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict dYIqsngT2n3nuXAAuoemPd6F2QXf1UfFhUXFyz0xqRn0jg9dwRzvUtjftghHo9h
+\restrict bpSimOsKLgSBDNW46QyuKpgMphnhkBYC8p74cGPgSMP93pGj6QJdGCrdtIA3CNe
 
 -- Dumped from database version 15.14
 -- Dumped by pg_dump version 15.14
 
--- Started on 2025-12-14 11:19:05
+-- Started on 2025-12-14 21:23:39
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -833,7 +833,8 @@ CREATE TABLE public.member (
     notlp character varying(30),
     deskripsi text,
     alamat text,
-    id_admin integer
+    id_admin integer,
+    google_scholar text
 );
 
 
@@ -1052,7 +1053,8 @@ CREATE TABLE public.produk (
     id_produk integer NOT NULL,
     nama_produk character varying(255) NOT NULL,
     deskripsi text,
-    gambar character varying(255)
+    gambar character varying(255),
+    try text
 );
 
 
@@ -1254,7 +1256,7 @@ CREATE VIEW public.view_alat_tersedia AS
      LEFT JOIN ( SELECT peminjaman.id_alat,
             count(*) AS jumlah_dipinjam
            FROM public.peminjaman
-          WHERE (((peminjaman.status)::text = 'dipinjam'::text) AND (peminjaman.id_alat IS NOT NULL))
+          WHERE ((peminjaman.status)::text = 'dipinjam'::text)
           GROUP BY peminjaman.id_alat) pj ON ((pj.id_alat = alat.id_alat_lab)));
 
 
@@ -1330,7 +1332,7 @@ ALTER SEQUENCE public.visitor_id_visitor_seq OWNED BY public.visitor.id_visitor;
 
 
 --
--- TOC entry 3320 (class 2604 OID 46951)
+-- TOC entry 3320 (class 2604 OID 47310)
 -- Name: absensi id_absensi; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1338,7 +1340,7 @@ ALTER TABLE ONLY public.absensi ALTER COLUMN id_absensi SET DEFAULT nextval('pub
 
 
 --
--- TOC entry 3306 (class 2604 OID 46952)
+-- TOC entry 3306 (class 2604 OID 47313)
 -- Name: admin id_admin; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1346,7 +1348,7 @@ ALTER TABLE ONLY public.admin ALTER COLUMN id_admin SET DEFAULT nextval('public.
 
 
 --
--- TOC entry 3322 (class 2604 OID 46953)
+-- TOC entry 3322 (class 2604 OID 47315)
 -- Name: alat_lab id_alat_lab; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1354,7 +1356,7 @@ ALTER TABLE ONLY public.alat_lab ALTER COLUMN id_alat_lab SET DEFAULT nextval('p
 
 
 --
--- TOC entry 3315 (class 2604 OID 46954)
+-- TOC entry 3315 (class 2604 OID 47317)
 -- Name: artikel id_artikel; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1362,7 +1364,7 @@ ALTER TABLE ONLY public.artikel ALTER COLUMN id_artikel SET DEFAULT nextval('pub
 
 
 --
--- TOC entry 3313 (class 2604 OID 46955)
+-- TOC entry 3313 (class 2604 OID 47319)
 -- Name: berita id_berita; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1370,7 +1372,7 @@ ALTER TABLE ONLY public.berita ALTER COLUMN id_berita SET DEFAULT nextval('publi
 
 
 --
--- TOC entry 3303 (class 2604 OID 46956)
+-- TOC entry 3303 (class 2604 OID 47321)
 -- Name: buku_tamu id_buku_tamu; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1378,7 +1380,7 @@ ALTER TABLE ONLY public.buku_tamu ALTER COLUMN id_buku_tamu SET DEFAULT nextval(
 
 
 --
--- TOC entry 3343 (class 2604 OID 46957)
+-- TOC entry 3343 (class 2604 OID 47323)
 -- Name: contact_info id_contact; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1386,7 +1388,7 @@ ALTER TABLE ONLY public.contact_info ALTER COLUMN id_contact SET DEFAULT nextval
 
 
 --
--- TOC entry 3332 (class 2604 OID 46958)
+-- TOC entry 3332 (class 2604 OID 47325)
 -- Name: fokus_penelitian id_fp; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1394,7 +1396,7 @@ ALTER TABLE ONLY public.fokus_penelitian ALTER COLUMN id_fp SET DEFAULT nextval(
 
 
 --
--- TOC entry 3344 (class 2604 OID 46959)
+-- TOC entry 3344 (class 2604 OID 47327)
 -- Name: footer_settings id_footer; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1402,7 +1404,7 @@ ALTER TABLE ONLY public.footer_settings ALTER COLUMN id_footer SET DEFAULT nextv
 
 
 --
--- TOC entry 3300 (class 2604 OID 46960)
+-- TOC entry 3300 (class 2604 OID 47329)
 -- Name: gallery id_gallery; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1410,7 +1412,7 @@ ALTER TABLE ONLY public.gallery ALTER COLUMN id_gallery SET DEFAULT nextval('pub
 
 
 --
--- TOC entry 3309 (class 2604 OID 46471)
+-- TOC entry 3309 (class 2604 OID 47331)
 -- Name: mahasiswa id_mahasiswa; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1418,7 +1420,7 @@ ALTER TABLE ONLY public.mahasiswa ALTER COLUMN id_mahasiswa SET DEFAULT nextval(
 
 
 --
--- TOC entry 3311 (class 2604 OID 46961)
+-- TOC entry 3311 (class 2604 OID 47333)
 -- Name: member id_member; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1426,7 +1428,7 @@ ALTER TABLE ONLY public.member ALTER COLUMN id_member SET DEFAULT nextval('publi
 
 
 --
--- TOC entry 3312 (class 2604 OID 46962)
+-- TOC entry 3312 (class 2604 OID 47335)
 -- Name: mitra id_mitra; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1434,7 +1436,7 @@ ALTER TABLE ONLY public.mitra ALTER COLUMN id_mitra SET DEFAULT nextval('public.
 
 
 --
--- TOC entry 3326 (class 2604 OID 46963)
+-- TOC entry 3326 (class 2604 OID 47337)
 -- Name: peminjaman id_peminjaman; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1442,7 +1444,7 @@ ALTER TABLE ONLY public.peminjaman ALTER COLUMN id_peminjaman SET DEFAULT nextva
 
 
 --
--- TOC entry 3316 (class 2604 OID 46964)
+-- TOC entry 3316 (class 2604 OID 47339)
 -- Name: penelitian id_penelitian; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1450,7 +1452,7 @@ ALTER TABLE ONLY public.penelitian ALTER COLUMN id_penelitian SET DEFAULT nextva
 
 
 --
--- TOC entry 3337 (class 2604 OID 46965)
+-- TOC entry 3337 (class 2604 OID 47340)
 -- Name: pengunjung id_pengunjung; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1458,7 +1460,7 @@ ALTER TABLE ONLY public.pengunjung ALTER COLUMN id_pengunjung SET DEFAULT nextva
 
 
 --
--- TOC entry 3319 (class 2604 OID 46966)
+-- TOC entry 3319 (class 2604 OID 47341)
 -- Name: produk id_produk; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1466,7 +1468,7 @@ ALTER TABLE ONLY public.produk ALTER COLUMN id_produk SET DEFAULT nextval('publi
 
 
 --
--- TOC entry 3329 (class 2604 OID 46967)
+-- TOC entry 3329 (class 2604 OID 47343)
 -- Name: ruang_lab id_ruang_lab; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1474,7 +1476,7 @@ ALTER TABLE ONLY public.ruang_lab ALTER COLUMN id_ruang_lab SET DEFAULT nextval(
 
 
 --
--- TOC entry 3333 (class 2604 OID 46589)
+-- TOC entry 3333 (class 2604 OID 47346)
 -- Name: settings id_setting; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1482,7 +1484,7 @@ ALTER TABLE ONLY public.settings ALTER COLUMN id_setting SET DEFAULT nextval('pu
 
 
 --
--- TOC entry 3345 (class 2604 OID 47245)
+-- TOC entry 3345 (class 2604 OID 47349)
 -- Name: video id_video; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1490,7 +1492,7 @@ ALTER TABLE ONLY public.video ALTER COLUMN id_video SET DEFAULT nextval('public.
 
 
 --
--- TOC entry 3339 (class 2604 OID 46968)
+-- TOC entry 3339 (class 2604 OID 47348)
 -- Name: visitor id_visitor; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1542,7 +1544,6 @@ COPY public.alat_lab (id_alat_lab, nama_alat, deskripsi, stock, created_at, upda
 
 COPY public.artikel (id_artikel, judul, tahun, konten, id_penelitian, nim, id_member, id_produk, id_mitra) FROM stdin;
 14	Enhancing EFL Reading Comprehension via an AI-Chatbot-Guided Toulmin Mapping in Viat-Map	2025	https://journal.unilak.ac.id/index.php/UTAMAX/article/download/26628/8190	3	\N	5	1	\N
-15	Intergrasi LLM ke dalam ViatMap untuk memperbaiki kesalahan berfikir siswa dalam memahami Bahasa Inggris	2022		3	11226677	\N	1	\N
 13	Analyzing Student Behavior in Viat-map: Steps and Time as Performance Indicators	2024	https://scholar.google.com/citations?view_op=view_citation&hl=en&user=jetyPtUAAAAJ&sortby=pubdate&citation_for_view=jetyPtUAAAAJ:R3hNpaxXUhUC	3	\N	5	\N	\N
 12	Gamification in Viat-Map Application to Improve Student’s Experiences and the Relation with Their Performance	2024	https://scholar.google.com/citations?view_op=view_citation&hl=en&user=jetyPtUAAAAJ&sortby=pubdate&citation_for_view=jetyPtUAAAAJ:TQgYirikUcIC	3	\N	5	1	\N
 9	\tInvestigating VIAT-Map from the view point of Ease of Use, Perceived of Usefulness, and Acceptance of IT by using Technology Acceptance Model (TAM)	2023	https://ieeexplore.ieee.org/abstract/document/10435078/	3	\N	5	1	\N
@@ -1673,17 +1674,17 @@ COPY public.mahasiswa (id_mahasiswa, nama, tahun, status, id_admin) FROM stdin;
 -- Data for Name: member; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.member (id_member, nama, email, jabatan, foto, bidang_keahlian, notlp, deskripsi, alamat, id_admin) FROM stdin;
-5	Dr. Eng. Banni Satria Andoko, S.Kom.,M.MSI	ando@polinema.ac.id	Ketua Lab	https://let.polinema.ac.id/assets/images/18835562-10154469252722414-8386228144297630804-n.jpg	\N	(62) 813-5988-9181	I am a lecturer in State Polytechnic of Malang - Indonesia. My research area is Technology Enhanced Learning.	Jl. Soekarno Hatta No.9, Jatimulyo, Kec. Lowokwaru, Kota Malang, Jawa Timur	\N
-6	Deasy Sandhya Elya Ikawati, S.Si., M.Si	deasysandhya@polinema.ac.id	member	https://let.polinema.ac.id/assets/images/whatsapp-image-2024-01-12-at-16.32.26-97f4f829-1.jpg	\N	\N	\N	\N	\N
-7	Farid Angga Pribadi, S.Kom., M.Kom	faridangga@polinema.ac.id	\N	https://let.polinema.ac.id/assets/images/profpic-farid-1.jpg	\N	\N	\N	\N	\N
-8	Agung Nugroho Pramudhita, S.T., M.T. 	agung.pramudhita@polinema.ac.id	\N	https://let.polinema.ac.id/assets/images/whatsapp-image-2024-01-16-at-16.22.54-40cb242d.jpg	\N	\N	\N	\N	\N
-9	Vivin Ayu Lestari, S.Pd., M.Kom	vivin@polinema.ac.id	\N	https://let.polinema.ac.id/assets/images/20230809-104340.jpeg	\N	\N	\N	\N	\N
-10	Dian Hanifudin Subhi, S.Kom.,M.Kom.	\N	\N	https://let.polinema.ac.id/assets/images/whatsapp-image-2024-05-15-at-12.17.57-89ae13e6.jpeg	\N	\N	\N	\N	\N
-12	Putra Prima Arhandi, S.T.,M.Kom.	putraprima@polinema.ac.id	\N	https://let.polinema.ac.id/assets/images/prima-1.jpeg	\N	\N	\N	\N	\N
-14	Arief Prasetyo, S.Kom.,M.Kom.	arief.prasetyo@polinema.ac.id	\N	https://let.polinema.ac.id/assets/images/whatsapp-image-2024-01-12-at-10.57.00-35ebc528.jpeg	\N	\N	\N	\N	\N
-11	Moch. Zawaruddin Abdullah, S.ST., M.Kom	\N	\N	https://let.polinema.ac.id/assets/images/img-20240515.jpeg	\N	\N	\N	https://let.polinema.ac.id/assets/images/img-20240515.jpeg	\N
-15	Dr. Eng. Afif Supiyanto	\N	analyst	https://let.polinema.ac.id/assets/images/afif.jpg	\N	\N	\N	\N	\N
+COPY public.member (id_member, nama, email, jabatan, foto, bidang_keahlian, notlp, deskripsi, alamat, id_admin, google_scholar) FROM stdin;
+10	Dian Hanifudin Subhi, S.Kom.,M.Kom.	\N	\N	https://let.polinema.ac.id/assets/images/whatsapp-image-2024-05-15-at-12.17.57-89ae13e6.jpeg	\N	\N	\N	\N	\N	\N
+14	Arief Prasetyo, S.Kom.,M.Kom.	arief.prasetyo@polinema.ac.id	\N	https://let.polinema.ac.id/assets/images/whatsapp-image-2024-01-12-at-10.57.00-35ebc528.jpeg	\N	\N	\N	\N	\N	\N
+11	Moch. Zawaruddin Abdullah, S.ST., M.Kom	\N	\N	https://let.polinema.ac.id/assets/images/img-20240515.jpeg	\N	\N	\N	https://let.polinema.ac.id/assets/images/img-20240515.jpeg	\N	\N
+5	Dr. Eng. Banni Satria Andoko, S.Kom.,M.MSI	ando@polinema.ac.id	Ketua Lab	https://let.polinema.ac.id/assets/images/18835562-10154469252722414-8386228144297630804-n.jpg	\N	(62) 813-5988-9181	I am a lecturer in State Polytechnic of Malang - Indonesia. My research area is Technology Enhanced Learning.	Jl. Soekarno Hatta No.9, Jatimulyo, Kec. Lowokwaru, Kota Malang, Jawa Timur	\N	https://scholar.google.com/citations?user=jetyPtUAAAAJ&hl=id
+12	Putra Prima Arhandi, S.T.,M.Kom.	putraprima@polinema.ac.id	\N	https://let.polinema.ac.id/assets/images/prima-1.jpeg	\N	\N	\N	\N	\N	https://scholar.google.com/citations?user=Wl99TE0AAAAJ&hl=id
+15	Dr. Eng. Afif Supiyanto	\N	analyst	https://let.polinema.ac.id/assets/images/afif.jpg	\N	\N	\N	\N	\N	https://scholar.google.com/citations?hl=id&user=VSIYb_QAAAAJ
+6	Deasy Sandhya Elya Ikawati, S.Si., M.Si	deasysandhya@polinema.ac.id	member	https://let.polinema.ac.id/assets/images/whatsapp-image-2024-01-12-at-16.32.26-97f4f829-1.jpg	\N	\N	\N	\N	\N	https://scholar.google.com/citations?hl=id&user=H-zZ_4IAAAAJ
+7	Farid Angga Pribadi, S.Kom., M.Kom	faridangga@polinema.ac.id	\N	https://let.polinema.ac.id/assets/images/profpic-farid-1.jpg	\N	\N	\N	\N	\N	https://scholar.google.com/citations?hl=id&user=l2ZPw6YAAAAJ
+8	Agung Nugroho Pramudhita, S.T., M.T. 	agung.pramudhita@polinema.ac.id	\N	https://let.polinema.ac.id/assets/images/whatsapp-image-2024-01-16-at-16.22.54-40cb242d.jpg	\N	\N	\N	\N	\N	https://scholar.google.com/citations?hl=id&user=hpVrzLoAAAAJ
+9	Vivin Ayu Lestari, S.Pd., M.Kom	vivin@polinema.ac.id	\N	https://let.polinema.ac.id/assets/images/20230809-104340.jpeg	\N	\N	\N	\N	\N	https://scholar.google.com/citations?hl=id&user=2og3UP8AAAAJ
 \.
 
 
@@ -1733,8 +1734,7 @@ COPY public.peminjaman (id_peminjaman, id_alat, nama_peminjam, tanggal_pinjam, t
 --
 
 COPY public.penelitian (id_penelitian, id_artikel, id_mhs, judul, tahun, id_member, deskripsi, created_at, id_produk, id_mitra, tgl_mulai, tgl_selesai, id_fp) FROM stdin;
-4	\N	\N	PseudoLearn Application	2021	\N	A learning medium for reconstructing pseudocode algorithms using the Element Fill-in-Blank Problems approach in Java programming.	2025-12-09 14:34:41.544171+07	\N	\N	2021-01-09	\N	\N
-3	\N	\N	Viat Map Application	2021	\N	VIAT-map (Visual Arguments Toulmin) Application to help Reding Comprehension by using Toulmin Arguments Concept. We are trying to emphasise the logic behind a written text by adding the claim, ground and warrant following the Toulmin Argument Concept.	2025-12-09 14:33:13.036895+07	\N	\N	2021-07-09	\N	\N
+3	\N	\N	Viat Map Application	2021	\N	VIAT-map (Visual Arguments Toulmin) Application to help Reding Comprehension by using Toulmin Arguments Concept. We are trying to emphasise the logic behind a written text by adding the claim, ground and warrant following the Toulmin Argument Concept.	2025-12-09 14:33:13.036895+07	\N	\N	2021-01-09	\N	\N
 \.
 
 
@@ -1754,12 +1754,12 @@ COPY public.pengunjung (id_pengunjung, nama, email, asal_institusi, created_at, 
 -- Data for Name: produk; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.produk (id_produk, nama_produk, deskripsi, gambar) FROM stdin;
-1	VIAT Map Application	VIAT-map (Visual Arguments Toulmin) Application to help Reding Comprehension by using Toulmin Arguments Concept. We are trying to emphasise the logic behind a written text by adding the claim, ground and warrant following the Toulmin Argument Concept.	https://let.polinema.ac.id/assets/images/viat-map.png
-2	PseudoLearn Application	Sebuah media pembelajaran rekonstruksi algoritma pseudocode dengan menggunakan pendekatan Element Fill-in-Blank Problems di dalam pemrograman java	https://let.polinema.ac.id/assets/images/tinytake16-01-2024-05-8.png
-4	ALL-IN-ONE GELFREE ELECTRODE CAP BUNDLE	\N	uploads/produk/img_6935af815d8fe8.08665919.png
-5	ALL-IN-ONE EGG ELECTRODE CAP BUNDLE	\N	uploads/produk/img_6935afce177fe6.99916109.png
-3	Codeasy	\N	uploads/produk/img_6935ff193b4766.41314001.jpg
+COPY public.produk (id_produk, nama_produk, deskripsi, gambar, try) FROM stdin;
+2	PseudoLearn Application	Sebuah media pembelajaran rekonstruksi algoritma pseudocode dengan menggunakan pendekatan Element Fill-in-Blank Problems di dalam pemrograman java	https://let.polinema.ac.id/assets/images/tinytake16-01-2024-05-8.png	\N
+4	ALL-IN-ONE GELFREE ELECTRODE CAP BUNDLE	\N	uploads/produk/img_6935af815d8fe8.08665919.png	\N
+5	ALL-IN-ONE EGG ELECTRODE CAP BUNDLE	\N	uploads/produk/img_6935afce177fe6.99916109.png	\N
+3	Codeasy	\N	uploads/produk/img_6935ff193b4766.41314001.jpg	\N
+1	VIAT Map Application	VIAT-map (Visual Arguments Toulmin) Application to help Reding Comprehension by using Toulmin Arguments Concept. We are trying to emphasise the logic behind a written text by adding the claim, ground and warrant following the Toulmin Argument Concept.	https://let.polinema.ac.id/assets/images/viat-map.png	https://vmap.let.polinema.ac.id/
 \.
 
 
@@ -2550,7 +2550,7 @@ ALTER TABLE ONLY public.visitor
 
 --
 -- TOC entry 3626 (class 0 OID 0)
--- Dependencies: 9
+-- Dependencies: 13
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: pg_database_owner
 --
 
@@ -2574,11 +2574,11 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENC
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES  TO postgres;
 
 
--- Completed on 2025-12-14 11:19:06
+-- Completed on 2025-12-14 21:23:39
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict dYIqsngT2n3nuXAAuoemPd6F2QXf1UfFhUXFyz0xqRn0jg9dwRzvUtjftghHo9h
+\unrestrict bpSimOsKLgSBDNW46QyuKpgMphnhkBYC8p74cGPgSMP93pGj6QJdGCrdtIA3CNe
 
