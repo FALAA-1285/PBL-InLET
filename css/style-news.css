@@ -190,6 +190,13 @@ main {
     background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
     padding: 1rem;
     color: #fff;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.pin-item:hover .pin-overlay {
+    opacity: 1 !important;
 }
 
 .pin-title {

@@ -134,33 +134,26 @@ main {
 }
 
 .pin-item {
-    position: absolute;
-    width: 100%;
-    opacity: 0;
-    transition: opacity .5s, transform .5s;
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transition: .25s ease;
 }
 
-.pin-item.show {
-    opacity: 1;
+.pin-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .pin-img-wrapper {
-    position: relative;
     overflow: hidden;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    /* make image boxes consistent so object-fit crops predictably */
-    width: 100%;
-    aspect-ratio: 3 / 4;
-    max-height: 520px;
 }
 
 .pin-img-wrapper img {
     width: 100%;
-    height: 100%;
     display: block;
-    object-fit: cover;
-    border-radius: 10px;
+    border-radius: 16px;
     transition: transform 0.3s ease;
 }
 
@@ -173,34 +166,22 @@ main {
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
+    padding: 1rem;
     color: #fff;
-    padding: 10px;
-    opacity: 0;
-    transition: opacity .3s;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 
-.pin-img-wrapper:hover .pin-overlay {
-    opacity: 1;
+.pin-item:hover .pin-overlay {
+    opacity: 1 !important;
 }
 
 .pin-title {
     font-size: 1rem;
     font-weight: 600;
     margin: 0;
-}
-
-.pin-desc {
-    font-size: .875rem;
-    margin: 0;
-}
-
-@media(max-width:575.98px) {
-    .pin-item {
-        position: static !important;
-        width: 100% !important;
-        margin-bottom: 15px;
-    }
 }
 
 /* Section Titles */

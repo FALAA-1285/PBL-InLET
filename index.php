@@ -95,31 +95,38 @@ $partners = safeQueryAll($conn, "SELECT * FROM mitra ORDER BY nama_institusi");
 // Fetch videos
 $videos = safeQueryAll($conn, "SELECT * FROM video ORDER BY created_at DESC");
 
-// Fetch gallery
-$raw_gallery = safeQueryAll($conn, "SELECT gambar, judul FROM gallery ORDER BY created_at DESC");
-
+// ---------- GALLERY SOURCE ----------
 $all_gallery = [];
-if (!empty($raw_gallery)) {
-    foreach ($raw_gallery as $row) {
-        $img = trim($row['gambar'] ?? '');
-        // keep absolute URLs as-is; if path looks relative, make it relative to 'uploads/'
-        if ($img !== '' && !preg_match('#^https?://#i', $img)) {
-            // if it's already contains uploads/ keep it; else prepend uploads/
-            if (strpos($img, 'uploads/') !== 0 && strpos($img, './uploads/') !== 0) {
-                $img = 'uploads/' . ltrim($img, '/');
-            }
-        }
-        $all_gallery[] = [
-            'img' => $img ?: null,
-            'judul' => $row['judul'] ?? ''
-        ];
-    }
-}
-
-// If no gallery data, leave empty
-if (empty($all_gallery)) {
+try {
+    $gallery_stmt = $conn->query("SELECT gambar, judul FROM gallery ORDER BY created_at DESC");
+    $all_gallery = $gallery_stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
     $all_gallery = [];
 }
+
+if (empty($all_gallery)) {
+    $all_gallery = [];
+} else {
+    $all_gallery = array_map(function ($item) {
+        return ["img" => $item['gambar'], "judul" => $item['judul'] ?? ''];
+    }, $all_gallery);
+}
+
+// ---------- AJAX endpoint for load_more gallery ----------
+if (isset($_GET['action']) && $_GET['action'] === 'load_gallery') {
+    $limit = 12;
+    $gpage = isset($_GET['gpage']) ? max(1, (int) $_GET['gpage']) : 1;
+    $start = ($gpage - 1) * $limit;
+    $slice = array_slice($all_gallery, $start, $limit);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(array_values($slice));
+    exit;
+}
+
+// Gallery initial load
+$gallery_items_per_page = 12;
+$total_gallery_items = count($all_gallery);
+$gallery_init = array_slice($all_gallery, 0, $gallery_items_per_page);
 
 // Initials helper
 function getInitials($name)
@@ -609,30 +616,22 @@ function getInitials($name)
                     <p>Documentation of InLET</p>
                 </div>
 
-                <!-- Pinterest-like grid -->
                 <?php if (!empty($all_gallery)): ?>
                     <div id="pinterest-grid" class="pinterest-grid">
-                        <?php foreach ($all_gallery as $g):
-                            $img_src = $g['img'] ?? null;
-                            // if empty or null, use placeholder
-                            if (empty($img_src)) {
-                                $img_src = "https://via.placeholder.com/400x300/cccccc/666666?text=Gallery";
-                            }
-                            // ensure safe attributes
-                            $judul = $g['judul'] ?? '';
-                            ?>
+                        <?php foreach ($gallery_init as $g): ?>
                             <div class="pin-item">
                                 <div class="pin-img-wrapper">
-                                    <img src="<?= htmlspecialchars($img_src) ?>"
-                                        alt="<?= htmlspecialchars($judul ?: 'Gallery Image') ?>"
+                                    <img src="<?php echo htmlspecialchars($g['img']); ?>" alt="Gallery Image"
                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Gallery';">
                                     <div class="pin-overlay">
-                                        <h5 class="pin-title"><?= htmlspecialchars($judul ?: 'Image') ?></h5>
+                                        <h5 class="pin-title"><?php echo htmlspecialchars($g['judul'] ?: 'Image'); ?></h5>
                                     </div>
                                 </div>
                             </div>
                         <?php endforeach; ?>
                     </div>
+
+                    <div id="loader" class="text-center mt-3 d-none">Loading more...</div>
                 <?php else: ?>
                     <div class="empty-data-alert" role="alert">
                         <i class="fas fa-images fa-3x mb-3 text-muted"></i>
@@ -1012,6 +1011,168 @@ function getInitials($name)
                     }
                 });
             });
+        });
+
+        // Gallery Masonry Layout and Infinite Scroll
+        document.addEventListener("DOMContentLoaded", function () {
+            const container = document.getElementById("pinterest-grid");
+            if (!container) return;
+            const gap = 15;
+            let gpage = 2; // Gallery page counter
+            let allLoaded = false;
+            let isLoading = false;
+
+            function getColumns() {
+                if (window.innerWidth < 576) return 1;
+                if (window.innerWidth < 768) return 2;
+                return 3;
+            }
+
+            function masonryLayout() {
+                const items = Array.from(container.querySelectorAll(".pin-item"));
+                const columns = getColumns();
+
+                if (columns === 1) {
+                    container.style.height = "auto";
+                    items.forEach(i => {
+                        i.style.position = "";
+                        i.style.transform = "";
+                        i.style.width = "100%";
+                    });
+                    return;
+                }
+
+                items.forEach(i => {
+                    i.style.position = "absolute";
+                    i.style.transition = "transform 300ms ease";
+                });
+
+                const colWidth = (container.offsetWidth - (columns - 1) * gap) / columns;
+                const colHeights = Array(columns).fill(0);
+
+                items.forEach(item => {
+                    item.style.width = Math.floor(colWidth) + "px";
+                    const minCol = colHeights.indexOf(Math.min(...colHeights));
+                    const x = minCol * (colWidth + gap);
+                    const y = colHeights[minCol];
+                    item.style.transform = `translate(${x}px, ${y}px)`;
+                    item.classList.add("show");
+                    colHeights[minCol] += item.offsetHeight + gap;
+                });
+
+                container.style.height = Math.max(...colHeights) + "px";
+            }
+
+            function appendItems(data) {
+                if (!data || !data.length) return;
+                data.forEach(g => {
+                    const item = document.createElement("div");
+                    item.className = "pin-item";
+                    const wrapper = document.createElement("div");
+                    wrapper.className = "pin-img-wrapper";
+
+                    const img = document.createElement("img");
+                    img.src = g.img;
+                    img.alt = g.judul || "Gallery Image";
+                    img.onerror = function () {
+                        this.onerror = null;
+                        this.src = "https://via.placeholder.com/400x300/cccccc/666666?text=Gallery";
+                    };
+
+                    const overlay = document.createElement("div");
+                    overlay.className = "pin-overlay";
+                    const title = document.createElement("h5");
+                    title.className = "pin-title";
+                    title.textContent = g.judul || "Image";
+                    overlay.appendChild(title);
+
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(overlay);
+                    item.appendChild(wrapper);
+                    container.appendChild(item);
+
+                    img.onload = img.onerror = function () {
+                        setTimeout(masonryLayout, 40);
+                    };
+                });
+
+                setTimeout(masonryLayout, 60);
+            }
+
+            function loadMore() {
+                if (isLoading || allLoaded) return;
+                isLoading = true;
+                const loader = document.getElementById("loader");
+                if (loader) loader.style.display = "block";
+
+                fetch('index.php?action=load_gallery&gpage=' + gpage)
+                    .then(r => {
+                        if (!r.ok) throw new Error("Network response was not ok");
+                        return r.json();
+                    })
+                    .then(data => {
+                        if (!data || data.length === 0) {
+                            allLoaded = true;
+                        } else {
+                            appendItems(data);
+                            gpage++;
+                        }
+                    })
+                    .catch(err => {
+                        console.warn("Failed to load more gallery items:", err);
+                        allLoaded = true;
+                    })
+                    .finally(() => {
+                        isLoading = false;
+                        if (loader) loader.style.display = "none";
+                    });
+            }
+
+            (function initImageLoadAndLayout() {
+                const imgs = Array.from(container.querySelectorAll("img"));
+                if (!imgs.length) {
+                    masonryLayout();
+                    return;
+                }
+
+                let loadedCount = 0;
+                imgs.forEach(img => {
+                    if (img.complete) {
+                        loadedCount++;
+                    } else {
+                        img.addEventListener("load", () => {
+                            loadedCount++;
+                            if (loadedCount === imgs.length) masonryLayout();
+                        }, { once: true });
+                        img.addEventListener("error", () => {
+                            loadedCount++;
+                            if (loadedCount === imgs.length) masonryLayout();
+                        }, { once: true });
+                    }
+                });
+
+                if (loadedCount === imgs.length) {
+                    setTimeout(masonryLayout, 40);
+                }
+            })();
+
+            let resizeTimer = null;
+            window.addEventListener("resize", function () {
+                if (resizeTimer) clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(masonryLayout, 120);
+            });
+
+            let scrollTimer = null;
+            window.addEventListener('scroll', () => {
+                if (scrollTimer) clearTimeout(scrollTimer);
+                scrollTimer = setTimeout(() => {
+                    if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 200)) {
+                        loadMore();
+                    }
+                }, 120);
+            });
+
+            window.__galleryLoadMore = loadMore;
         });
     </script>
 </body>
