@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -293,7 +293,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="login-footer">
                 <a href="index.php">
-                    <i class="ri-arrow-left-line"></i> Kembali ke Beranda
+                    <i class="ri-arrow-left-line"></i> Back to Home
                 </a>
             </div>
         </div>

@@ -162,78 +162,113 @@ function getInitials($name)
         </section>
 
         <!-- Research section -->
-        <section class="py-5" id="riset">
+        <section class="py-5 bg-light" id="riset">
             <div class="container">
-                <div class="section-title">
-                    <h2>Our Research</h2>
-                    <?php 
-                    // Re-query to ensure fresh data (in case of updates)
-                    if (empty($riset)) {
-                        try {
-                            $stmt = $conn->prepare("SELECT id_fp, title as judul, deskripsi, detail FROM fokus_penelitian ORDER BY id_fp");
-                            $stmt->execute();
-                            $riset = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                        } catch (PDOException $e) {
-                            $riset = [];
-                        }
-                    }
-                    
-                    if (!empty($riset)): 
-                        // Display all research items
-                        foreach ($riset as $research_item): 
-                            $formatted_title = formatTitle($research_item['judul'] ?? '');
-                    ?>
-                        <div style="margin-bottom: 2rem;">
-                            <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;"><?= htmlspecialchars($formatted_title); ?></h3>
-                            <?php if (!empty($research_item['deskripsi'])): ?>
-                                <p class="text-center"><?= htmlspecialchars($research_item['deskripsi']); ?></p>
-                            <?php else: ?>
-                                <p class="text-center">Pilar ini berfokus pada rekayasa sistem informasi dan pengambilan keputusan berbasis data. Subdomain seperti E-Government, Decision Support Systems, dan Civic Technology dipilih karena relevan dengan kebutuhan industri dan pemerintahan dalam membangun sistem digital yang transparan, efisien, dan etis. Pilar ini mendukung pengembangan solusi teknologi untuk tata kelola publik, manajemen pengetahuan, dan sistem informasi yang patuh terhadap regulasi.</p>
-                            <?php endif; ?>
-                        </div>
-                    <?php 
-                        endforeach;
-                    else: ?>
-                        <p>InLET's research focuses on developing learning technology.</p>
-                        <p class="text-center">Pilar ini berfokus pada rekayasa sistem informasi dan pengambilan keputusan berbasis data. Subdomain seperti E-Government, Decision Support Systems, dan Civic Technology dipilih karena relevan dengan kebutuhan industri dan pemerintahan dalam membangun sistem digital yang transparan, efisien, dan etis. Pilar ini mendukung pengembangan solusi teknologi untuk tata kelola publik, manajemen pengetahuan, dan sistem informasi yang patuh terhadap regulasi.</p>
-                    <?php endif; ?>
+                <div class="section-title text-center mb-5">
+                    <h2 class="fw-bold">Our Research</h2>
+                    <p class="text-muted">Exploring innovative solutions in Information and Learning Engineering Technology</p>
+                    <div class="divider"></div>
                 </div>
+                <?php 
+                // Re-query to ensure fresh data (in case of updates)
+                if (empty($riset)) {
+                    try {
+                        $stmt = $conn->prepare("SELECT id_fp, title as judul, deskripsi, detail FROM fokus_penelitian ORDER BY id_fp");
+                        $stmt->execute();
+                        $riset = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    } catch (PDOException $e) {
+                        $riset = [];
+                    }
+                }
+                
+                if (!empty($riset)): ?>
+                    <div class="row">
+                        <?php foreach ($riset as $research_item): 
+                            $formatted_title = formatTitle($research_item['judul'] ?? '');
+                        ?>
+                            <div class="col-lg-6 col-md-12 mb-4">
+                                <div class="research-item-card card-surface h-100">
+                                    <h3 class="research-item-title"><?= htmlspecialchars($formatted_title); ?></h3>
+                                    <?php 
+                                    $description = !empty($research_item['deskripsi']) ? $research_item['deskripsi'] : 'This research pillar focuses on information systems engineering and data-driven decision making. Subdomains such as E-Government, Decision Support Systems, and Civic Technology are selected for their relevance to industry and government needs in building transparent, efficient, and ethical digital systems.';
+                                    $description_length = strlen($description);
+                                    $needs_readmore = $description_length > 150;
+                                    ?>
+                                    <div class="research-description-wrapper">
+                                        <p class="research-item-description <?= $needs_readmore ? 'research-description-collapsed' : '' ?>">
+                                            <?= htmlspecialchars($description); ?>
+                                        </p>
+                                        <?php if ($needs_readmore): ?>
+                                            <button class="btn-readmore" onclick="toggleResearchDescription(this)">
+                                                <span class="readmore-text">Read More</span>
+                                                <span class="readless-text" style="display: none;">Read Less</span>
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="empty-data-alert" role="alert">
+                        <i class="fas fa-flask fa-3x mb-3 text-muted"></i>
+                        <p class="mb-0">InLET's research focuses on developing learning technology.</p>
+                    </div>
+                <?php endif; ?>
             </div>
         </section>
 
         <section id="research-fields" class="py-5">
             <div class="container">
-                <h2 class="section-title mb-4 text-center">Research Fields</h2>
+                <div class="section-title text-center mb-5">
+                    <h2 class="fw-bold">Research Fields</h2>
+                    <p class="text-muted">Our core areas of expertise and innovation</p>
+                    <div class="divider"></div>
+                </div>
 
                 <div class="row">
                     <?php if (!empty($research_fields_paginated)): ?>
                         <?php foreach ($research_fields_paginated as $r): ?>
                             <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-                                <div class="rf-card p-4 shadow-sm rounded h-100">
-                                    <h4 class="fw-bold mb-2 text-center">
+                                <div class="rf-card card-surface h-100">
+                                    <h4 class="rf-card-title">
                                         <?= htmlspecialchars(formatTitle($r['judul'])) ?>
                                     </h4>
-                                    <div class="text-muted text-center">
+                                    <div class="rf-card-content">
                                         <?php 
                                         $detail_text = $r['detail'] ?? $r['deskripsi'] ?? '';
                                         if (!empty($detail_text)) {
                                             // Split by newlines and process each line
                                             $lines = explode("\n", $detail_text);
-                                            echo '<ul class="list-unstyled mb-0" style="text-align: left; padding-left: 1.5rem;">';
-                                            foreach ($lines as $line) {
-                                                $line = trim($line);
-                                                if (!empty($line)) {
-                                                    // If line starts with "-", remove it and make it a bullet point
-                                                    if (strpos($line, '-') === 0) {
-                                                        $line = trim(substr($line, 1));
-                                                        echo '<li style="list-style-type: disc; margin-bottom: 0.5rem;">' . htmlspecialchars($line) . '</li>';
-                                                    } else {
-                                                        // Regular line without bullet
-                                                        echo '<li style="list-style-type: none; margin-bottom: 0.5rem;">' . htmlspecialchars($line) . '</li>';
+                                            $total_lines = count(array_filter($lines, function($l) { return !empty(trim($l)); }));
+                                            $needs_readmore = $total_lines > 5;
+                                            ?>
+                                            <div class="rf-content-wrapper">
+                                                <ul class="rf-card-list <?= $needs_readmore ? 'rf-content-collapsed' : '' ?>">
+                                                    <?php
+                                                    foreach ($lines as $line) {
+                                                        $line = trim($line);
+                                                        if (!empty($line)) {
+                                                            // If line starts with "-", remove it and make it a bullet point
+                                                            if (strpos($line, '-') === 0) {
+                                                                $line = trim(substr($line, 1));
+                                                                echo '<li>' . htmlspecialchars($line) . '</li>';
+                                                            } else {
+                                                                // Regular line without bullet
+                                                                echo '<li class="no-bullet">' . htmlspecialchars($line) . '</li>';
+                                                            }
+                                                        }
                                                     }
-                                                }
-                                            }
-                                            echo '</ul>';
+                                                    ?>
+                                                </ul>
+                                                <?php if ($needs_readmore): ?>
+                                                    <button class="btn-readmore" onclick="toggleResearchField(this)">
+                                                        <span class="readmore-text">Read More</span>
+                                                        <span class="readless-text" style="display: none;">Read Less</span>
+                                                    </button>
+                                                <?php endif; ?>
+                                            </div>
+                                            <?php
                                         }
                                         ?>
                                     </div>
@@ -241,35 +276,65 @@ function getInitials($name)
                             </div>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <div class="empty-data-alert" role="alert">
-                            <i class="fas fa-flask fa-3x mb-3 text-muted"></i>
-                            <p class="mb-0">No Research Fields available.</p>
+                        <div class="col-12">
+                            <div class="empty-data-alert" role="alert">
+                                <i class="fas fa-flask fa-3x mb-3 text-muted"></i>
+                                <p class="mb-0">No Research Fields available.</p>
+                            </div>
                         </div>
                     <?php endif; ?>
                 </div>
 
                 <!-- Pagination -->
                 <?php if ($totalPagesRF > 1): ?>
-                    <nav aria-label="RF Pagination" class="mt-4">
-                        <ul class="pagination justify-content-center">
-
+                    <nav aria-label="RF Pagination" class="mt-5">
+                        <ul class="pagination pagination-modern justify-content-center">
                             <!-- Previous -->
                             <li class="page-item <?= ($pageRF <= 1) ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?rf=<?= $pageRF - 1 ?>">Previous</a>
+                                <a class="page-link" href="?rf=<?= $pageRF - 1 ?>#research-fields" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo; Previous</span>
+                                </a>
                             </li>
 
                             <!-- Number -->
-                            <?php for ($i = 1; $i <= $totalPagesRF; $i++): ?>
+                            <?php 
+                            $start_page = max(1, $pageRF - 2);
+                            $end_page = min($totalPagesRF, $pageRF + 2);
+                            
+                            if ($start_page > 1): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="?rf=1#research-fields">1</a>
+                                </li>
+                                <?php if ($start_page > 2): ?>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                <?php endif; ?>
+                            <?php endif; ?>
+
+                            <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
                                 <li class="page-item <?= ($i == $pageRF) ? 'active' : '' ?>">
-                                    <a class="page-link" href="?rf=<?= $i ?>"><?= $i ?></a>
+                                    <a class="page-link" href="?rf=<?= $i ?>#research-fields"><?= $i ?></a>
                                 </li>
                             <?php endfor; ?>
 
+                            <?php if ($end_page < $totalPagesRF): ?>
+                                <?php if ($end_page < $totalPagesRF - 1): ?>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                <?php endif; ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="?rf=<?= $totalPagesRF ?>#research-fields"><?= $totalPagesRF ?></a>
+                                </li>
+                            <?php endif; ?>
+
                             <!-- Next -->
                             <li class="page-item <?= ($pageRF >= $totalPagesRF) ? 'disabled' : '' ?>">
-                                <a class="page-link" href="?rf=<?= $pageRF + 1 ?>">Next</a>
+                                <a class="page-link" href="?rf=<?= $pageRF + 1 ?>#research-fields" aria-label="Next">
+                                    <span aria-hidden="true">Next &raquo;</span>
+                                </a>
                             </li>
-
                         </ul>
                     </nav>
                 <?php endif; ?>
@@ -295,57 +360,63 @@ function getInitials($name)
                     <div class="video-container-wrapper">
                         <div class="video-player-container">
                             <div class="video-wrapper" id="videoWrapper">
+                                <?php 
+                                // Filter only YouTube videos
+                                $youtube_videos = array_filter($videos, function($v) {
+                                    $url = strtolower($v['href_link'] ?? '');
+                                    return strpos($url, 'youtube.com') !== false || strpos($url, 'youtu.be') !== false;
+                                });
+                                $youtube_videos = array_values($youtube_videos); // Re-index array
+                                
+                                if (!empty($youtube_videos)):
+                                    $first_video = $youtube_videos[0];
+                                    $video_url = htmlspecialchars($first_video['href_link'] ?? '');
+                                    
+                                    // Extract YouTube video ID
+                                    $video_id = '';
+                                    if (preg_match('/youtu\.be\/([^\?\&]+)/', $video_url, $matches)) {
+                                        $video_id = $matches[1];
+                                    } elseif (preg_match('/youtube\.com\/watch\?v=([^\&\?]+)/', $video_url, $matches)) {
+                                        $video_id = $matches[1];
+                                    } elseif (preg_match('/youtube\.com\/embed\/([^\?\&]+)/', $video_url, $matches)) {
+                                        $video_id = $matches[1];
+                                    }
+                                ?>
                                 <button class="video-arrow arrow-left" id="prevVideo" title="Previous Video">
                                     <i class="fas fa-chevron-left"></i>
                                 </button>
-                                <?php 
-                                $first_video = $videos[0];
-                                $video_url = htmlspecialchars($first_video['href_link'] ?? '');
-                                $video_title = htmlspecialchars($first_video['title'] ?? '');
-                                ?>
                                 <div class="video-player" id="videoPlayer">
-                                    <?php if (!empty($video_url)): ?>
-                                        <?php if (preg_match('/youtube\.com|youtu\.be/i', $video_url)): ?>
-                                            <?php
-                                            // Extract YouTube video ID
-                                            $video_id = '';
-                                            if (preg_match('/youtu\.be\/([^\?\&]+)/', $video_url, $matches)) {
-                                                $video_id = $matches[1];
-                                            } elseif (preg_match('/youtube\.com\/watch\?v=([^\&\?]+)/', $video_url, $matches)) {
-                                                $video_id = $matches[1];
-                                            } elseif (preg_match('/youtube\.com\/embed\/([^\?\&]+)/', $video_url, $matches)) {
-                                                $video_id = $matches[1];
-                                            }
-                                            ?>
-                                            <?php if (!empty($video_id)): ?>
-                                                <iframe 
-                                                    id="videoFrame"
-                                                    src="https://www.youtube.com/embed/<?= $video_id ?>?enablejsapi=1" 
-                                                    frameborder="0" 
-                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                                    allowfullscreen
-                                                    style="width: 100%; height: 100%; min-height: 400px; border-radius: 8px;">
-                                                </iframe>
-                                            <?php else: ?>
-                                                <div class="video-placeholder">
-                                                    <p>Invalid YouTube URL</p>
-                                                </div>
-                                            <?php endif; ?>
-                                        <?php else: ?>
-                                            <video id="videoFrame" controls style="width: 100%; height: 100%; min-height: 400px; border-radius: 8px;">
-                                                <source src="<?= $video_url ?>" type="video/mp4">
-                                                Your browser does not support the video tag.
-                                            </video>
-                                        <?php endif; ?>
+                                    <?php if (!empty($video_id)): ?>
+                                        <iframe 
+                                            id="videoFrame"
+                                            src="https://www.youtube.com/embed/<?= $video_id ?>?enablejsapi=1" 
+                                            frameborder="0" 
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                            allowfullscreen
+                                            style="width: 100%; height: 100%; min-height: 400px; border-radius: 8px;">
+                                        </iframe>
                                     <?php else: ?>
                                         <div class="video-placeholder">
-                                            <p>No video URL available</p>
+                                            <p>Invalid YouTube URL</p>
                                         </div>
                                     <?php endif; ?>
                                 </div>
                                 <button class="video-arrow arrow-right" id="nextVideo" title="Next Video">
                                     <i class="fas fa-chevron-right"></i>
                                 </button>
+                                <?php else: ?>
+                                <button class="video-arrow arrow-left" id="prevVideo" title="Previous Video" style="display: none;">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <div class="video-player" id="videoPlayer">
+                                    <div class="video-placeholder">
+                                        <p>No YouTube videos available</p>
+                                    </div>
+                                </div>
+                                <button class="video-arrow arrow-right" id="nextVideo" title="Next Video" style="display: none;">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -410,10 +481,16 @@ function getInitials($name)
                             <p class="mb-0">No partners registered yet.</p>
                         </div>
                     </div>
-                <?php else: ?>
+                <?php else: 
+                    // Duplicate partners if less than 6 to ensure smooth infinite loop
+                    $partnersForSlider = $partners;
+                    if (count($partners) < 6) {
+                        $partnersForSlider = array_merge($partners, $partners, $partners);
+                    }
+                ?>
                     <div class="swiper partnersSwiper">
                         <div class="swiper-wrapper">
-                            <?php foreach ($partners as $p): ?>
+                            <?php foreach ($partnersForSlider as $p): ?>
                                 <div class="swiper-slide d-flex justify-content-center align-items-center">
                                     <?php if (!empty($p['logo'])): ?>
                                         <img src="<?= htmlspecialchars($p['logo']) ?>" class="partner-logo img-fluid rounded shadow-sm"
@@ -430,6 +507,7 @@ function getInitials($name)
                         </div>
                         <div class="swiper-button-next"></div>
                         <div class="swiper-button-prev"></div>
+                        <div class="swiper-pagination"></div>
                     </div>
                 <?php endif; ?>
             </div>
@@ -443,52 +521,63 @@ function getInitials($name)
                     <p class="text-muted">The brilliant minds behind our research.</p>
                     <div class="divider"></div>
                 </div>
-                <?php if (!empty($team)): ?>
-                    <div class="row g-4">
-                        <?php foreach ($team as $t):
-                            $foto_url = '';
-                            if (!empty($t['foto'])) {
-                                $foto_url = $t['foto'];
-                                if (!preg_match('/^https?:\/\//i', $foto_url)) {
-                                    if (strpos($foto_url, 'uploads/') !== 0) {
-                                        $foto_url = 'uploads/' . ltrim($foto_url, '/');
+                <?php if (!empty($team)): 
+                    // Duplicate team members if less than 5 to ensure smooth infinite loop
+                    $teamForSlider = $team;
+                    if (count($team) < 5) {
+                        $teamForSlider = array_merge($team, $team, $team);
+                    }
+                ?>
+                    <div class="swiper teamSwiper">
+                        <div class="swiper-wrapper">
+                            <?php foreach ($teamForSlider as $t):
+                                $foto_url = '';
+                                if (!empty($t['foto'])) {
+                                    $foto_url = $t['foto'];
+                                    if (!preg_match('/^https?:\/\//i', $foto_url)) {
+                                        if (strpos($foto_url, 'uploads/') !== 0) {
+                                            $foto_url = 'uploads/' . ltrim($foto_url, '/');
+                                        }
                                     }
                                 }
-                            }
-                            ?>
-                            <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
-                                <div class="member-card card-surface h-100">
-                                    <div class="member-img-wrapper">
-                                        <?php if (!empty($foto_url)): ?>
-                                            <img src="<?= htmlspecialchars($foto_url) ?>"
-                                                alt="<?= htmlspecialchars($t['nama']) ?>" class="member-img"
-                                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                            <div class="member-initials d-none">
-                                                <?= htmlspecialchars(getInitials($t["nama"])) ?>
-                                            </div>
-                                        <?php else: ?>
-                                            <div class="member-initials">
-                                                <?= htmlspecialchars(getInitials($t["nama"])) ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="member-info">
-                                        <h3 class="member-name"><?= htmlspecialchars($t["nama"]) ?></h3>
-                                        <div class="member-role"><?= htmlspecialchars($t["jabatan"] ?: 'Member') ?></div>
-                                        <?php if (!empty($t["deskripsi"])): ?>
-                                            <p class="member-desc" title="<?= htmlspecialchars($t["deskripsi"]) ?>"><?= htmlspecialchars($t["deskripsi"]) ?></p>
-                                        <?php endif; ?>
-                                    </div>
-                                    <?php if (!empty($t['email'])): ?>
-                                        <div class="member-footer">
-                                            <a href="mailto:<?php echo htmlspecialchars($t['email']); ?>" class="btn-email">
-                                                <i class="fas fa-envelope me-2"></i>Contact via Email
-                                            </a>
+                                ?>
+                                <div class="swiper-slide">
+                                    <div class="member-card card-surface h-100">
+                                        <div class="member-img-wrapper">
+                                            <?php if (!empty($foto_url)): ?>
+                                                <img src="<?= htmlspecialchars($foto_url) ?>"
+                                                    alt="<?= htmlspecialchars($t['nama']) ?>" class="member-img"
+                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                <div class="member-initials d-none">
+                                                    <?= htmlspecialchars(getInitials($t["nama"])) ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="member-initials">
+                                                    <?= htmlspecialchars(getInitials($t["nama"])) ?>
+                                                </div>
+                                            <?php endif; ?>
                                         </div>
-                                    <?php endif; ?>
+                                        <div class="member-info">
+                                            <h3 class="member-name"><?= htmlspecialchars($t["nama"]) ?></h3>
+                                            <div class="member-role"><?= htmlspecialchars($t["jabatan"] ?: 'Member') ?></div>
+                                            <?php if (!empty($t["deskripsi"])): ?>
+                                                <p class="member-desc" title="<?= htmlspecialchars($t["deskripsi"]) ?>"><?= htmlspecialchars($t["deskripsi"]) ?></p>
+                                            <?php endif; ?>
+                                        </div>
+                                        <?php if (!empty($t['email'])): ?>
+                                            <div class="member-footer">
+                                                <a href="mailto:<?php echo htmlspecialchars($t['email']); ?>" class="btn-email">
+                                                    <i class="fas fa-envelope me-2"></i>Contact via Email
+                                                </a>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
-                            </div>
-                        <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-button-prev"></div>
+                        <div class="swiper-pagination"></div>
                     </div>
                 <?php else: ?>
                     <div class="empty-data-alert" role="alert">
@@ -550,13 +639,100 @@ function getInitials($name)
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <script>
-        // Init partner slider
+        // Init partner slider with centered slides - always loop
         new Swiper(".partnersSwiper", {
-            slidesPerView: 5,
-            spaceBetween: 50,
-            autoplay: { delay: 3000, disableOnInteraction: false },
-            navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" },
-            breakpoints: { 0: { slidesPerView: 1, spaceBetween: 15 }, 576: { slidesPerView: 2, spaceBetween: 25 }, 768: { slidesPerView: 3, spaceBetween: 35 }, 992: { slidesPerView: 4, spaceBetween: 45 }, 1200: { slidesPerView: 5, spaceBetween: 50 } }
+            slidesPerView: 1,
+            spaceBetween: 30,
+            centeredSlides: true,
+            loop: true, // Always loop for infinite effect
+            loopAdditionalSlides: 2, // Add extra slides for smooth looping
+            autoplay: { 
+                delay: 3000, 
+                disableOnInteraction: false 
+            },
+            navigation: { 
+                nextEl: ".partnersSwiper .swiper-button-next", 
+                prevEl: ".partnersSwiper .swiper-button-prev" 
+            },
+            pagination: {
+                el: ".partnersSwiper .swiper-pagination",
+                clickable: true
+            },
+            breakpoints: { 
+                0: { 
+                    slidesPerView: 1, 
+                    spaceBetween: 20,
+                    centeredSlides: true
+                }, 
+                576: { 
+                    slidesPerView: 2, 
+                    spaceBetween: 25,
+                    centeredSlides: true
+                }, 
+                768: { 
+                    slidesPerView: 3, 
+                    spaceBetween: 30,
+                    centeredSlides: true
+                }, 
+                992: { 
+                    slidesPerView: 4, 
+                    spaceBetween: 35,
+                    centeredSlides: true
+                }, 
+                1200: { 
+                    slidesPerView: 5, 
+                    spaceBetween: 50,
+                    centeredSlides: true
+                } 
+            }
+        });
+
+        // Init team slider with centered slides - always loop
+        new Swiper(".teamSwiper", {
+            slidesPerView: 1,
+            spaceBetween: 30,
+            centeredSlides: true,
+            loop: true, // Always loop for infinite effect
+            loopAdditionalSlides: 2, // Add extra slides for smooth looping
+            autoplay: { 
+                delay: 3000, 
+                disableOnInteraction: false 
+            },
+            navigation: { 
+                nextEl: ".teamSwiper .swiper-button-next", 
+                prevEl: ".teamSwiper .swiper-button-prev" 
+            },
+            pagination: {
+                el: ".teamSwiper .swiper-pagination",
+                clickable: true
+            },
+            breakpoints: {
+                0: { 
+                    slidesPerView: 1, 
+                    spaceBetween: 20,
+                    centeredSlides: true
+                },
+                576: { 
+                    slidesPerView: 2, 
+                    spaceBetween: 25,
+                    centeredSlides: true
+                },
+                768: { 
+                    slidesPerView: 3, 
+                    spaceBetween: 30,
+                    centeredSlides: true
+                },
+                992: { 
+                    slidesPerView: 4, 
+                    spaceBetween: 30,
+                    centeredSlides: true
+                },
+                1200: { 
+                    slidesPerView: 4, 
+                    spaceBetween: 30,
+                    centeredSlides: true
+                }
+            }
         });
 
         // Masonry layout
@@ -646,16 +822,36 @@ function getInitials($name)
             });
         });
 
-        // Video Navigation with Auto-slide
+        // Video Navigation (Manual Only - No Auto-slide)
         <?php if (!empty($videos)): ?>
-        const videos = <?= json_encode($videos) ?>;
+        // Filter only YouTube videos
+        const allVideos = <?= json_encode($videos) ?>;
+        const videos = allVideos.filter(v => {
+            const url = (v.href_link || '').toLowerCase();
+            return url.includes('youtube.com') || url.includes('youtu.be');
+        });
+        
         let currentVideoIndex = 0;
-        let autoSlideInterval = null;
-        let autoSlideCount = 0;
-        const maxAutoSlide = 5; // Auto-play 5 videos pertama
-        const slideDuration = 10000; // 10 detik per video
 
         function loadVideo(index) {
+            if (videos.length === 0) {
+                const videoPlayer = document.getElementById('videoPlayer');
+                if (videoPlayer) {
+                    // Remove iframe if exists
+                    const iframe = videoPlayer.querySelector('iframe');
+                    if (iframe) iframe.remove();
+                    // Remove placeholder if exists
+                    const placeholder = videoPlayer.querySelector('.video-placeholder');
+                    if (placeholder) placeholder.remove();
+                    // Add placeholder
+                    const newPlaceholder = document.createElement('div');
+                    newPlaceholder.className = 'video-placeholder';
+                    newPlaceholder.innerHTML = '<p>No YouTube videos available</p>';
+                    videoPlayer.appendChild(newPlaceholder);
+                }
+                return;
+            }
+            
             // Handle circular navigation
             if (index < 0) {
                 index = videos.length - 1; // Loop to last video
@@ -668,134 +864,185 @@ function getInitials($name)
             const videoUrl = video.href_link || '';
             
             const videoPlayer = document.getElementById('videoPlayer');
+            if (!videoPlayer) return;
             
             if (!videoUrl) {
-                videoPlayer.innerHTML = '<div class="video-placeholder"><p>No video URL available</p></div>';
+                // Remove iframe if exists
+                const iframe = videoPlayer.querySelector('iframe');
+                if (iframe) iframe.remove();
+                // Remove placeholder if exists
+                const placeholder = videoPlayer.querySelector('.video-placeholder');
+                if (placeholder) placeholder.remove();
+                // Add placeholder
+                const newPlaceholder = document.createElement('div');
+                newPlaceholder.className = 'video-placeholder';
+                newPlaceholder.innerHTML = '<p>No video URL available</p>';
+                videoPlayer.appendChild(newPlaceholder);
                 return;
             }
             
-            // Check if YouTube URL
-            if (videoUrl.match(/youtube\.com|youtu\.be/i)) {
-                let videoId = '';
-                if (videoUrl.match(/youtu\.be\/([^\?\&]+)/)) {
-                    videoId = videoUrl.match(/youtu\.be\/([^\?\&]+)/)[1];
-                } else if (videoUrl.match(/youtube\.com\/watch\?v=([^\&\?]+)/)) {
-                    videoId = videoUrl.match(/youtube\.com\/watch\?v=([^\&\?]+)/)[1];
-                } else if (videoUrl.match(/youtube\.com\/embed\/([^\?\&]+)/)) {
-                    videoId = videoUrl.match(/youtube\.com\/embed\/([^\?\&]+)/)[1];
-                }
+            // Extract YouTube video ID
+            let videoId = '';
+            if (videoUrl.match(/youtu\.be\/([^\?\&]+)/)) {
+                videoId = videoUrl.match(/youtu\.be\/([^\?\&]+)/)[1];
+            } else if (videoUrl.match(/youtube\.com\/watch\?v=([^\&\?]+)/)) {
+                videoId = videoUrl.match(/youtube\.com\/watch\?v=([^\&\?]+)/)[1];
+            } else if (videoUrl.match(/youtube\.com\/embed\/([^\?\&]+)/)) {
+                videoId = videoUrl.match(/youtube\.com\/embed\/([^\?\&]+)/)[1];
+            }
+            
+            // Remove existing placeholder
+            const placeholder = videoPlayer.querySelector('.video-placeholder');
+            if (placeholder) placeholder.remove();
+            
+            // Remove existing iframe
+            const existingIframe = videoPlayer.querySelector('iframe');
+            if (existingIframe) existingIframe.remove();
+            
+            if (videoId) {
+                // Create new iframe
+                const iframe = document.createElement('iframe');
+                iframe.id = 'videoFrame';
+                iframe.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
+                iframe.frameBorder = '0';
+                iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                iframe.allowFullscreen = true;
+                iframe.style.cssText = 'width: 100%; height: 100%; min-height: 400px; border-radius: 8px;';
                 
-                if (videoId) {
-                    videoPlayer.innerHTML = `<iframe 
-                        id="videoFrame"
-                        src="https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen
-                        style="width: 100%; height: 100%; min-height: 400px; border-radius: 8px;">
-                    </iframe>`;
-                } else {
-                    videoPlayer.innerHTML = '<div class="video-placeholder"><p>Invalid YouTube URL</p></div>';
-                }
+                // Add iframe to video player
+                videoPlayer.appendChild(iframe);
             } else {
-                // Regular video file
-                videoPlayer.innerHTML = `<video id="videoFrame" controls autoplay style="width: 100%; height: 100%; min-height: 400px; border-radius: 8px;">
-                    <source src="${videoUrl}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>`;
+                // Add placeholder for invalid URL
+                const newPlaceholder = document.createElement('div');
+                newPlaceholder.className = 'video-placeholder';
+                newPlaceholder.innerHTML = '<p>Invalid YouTube URL</p>';
+                videoPlayer.appendChild(newPlaceholder);
             }
         }
 
         function nextVideo() {
+            if (videos.length === 0) return;
             currentVideoIndex = (currentVideoIndex + 1) % videos.length; // Circular
             loadVideo(currentVideoIndex);
-            autoSlideCount++;
-            
-            // Stop auto-slide after 5 videos
-            if (autoSlideCount >= maxAutoSlide) {
-                stopAutoSlide();
-            }
         }
 
         function prevVideo() {
+            if (videos.length === 0) return;
             currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length; // Circular
             loadVideo(currentVideoIndex);
-            stopAutoSlide(); // Stop auto-slide when user manually navigates
         }
 
-        function startAutoSlide() {
-            stopAutoSlide(); // Clear any existing interval
-            autoSlideCount = 0;
-            autoSlideInterval = setInterval(function() {
-                if (autoSlideCount < maxAutoSlide) {
-                    nextVideo();
-                } else {
-                    stopAutoSlide();
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize first YouTube video
+            if (videos.length > 0) {
+                loadVideo(0);
+                // Show navigation buttons if there are multiple videos
+                const prevBtn = document.getElementById('prevVideo');
+                const nextBtn = document.getElementById('nextVideo');
+                if (prevBtn && videos.length > 1) prevBtn.style.display = 'flex';
+                if (nextBtn && videos.length > 1) nextBtn.style.display = 'flex';
+            } else {
+                const videoPlayer = document.getElementById('videoPlayer');
+                if (videoPlayer) {
+                    // Keep buttons but hide them if no videos
+                    const prevBtn = document.getElementById('prevVideo');
+                    const nextBtn = document.getElementById('nextVideo');
+                    if (prevBtn) prevBtn.style.display = 'none';
+                    if (nextBtn) nextBtn.style.display = 'none';
                 }
-            }, slideDuration);
-        }
-
-        function stopAutoSlide() {
-            if (autoSlideInterval) {
-                clearInterval(autoSlideInterval);
-                autoSlideInterval = null;
             }
-        }
 
-        // Initialize first video
-        loadVideo(0);
-        
-        // Start auto-slide after a short delay
-        setTimeout(function() {
-            if (videos.length > 1) {
-                startAutoSlide();
-            }
-        }, 2000); // Start after 2 seconds
-
-        document.getElementById('prevVideo').addEventListener('click', function() {
-            prevVideo();
-        });
-
-        document.getElementById('nextVideo').addEventListener('click', function() {
-            nextVideo();
-        });
-
-        // Click navigation on video player
-        const videoWrapper = document.getElementById('videoWrapper');
-        videoWrapper.addEventListener('click', function(e) {
-            // Don't trigger if clicking on arrow buttons
-            if (e.target.closest('.video-arrow')) {
-                return;
+            // Add event listeners for prev/next buttons
+            const prevBtn = document.getElementById('prevVideo');
+            const nextBtn = document.getElementById('nextVideo');
+            
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function() {
+                    prevVideo();
+                });
             }
             
-            const rect = videoWrapper.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const width = rect.width;
-            const middle = width / 2;
-            
-            // Left click (left half) = previous video
-            if (clickX < middle) {
-                prevVideo();
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function() {
+                    nextVideo();
+                });
             }
-            // Right click (right half) = next video
-            else {
-                nextVideo();
-            }
-        });
 
-        // Keyboard navigation
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowLeft') {
-                prevVideo();
-            } else if (e.key === 'ArrowRight') {
-                nextVideo();
-            }
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft') {
+                    prevVideo();
+                } else if (e.key === 'ArrowRight') {
+                    nextVideo();
+                }
+            });
         });
         <?php endif; ?>
+        
+        // Read More functionality for Research
+        function toggleResearchDescription(btn) {
+            const wrapper = btn.closest('.research-description-wrapper');
+            const description = wrapper.querySelector('.research-item-description');
+            const readmoreText = btn.querySelector('.readmore-text');
+            const readlessText = btn.querySelector('.readless-text');
+            
+            if (description.classList.contains('research-description-collapsed')) {
+                // Expand
+                description.style.maxHeight = description.scrollHeight + 'px';
+                description.classList.remove('research-description-collapsed');
+                readmoreText.style.display = 'none';
+                readlessText.style.display = 'inline';
+                
+                // After animation, remove max-height to allow natural height
+                setTimeout(() => {
+                    description.style.maxHeight = 'none';
+                }, 300);
+            } else {
+                // Collapse
+                description.style.maxHeight = description.scrollHeight + 'px';
+                // Force reflow
+                description.offsetHeight;
+                description.style.maxHeight = '5.1em';
+                description.classList.add('research-description-collapsed');
+                readmoreText.style.display = 'inline';
+                readlessText.style.display = 'none';
+            }
+        }
+        
+        // Read More functionality for Research Fields
+        function toggleResearchField(btn) {
+            const wrapper = btn.closest('.rf-content-wrapper');
+            const content = wrapper.querySelector('.rf-card-list');
+            const readmoreText = btn.querySelector('.readmore-text');
+            const readlessText = btn.querySelector('.readless-text');
+            
+            if (content.classList.contains('rf-content-collapsed')) {
+                // Expand
+                content.style.maxHeight = content.scrollHeight + 'px';
+                content.classList.remove('rf-content-collapsed');
+                readmoreText.style.display = 'none';
+                readlessText.style.display = 'inline';
+                
+                // After animation, remove max-height to allow natural height
+                setTimeout(() => {
+                    content.style.maxHeight = 'none';
+                }, 300);
+            } else {
+                // Collapse
+                content.style.maxHeight = content.scrollHeight + 'px';
+                // Force reflow
+                content.offsetHeight;
+                content.style.maxHeight = '180px';
+                content.classList.add('rf-content-collapsed');
+                readmoreText.style.display = 'inline';
+                readlessText.style.display = 'none';
+            }
+        }
     </script>
     <style>
         .video-container-wrapper {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
         }
         .video-player-container {
@@ -808,74 +1055,60 @@ function getInitials($name)
             position: relative;
             display: flex;
             align-items: center;
-        }
-        .video-wrapper::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 50%;
-            height: 100%;
-            z-index: 1;
-            background: rgba(0,0,0,0);
-            transition: background 0.3s;
-        }
-        .video-wrapper::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: 50%;
-            height: 100%;
-            z-index: 1;
-            background: rgba(0,0,0,0);
-            transition: background 0.3s;
-        }
-        .video-wrapper:hover::before {
-            background: rgba(0,0,0,0.1);
-        }
-        .video-wrapper:hover::after {
-            background: rgba(0,0,0,0.1);
+            justify-content: center;
+            gap: 1rem;
         }
         .video-player {
-            width: 100%;
+            flex: 1;
             background: #000;
             border-radius: 8px;
             overflow: hidden;
+            position: relative;
         }
         .video-arrow {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 40px;
-            height: 40px;
-            background: rgba(0, 0, 0, 0.6);
+            width: 56px;
+            height: 56px;
+            background: #1a1a1a;
+            background-image: 
+                linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%),
+                linear-gradient(-45deg, rgba(255,255,255,0.05) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.05) 75%),
+                linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.05) 75%);
+            background-size: 8px 8px;
+            background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
             border: none;
-            border-radius: 50%;
+            border-radius: 16px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
             color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            transition: all 0.3s;
+            font-size: 20px;
             z-index: 10;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             padding: 0;
+            flex-shrink: 0;
+        }
+        .video-arrow i {
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
         }
         .video-arrow:hover {
-            background: rgba(0, 0, 0, 0.8);
-            transform: translateY(-50%) scale(1.1);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            background: #2a2a2a;
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
         }
         .video-arrow:active {
-            transform: translateY(-50%) scale(0.95);
+            transform: scale(0.98);
         }
         .arrow-left {
-            left: 10px;
+            order: 1;
+        }
+        .video-player {
+            order: 2;
         }
         .arrow-right {
-            right: 10px;
+            order: 3;
         }
         .video-placeholder {
             padding: 4rem;

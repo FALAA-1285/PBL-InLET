@@ -299,57 +299,63 @@ function getPaginationUrl($page, $search = '')
                     <div class="video-container-wrapper">
                         <div class="video-player-container">
                             <div class="video-wrapper" id="videoWrapper">
+                                <?php 
+                                // Filter only YouTube videos
+                                $youtube_videos = array_filter($videos, function($v) {
+                                    $url = strtolower($v['href_link'] ?? '');
+                                    return strpos($url, 'youtube.com') !== false || strpos($url, 'youtu.be') !== false;
+                                });
+                                $youtube_videos = array_values($youtube_videos); // Re-index array
+                                
+                                if (!empty($youtube_videos)):
+                                    $first_video = $youtube_videos[0];
+                                    $video_url = htmlspecialchars($first_video['href_link'] ?? '');
+                                    
+                                    // Extract YouTube video ID
+                                    $video_id = '';
+                                    if (preg_match('/youtu\.be\/([^\?\&]+)/', $video_url, $matches)) {
+                                        $video_id = $matches[1];
+                                    } elseif (preg_match('/youtube\.com\/watch\?v=([^\&\?]+)/', $video_url, $matches)) {
+                                        $video_id = $matches[1];
+                                    } elseif (preg_match('/youtube\.com\/embed\/([^\?\&]+)/', $video_url, $matches)) {
+                                        $video_id = $matches[1];
+                                    }
+                                ?>
                                 <button class="video-arrow arrow-left" id="prevVideo" title="Previous Video">
                                     <i class="fas fa-chevron-left"></i>
                                 </button>
-                                <?php 
-                                $first_video = $videos[0];
-                                $video_url = htmlspecialchars($first_video['href_link'] ?? '');
-                                $video_title = htmlspecialchars($first_video['title'] ?? '');
-                                ?>
                                 <div class="video-player" id="videoPlayer">
-                                    <?php if (!empty($video_url)): ?>
-                                        <?php if (preg_match('/youtube\.com|youtu\.be/i', $video_url)): ?>
-                                            <?php
-                                            // Extract YouTube video ID
-                                            $video_id = '';
-                                            if (preg_match('/youtu\.be\/([^\?\&]+)/', $video_url, $matches)) {
-                                                $video_id = $matches[1];
-                                            } elseif (preg_match('/youtube\.com\/watch\?v=([^\&\?]+)/', $video_url, $matches)) {
-                                                $video_id = $matches[1];
-                                            } elseif (preg_match('/youtube\.com\/embed\/([^\?\&]+)/', $video_url, $matches)) {
-                                                $video_id = $matches[1];
-                                            }
-                                            ?>
-                                            <?php if (!empty($video_id)): ?>
-                                                <iframe 
-                                                    id="videoFrame"
-                                                    src="https://www.youtube.com/embed/<?= $video_id ?>?enablejsapi=1" 
-                                                    frameborder="0" 
-                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                                    allowfullscreen
-                                                    style="width: 100%; height: 100%; min-height: 400px; border-radius: 8px;">
-                                                </iframe>
-                                            <?php else: ?>
-                                                <div class="video-placeholder">
-                                                    <p>Invalid YouTube URL</p>
-                                                </div>
-                                            <?php endif; ?>
-                                        <?php else: ?>
-                                            <video id="videoFrame" controls style="width: 100%; height: 100%; min-height: 400px; border-radius: 8px;">
-                                                <source src="<?= $video_url ?>" type="video/mp4">
-                                                Your browser does not support the video tag.
-                                            </video>
-                                        <?php endif; ?>
+                                    <?php if (!empty($video_id)): ?>
+                                        <iframe 
+                                            id="videoFrame"
+                                            src="https://www.youtube.com/embed/<?= $video_id ?>?enablejsapi=1" 
+                                            frameborder="0" 
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                            allowfullscreen
+                                            style="width: 100%; height: 100%; min-height: 400px; border-radius: 8px;">
+                                        </iframe>
                                     <?php else: ?>
                                         <div class="video-placeholder">
-                                            <p>No video URL available</p>
+                                            <p>Invalid YouTube URL</p>
                                         </div>
                                     <?php endif; ?>
                                 </div>
                                 <button class="video-arrow arrow-right" id="nextVideo" title="Next Video">
                                     <i class="fas fa-chevron-right"></i>
                                 </button>
+                                <?php else: ?>
+                                <button class="video-arrow arrow-left" id="prevVideo" title="Previous Video" style="display: none;">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <div class="video-player" id="videoPlayer">
+                                    <div class="video-placeholder">
+                                        <p>No YouTube videos available</p>
+                                    </div>
+                                </div>
+                                <button class="video-arrow arrow-right" id="nextVideo" title="Next Video" style="display: none;">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -566,16 +572,36 @@ function getPaginationUrl($page, $search = '')
             window.__galleryLoadMore = loadMore;
         });
 
-        // Video Navigation with Auto-slide
+        // Video Navigation (Manual Only - No Auto-slide)
         <?php if (!empty($videos)): ?>
-        const videos = <?= json_encode($videos) ?>;
+        // Filter only YouTube videos
+        const allVideos = <?= json_encode($videos) ?>;
+        const videos = allVideos.filter(v => {
+            const url = (v.href_link || '').toLowerCase();
+            return url.includes('youtube.com') || url.includes('youtu.be');
+        });
+        
         let currentVideoIndex = 0;
-        let autoSlideInterval = null;
-        let autoSlideCount = 0;
-        const maxAutoSlide = 5; // Auto-play 5 videos pertama
-        const slideDuration = 10000; // 10 detik per video
 
         function loadVideo(index) {
+            if (videos.length === 0) {
+                const videoPlayer = document.getElementById('videoPlayer');
+                if (videoPlayer) {
+                    // Remove iframe if exists
+                    const iframe = videoPlayer.querySelector('iframe');
+                    if (iframe) iframe.remove();
+                    // Remove placeholder if exists
+                    const placeholder = videoPlayer.querySelector('.video-placeholder');
+                    if (placeholder) placeholder.remove();
+                    // Add placeholder
+                    const newPlaceholder = document.createElement('div');
+                    newPlaceholder.className = 'video-placeholder';
+                    newPlaceholder.innerHTML = '<p>No YouTube videos available</p>';
+                    videoPlayer.appendChild(newPlaceholder);
+                }
+                return;
+            }
+            
             // Handle circular navigation
             if (index < 0) {
                 index = videos.length - 1; // Loop to last video
@@ -588,134 +614,125 @@ function getPaginationUrl($page, $search = '')
             const videoUrl = video.href_link || '';
             
             const videoPlayer = document.getElementById('videoPlayer');
+            if (!videoPlayer) return;
             
             if (!videoUrl) {
-                videoPlayer.innerHTML = '<div class="video-placeholder"><p>No video URL available</p></div>';
+                // Remove iframe if exists
+                const iframe = videoPlayer.querySelector('iframe');
+                if (iframe) iframe.remove();
+                // Remove placeholder if exists
+                const placeholder = videoPlayer.querySelector('.video-placeholder');
+                if (placeholder) placeholder.remove();
+                // Add placeholder
+                const newPlaceholder = document.createElement('div');
+                newPlaceholder.className = 'video-placeholder';
+                newPlaceholder.innerHTML = '<p>No video URL available</p>';
+                videoPlayer.appendChild(newPlaceholder);
                 return;
             }
             
-            // Check if YouTube URL
-            if (videoUrl.match(/youtube\.com|youtu\.be/i)) {
-                let videoId = '';
-                if (videoUrl.match(/youtu\.be\/([^\?\&]+)/)) {
-                    videoId = videoUrl.match(/youtu\.be\/([^\?\&]+)/)[1];
-                } else if (videoUrl.match(/youtube\.com\/watch\?v=([^\&\?]+)/)) {
-                    videoId = videoUrl.match(/youtube\.com\/watch\?v=([^\&\?]+)/)[1];
-                } else if (videoUrl.match(/youtube\.com\/embed\/([^\?\&]+)/)) {
-                    videoId = videoUrl.match(/youtube\.com\/embed\/([^\?\&]+)/)[1];
-                }
+            // Extract YouTube video ID
+            let videoId = '';
+            if (videoUrl.match(/youtu\.be\/([^\?\&]+)/)) {
+                videoId = videoUrl.match(/youtu\.be\/([^\?\&]+)/)[1];
+            } else if (videoUrl.match(/youtube\.com\/watch\?v=([^\&\?]+)/)) {
+                videoId = videoUrl.match(/youtube\.com\/watch\?v=([^\&\?]+)/)[1];
+            } else if (videoUrl.match(/youtube\.com\/embed\/([^\?\&]+)/)) {
+                videoId = videoUrl.match(/youtube\.com\/embed\/([^\?\&]+)/)[1];
+            }
+            
+            // Remove existing placeholder
+            const placeholder = videoPlayer.querySelector('.video-placeholder');
+            if (placeholder) placeholder.remove();
+            
+            // Remove existing iframe
+            const existingIframe = videoPlayer.querySelector('iframe');
+            if (existingIframe) existingIframe.remove();
+            
+            if (videoId) {
+                // Create new iframe
+                const iframe = document.createElement('iframe');
+                iframe.id = 'videoFrame';
+                iframe.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
+                iframe.frameBorder = '0';
+                iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                iframe.allowFullscreen = true;
+                iframe.style.cssText = 'width: 100%; height: 100%; min-height: 400px; border-radius: 8px;';
                 
-                if (videoId) {
-                    videoPlayer.innerHTML = `<iframe 
-                        id="videoFrame"
-                        src="https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen
-                        style="width: 100%; height: 100%; min-height: 400px; border-radius: 8px;">
-                    </iframe>`;
-                } else {
-                    videoPlayer.innerHTML = '<div class="video-placeholder"><p>Invalid YouTube URL</p></div>';
-                }
+                // Add iframe to video player
+                videoPlayer.appendChild(iframe);
             } else {
-                // Regular video file
-                videoPlayer.innerHTML = `<video id="videoFrame" controls autoplay style="width: 100%; height: 100%; min-height: 400px; border-radius: 8px;">
-                    <source src="${videoUrl}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>`;
+                // Add placeholder for invalid URL
+                const newPlaceholder = document.createElement('div');
+                newPlaceholder.className = 'video-placeholder';
+                newPlaceholder.innerHTML = '<p>Invalid YouTube URL</p>';
+                videoPlayer.appendChild(newPlaceholder);
             }
         }
 
         function nextVideo() {
+            if (videos.length === 0) return;
             currentVideoIndex = (currentVideoIndex + 1) % videos.length; // Circular
             loadVideo(currentVideoIndex);
-            autoSlideCount++;
-            
-            // Stop auto-slide after 5 videos
-            if (autoSlideCount >= maxAutoSlide) {
-                stopAutoSlide();
-            }
         }
 
         function prevVideo() {
+            if (videos.length === 0) return;
             currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length; // Circular
             loadVideo(currentVideoIndex);
-            stopAutoSlide(); // Stop auto-slide when user manually navigates
         }
 
-        function startAutoSlide() {
-            stopAutoSlide(); // Clear any existing interval
-            autoSlideCount = 0;
-            autoSlideInterval = setInterval(function() {
-                if (autoSlideCount < maxAutoSlide) {
-                    nextVideo();
-                } else {
-                    stopAutoSlide();
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize first YouTube video
+            if (videos.length > 0) {
+                loadVideo(0);
+                // Show navigation buttons if there are multiple videos
+                const prevBtn = document.getElementById('prevVideo');
+                const nextBtn = document.getElementById('nextVideo');
+                if (prevBtn && videos.length > 1) prevBtn.style.display = 'flex';
+                if (nextBtn && videos.length > 1) nextBtn.style.display = 'flex';
+            } else {
+                const videoPlayer = document.getElementById('videoPlayer');
+                if (videoPlayer) {
+                    // Keep buttons but hide them if no videos
+                    const prevBtn = document.getElementById('prevVideo');
+                    const nextBtn = document.getElementById('nextVideo');
+                    if (prevBtn) prevBtn.style.display = 'none';
+                    if (nextBtn) nextBtn.style.display = 'none';
                 }
-            }, slideDuration);
-        }
-
-        function stopAutoSlide() {
-            if (autoSlideInterval) {
-                clearInterval(autoSlideInterval);
-                autoSlideInterval = null;
             }
-        }
 
-        // Initialize first video
-        loadVideo(0);
-        
-        // Start auto-slide after a short delay
-        setTimeout(function() {
-            if (videos.length > 1) {
-                startAutoSlide();
-            }
-        }, 2000); // Start after 2 seconds
-
-        document.getElementById('prevVideo').addEventListener('click', function() {
-            prevVideo();
-        });
-
-        document.getElementById('nextVideo').addEventListener('click', function() {
-            nextVideo();
-        });
-
-        // Click navigation on video player
-        const videoWrapper = document.getElementById('videoWrapper');
-        videoWrapper.addEventListener('click', function(e) {
-            // Don't trigger if clicking on arrow buttons
-            if (e.target.closest('.video-arrow')) {
-                return;
+            // Add event listeners for prev/next buttons
+            const prevBtn = document.getElementById('prevVideo');
+            const nextBtn = document.getElementById('nextVideo');
+            
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function() {
+                    prevVideo();
+                });
             }
             
-            const rect = videoWrapper.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const width = rect.width;
-            const middle = width / 2;
-            
-            // Left click (left half) = previous video
-            if (clickX < middle) {
-                prevVideo();
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function() {
+                    nextVideo();
+                });
             }
-            // Right click (right half) = next video
-            else {
-                nextVideo();
-            }
-        });
 
-        // Keyboard navigation
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowLeft') {
-                prevVideo();
-            } else if (e.key === 'ArrowRight') {
-                nextVideo();
-            }
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft') {
+                    prevVideo();
+                } else if (e.key === 'ArrowRight') {
+                    nextVideo();
+                }
+            });
         });
         <?php endif; ?>
     </script>
     <style>
         .video-container-wrapper {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
         }
         .video-player-container {
@@ -728,74 +745,60 @@ function getPaginationUrl($page, $search = '')
             position: relative;
             display: flex;
             align-items: center;
-        }
-        .video-wrapper::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 50%;
-            height: 100%;
-            z-index: 1;
-            background: rgba(0,0,0,0);
-            transition: background 0.3s;
-        }
-        .video-wrapper::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: 50%;
-            height: 100%;
-            z-index: 1;
-            background: rgba(0,0,0,0);
-            transition: background 0.3s;
-        }
-        .video-wrapper:hover::before {
-            background: rgba(0,0,0,0.1);
-        }
-        .video-wrapper:hover::after {
-            background: rgba(0,0,0,0.1);
+            justify-content: center;
+            gap: 1rem;
         }
         .video-player {
-            width: 100%;
+            flex: 1;
             background: #000;
             border-radius: 8px;
             overflow: hidden;
+            position: relative;
         }
         .video-arrow {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 40px;
-            height: 40px;
-            background: rgba(0, 0, 0, 0.6);
+            width: 56px;
+            height: 56px;
+            background: #1a1a1a;
+            background-image: 
+                linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%),
+                linear-gradient(-45deg, rgba(255,255,255,0.05) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.05) 75%),
+                linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.05) 75%);
+            background-size: 8px 8px;
+            background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
             border: none;
-            border-radius: 50%;
+            border-radius: 16px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
             color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            transition: all 0.3s;
+            font-size: 20px;
             z-index: 10;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             padding: 0;
+            flex-shrink: 0;
+        }
+        .video-arrow i {
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
         }
         .video-arrow:hover {
-            background: rgba(0, 0, 0, 0.8);
-            transform: translateY(-50%) scale(1.1);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            background: #2a2a2a;
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
         }
         .video-arrow:active {
-            transform: translateY(-50%) scale(0.95);
+            transform: scale(0.98);
         }
         .arrow-left {
-            left: 10px;
+            order: 1;
+        }
+        .video-player {
+            order: 2;
         }
         .arrow-right {
-            right: 10px;
+            order: 3;
         }
         .video-placeholder {
             padding: 4rem;

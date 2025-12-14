@@ -482,10 +482,10 @@ $members = $stmt->fetchAll();
                                 placeholder="Area of expertise (optional)">
                         </div>
                         <div class="form-group">
-                            <label>Upload Foto (File)</label>
+                            <label>Upload Photo (File)</label>
                             <input type="file" name="foto_file"
                                 accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
-                            <small class="d-block mt-2 text-muted small">Maksimal 5MB. Format: JPG, PNG, GIF,
+                            <small class="d-block mt-2 text-muted small">Maximum 5MB. Format: JPG, PNG, GIF,
                                 WEBP</small>
                         </div>
                         <div class="form-group">

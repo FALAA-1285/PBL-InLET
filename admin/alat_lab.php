@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stock = intval($_POST['stock'] ?? 0);
 
         if (empty($nama_alat)) {
-            $message = 'Nama alat harus diisi!';
+            $message = 'Tool name must be filled!';
             $message_type = 'error';
         } else {
             try {
@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stock = intval($_POST['stock'] ?? 0);
 
         if (empty($nama_alat)) {
-            $message = 'Nama alat harus diisi!';
+            $message = 'Tool name must be filled!';
             $message_type = 'error';
         } else {
             try {
@@ -163,7 +163,7 @@ if (isset($_GET['edit'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lab Tools Management - CMS InLET</title>
+    <title>Manage Lab Tools - CMS InLET</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="admin.css">

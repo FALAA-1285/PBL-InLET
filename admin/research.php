@@ -7,6 +7,31 @@ $conn = getDBConnection();
 $message = '';
 $message_type = '';
 
+// Ensure required columns exist in artikel table
+try {
+    $check_cols = $conn->query("SELECT column_name FROM information_schema.columns WHERE table_name = 'artikel'");
+    $existing_cols = $check_cols->fetchAll(PDO::FETCH_COLUMN);
+    
+    if (!in_array('id_penelitian', $existing_cols)) {
+        $conn->exec("ALTER TABLE artikel ADD COLUMN id_penelitian INTEGER REFERENCES penelitian(id_penelitian) ON DELETE SET NULL");
+    }
+    if (!in_array('nim', $existing_cols)) {
+        $conn->exec("ALTER TABLE artikel ADD COLUMN nim VARCHAR(50)");
+    }
+    if (!in_array('id_member', $existing_cols)) {
+        $conn->exec("ALTER TABLE artikel ADD COLUMN id_member INTEGER REFERENCES member(id_member) ON DELETE SET NULL");
+    }
+    if (!in_array('id_produk', $existing_cols)) {
+        $conn->exec("ALTER TABLE artikel ADD COLUMN id_produk INTEGER REFERENCES produk(id_produk) ON DELETE SET NULL");
+    }
+    if (!in_array('id_mitra', $existing_cols)) {
+        $conn->exec("ALTER TABLE artikel ADD COLUMN id_mitra INTEGER REFERENCES mitra(id_mitra) ON DELETE SET NULL");
+    }
+} catch (PDOException $e) {
+    // Columns might already exist or there's a constraint issue, continue anyway
+    error_log("Note: Could not add columns to artikel table: " . $e->getMessage());
+}
+
 // Helper function to get student identifier column name for penelitian table
 function getPenelitianStudentCol($conn) {
     static $student_col = null;
@@ -51,14 +76,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $judul = $_POST['judul'] ?? '';
         $tahun = $_POST['tahun'] ?? null;
         $konten = $_POST['konten'] ?? '';
+        $id_penelitian = $_POST['id_penelitian'] ?? null;
+        $nim = $_POST['nim'] ?? null;
+        $id_member = $_POST['id_member'] ?? null;
+        $id_produk = $_POST['id_produk'] ?? null;
+        $id_mitra = $_POST['id_mitra'] ?? null;
 
         try {
-            $stmt = $conn->prepare("INSERT INTO artikel (judul, tahun, konten) VALUES (:judul, :tahun, :konten)");
-            $stmt->execute([
+            // Check which columns exist in artikel table
+            $check_cols = $conn->query("SELECT column_name FROM information_schema.columns WHERE table_name = 'artikel'");
+            $columns = $check_cols->fetchAll(PDO::FETCH_COLUMN);
+            $has_id_penelitian = in_array('id_penelitian', $columns);
+            $has_nim = in_array('nim', $columns);
+            $has_id_member = in_array('id_member', $columns);
+            $has_id_produk = in_array('id_produk', $columns);
+            $has_id_mitra = in_array('id_mitra', $columns);
+            
+            // Build dynamic query based on available columns
+            $fields = ['judul', 'tahun', 'konten'];
+            $values = [':judul', ':tahun', ':konten'];
+            $params = [
                 'judul' => $judul,
                 'tahun' => $tahun ?: null,
                 'konten' => $konten
-            ]);
+            ];
+            
+            if ($has_id_penelitian) {
+                $fields[] = 'id_penelitian';
+                $values[] = ':id_penelitian';
+                $params['id_penelitian'] = $id_penelitian ?: null;
+            }
+            if ($has_nim) {
+                $fields[] = 'nim';
+                $values[] = ':nim';
+                $params['nim'] = $nim ?: null;
+            }
+            if ($has_id_member) {
+                $fields[] = 'id_member';
+                $values[] = ':id_member';
+                $params['id_member'] = $id_member ?: null;
+            }
+            if ($has_id_produk) {
+                $fields[] = 'id_produk';
+                $values[] = ':id_produk';
+                $params['id_produk'] = $id_produk ?: null;
+            }
+            if ($has_id_mitra) {
+                $fields[] = 'id_mitra';
+                $values[] = ':id_mitra';
+                $params['id_mitra'] = $id_mitra ?: null;
+            }
+            
+            $query = "INSERT INTO artikel (" . implode(', ', $fields) . ") VALUES (" . implode(', ', $values) . ")";
+            $stmt = $conn->prepare($query);
+            $stmt->execute($params);
             $message = 'Article successfully added!';
             $message_type = 'success';
         } catch (PDOException $e) {
@@ -69,41 +140,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $judul = $_POST['judul'] ?? '';
         $tahun = $_POST['tahun'] ?? null;
         $deskripsi = $_POST['deskripsi'] ?? '';
-        $id_artikel = $_POST['id_artikel'] ?? null;
-        $nim = $_POST['nim'] ?? null;
-        $id_member = $_POST['id_member'] ?? null;
-        $id_produk = $_POST['id_produk'] ?? null;
-        $id_mitra = $_POST['id_mitra'] ?? null;
         $tgl_mulai = $_POST['tgl_mulai'] ?? null;
         $tgl_selesai = $_POST['tgl_selesai'] ?? null;
 
         try {
             $student_col = getPenelitianStudentCol($conn);
             if ($student_col) {
-                $query = "INSERT INTO penelitian (judul, tahun, deskripsi, id_artikel, " . $student_col . ", id_member, id_produk, id_mitra, tgl_mulai, tgl_selesai) VALUES (:judul, :tahun, :deskripsi, :id_artikel, :student_id, :id_member, :id_produk, :id_mitra, :tgl_mulai, :tgl_selesai)";
+                $query = "INSERT INTO penelitian (judul, tahun, deskripsi, " . $student_col . ", tgl_mulai, tgl_selesai) VALUES (:judul, :tahun, :deskripsi, NULL, :tgl_mulai, :tgl_selesai)";
                 $params = [
                     'judul' => $judul,
                     'tahun' => $tahun ?: null,
                     'deskripsi' => $deskripsi ?: null,
-                    'id_artikel' => $id_artikel ?: null,
-                    'student_id' => $nim ?: null,
-                    'id_member' => $id_member ?: null,
-                    'id_produk' => $id_produk ?: null,
-                    'id_mitra' => $id_mitra ?: null,
                     'tgl_mulai' => $tgl_mulai ?: null,
                     'tgl_selesai' => $tgl_selesai ?: null
                 ];
             } else {
                 // No student identifier column, skip it
-                $query = "INSERT INTO penelitian (judul, tahun, deskripsi, id_artikel, id_member, id_produk, id_mitra, tgl_mulai, tgl_selesai) VALUES (:judul, :tahun, :deskripsi, :id_artikel, :id_member, :id_produk, :id_mitra, :tgl_mulai, :tgl_selesai)";
+                $query = "INSERT INTO penelitian (judul, tahun, deskripsi, tgl_mulai, tgl_selesai) VALUES (:judul, :tahun, :deskripsi, :tgl_mulai, :tgl_selesai)";
                 $params = [
                     'judul' => $judul,
                     'tahun' => $tahun ?: null,
                     'deskripsi' => $deskripsi ?: null,
-                    'id_artikel' => $id_artikel ?: null,
-                    'id_member' => $id_member ?: null,
-                    'id_produk' => $id_produk ?: null,
-                    'id_mitra' => $id_mitra ?: null,
                     'tgl_mulai' => $tgl_mulai ?: null,
                     'tgl_selesai' => $tgl_selesai ?: null
                 ];
@@ -121,15 +178,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $judul = $_POST['judul'] ?? '';
         $tahun = $_POST['tahun'] ?? null;
         $konten = $_POST['konten'] ?? '';
+        $id_penelitian = $_POST['id_penelitian'] ?? null;
+        $nim = $_POST['nim'] ?? null;
+        $id_member = $_POST['id_member'] ?? null;
+        $id_produk = $_POST['id_produk'] ?? null;
+        $id_mitra = $_POST['id_mitra'] ?? null;
 
         try {
-            $stmt = $conn->prepare("UPDATE artikel SET judul = :judul, tahun = :tahun, konten = :konten WHERE id_artikel = :id");
-            $stmt->execute([
+            // Check which columns exist in artikel table
+            $check_cols = $conn->query("SELECT column_name FROM information_schema.columns WHERE table_name = 'artikel'");
+            $columns = $check_cols->fetchAll(PDO::FETCH_COLUMN);
+            $has_id_penelitian = in_array('id_penelitian', $columns);
+            $has_nim = in_array('nim', $columns);
+            $has_id_member = in_array('id_member', $columns);
+            $has_id_produk = in_array('id_produk', $columns);
+            $has_id_mitra = in_array('id_mitra', $columns);
+            
+            // Build dynamic query based on available columns
+            $sets = ['judul = :judul', 'tahun = :tahun', 'konten = :konten'];
+            $params = [
                 'id' => $id,
                 'judul' => $judul,
                 'tahun' => $tahun ?: null,
                 'konten' => $konten
-            ]);
+            ];
+            
+            if ($has_id_penelitian) {
+                $sets[] = 'id_penelitian = :id_penelitian';
+                $params['id_penelitian'] = $id_penelitian ?: null;
+            }
+            if ($has_nim) {
+                $sets[] = 'nim = :nim';
+                $params['nim'] = $nim ?: null;
+            }
+            if ($has_id_member) {
+                $sets[] = 'id_member = :id_member';
+                $params['id_member'] = $id_member ?: null;
+            }
+            if ($has_id_produk) {
+                $sets[] = 'id_produk = :id_produk';
+                $params['id_produk'] = $id_produk ?: null;
+            }
+            if ($has_id_mitra) {
+                $sets[] = 'id_mitra = :id_mitra';
+                $params['id_mitra'] = $id_mitra ?: null;
+            }
+            
+            $query = "UPDATE artikel SET " . implode(', ', $sets) . " WHERE id_artikel = :id";
+            $stmt = $conn->prepare($query);
+            $stmt->execute($params);
             $message = 'Article successfully updated!';
             $message_type = 'success';
         } catch (PDOException $e) {
@@ -141,7 +238,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $judul = $_POST['judul'] ?? '';
         $tahun = $_POST['tahun'] ?? null;
         $deskripsi = $_POST['deskripsi'] ?? '';
-        $id_artikel = $_POST['id_artikel'] ?? null;
         $nim = $_POST['nim'] ?? null;
         $id_member = $_POST['id_member'] ?? null;
         $id_produk = $_POST['id_produk'] ?? null;
@@ -152,13 +248,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $student_col = getPenelitianStudentCol($conn);
             if ($student_col) {
-                $query = "UPDATE penelitian SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, id_artikel = :id_artikel, " . $student_col . " = :student_id, id_member = :id_member, id_produk = :id_produk, id_mitra = :id_mitra, tgl_mulai = :tgl_mulai, tgl_selesai = :tgl_selesai WHERE id_penelitian = :id";
+                $query = "UPDATE penelitian SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, " . $student_col . " = :student_id, id_member = :id_member, id_produk = :id_produk, id_mitra = :id_mitra, tgl_mulai = :tgl_mulai, tgl_selesai = :tgl_selesai WHERE id_penelitian = :id";
                 $params = [
                     'id' => $id,
                     'judul' => $judul,
                     'tahun' => $tahun ?: null,
                     'deskripsi' => $deskripsi ?: null,
-                    'id_artikel' => $id_artikel ?: null,
                     'student_id' => $nim ?: null,
                     'id_member' => $id_member ?: null,
                     'id_produk' => $id_produk ?: null,
@@ -168,13 +263,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ];
             } else {
                 // No student identifier column, skip it
-                $query = "UPDATE penelitian SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, id_artikel = :id_artikel, id_member = :id_member, id_produk = :id_produk, id_mitra = :id_mitra, tgl_mulai = :tgl_mulai, tgl_selesai = :tgl_selesai WHERE id_penelitian = :id";
+                $query = "UPDATE penelitian SET judul = :judul, tahun = :tahun, deskripsi = :deskripsi, id_member = :id_member, id_produk = :id_produk, id_mitra = :id_mitra, tgl_mulai = :tgl_mulai, tgl_selesai = :tgl_selesai WHERE id_penelitian = :id";
                 $params = [
                     'id' => $id,
                     'judul' => $judul,
                     'tahun' => $tahun ?: null,
                     'deskripsi' => $deskripsi ?: null,
-                    'id_artikel' => $id_artikel ?: null,
                     'id_member' => $id_member ?: null,
                     'id_produk' => $id_produk ?: null,
                     'id_mitra' => $id_mitra ?: null,
@@ -195,7 +289,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $conn->prepare("DELETE FROM artikel WHERE id_artikel = :id");
             $stmt->execute(['id' => $id]);
-            $message = 'Artikel berhasil dihapus!';
+            $message = 'Article successfully deleted!';
             $message_type = 'success';
         } catch (PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
@@ -206,7 +300,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $conn->prepare("DELETE FROM penelitian WHERE id_penelitian = :id");
             $stmt->execute(['id' => $id]);
-            $message = 'Penelitian berhasil dihapus!';
+            $message = 'Research successfully deleted!';
             $message_type = 'success';
         } catch (PDOException $e) {
             $message = 'Error: ' . $e->getMessage();
@@ -468,8 +562,28 @@ $total_items_artikel = $stmt->fetchColumn();
 $total_pages_artikel = ceil($total_items_artikel / $items_per_page);
 $offset_artikel = ($current_page_artikel - 1) * $items_per_page;
 
-// Get articles with pagination (for display)
-$stmt = $conn->prepare("SELECT * FROM artikel ORDER BY tahun DESC, judul LIMIT :limit OFFSET :offset");
+// Get articles with pagination (for display) - include research info
+// Check if id_penelitian column exists first
+try {
+    $check_col = $conn->query("SELECT column_name FROM information_schema.columns WHERE table_name = 'artikel' AND column_name = 'id_penelitian'");
+    $has_id_penelitian = $check_col->rowCount() > 0;
+} catch (PDOException $e) {
+    $has_id_penelitian = false;
+}
+
+if ($has_id_penelitian) {
+    $stmt = $conn->prepare("SELECT a.*, p.judul as penelitian_judul 
+                            FROM artikel a 
+                            LEFT JOIN penelitian p ON a.id_penelitian = p.id_penelitian 
+                            ORDER BY a.tahun DESC, a.judul 
+                            LIMIT :limit OFFSET :offset");
+} else {
+    // Fallback if column doesn't exist yet
+    $stmt = $conn->prepare("SELECT a.*, NULL as penelitian_judul 
+                            FROM artikel a 
+                            ORDER BY a.tahun DESC, a.judul 
+                            LIMIT :limit OFFSET :offset");
+}
 $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset_artikel, PDO::PARAM_INT);
 $stmt->execute();
@@ -504,7 +618,6 @@ try {
         // Ensure 'nim' column is always available in result for JavaScript compatibility
         $query = "SELECT p.*, 
                       " . ($student_col === 'nim' ? "p.nim" : "p." . $student_col . " as nim") . ",
-                      a.judul as artikel_judul, 
                       " . ($student_col === 'nim' 
                           ? "COALESCE((SELECT nama FROM mahasiswa WHERE nim = p.nim LIMIT 1), 'N/A') as mahasiswa_nama"
                           : "COALESCE((SELECT nama FROM mahasiswa WHERE id_mahasiswa = p.id_mhs LIMIT 1), 'N/A') as mahasiswa_nama") . ",
@@ -512,7 +625,6 @@ try {
                       pr.nama_produk, 
                       mt.nama_institusi as mitra_nama
                   FROM penelitian p
-                  LEFT JOIN artikel a ON p.id_artikel = a.id_artikel
                   LEFT JOIN member mem ON p.id_member = mem.id_member
                   LEFT JOIN produk pr ON p.id_produk = pr.id_produk
                   LEFT JOIN mitra mt ON p.id_mitra = mt.id_mitra
@@ -522,13 +634,11 @@ try {
         // No student identifier column found
         $query = "SELECT p.*, 
                       NULL as nim,
-                      a.judul as artikel_judul, 
                       'N/A' as mahasiswa_nama,
                       mem.nama as member_nama, 
                       pr.nama_produk, 
                       mt.nama_institusi as mitra_nama
                   FROM penelitian p
-                  LEFT JOIN artikel a ON p.id_artikel = a.id_artikel
                   LEFT JOIN member mem ON p.id_member = mem.id_member
                   LEFT JOIN produk pr ON p.id_produk = pr.id_produk
                   LEFT JOIN mitra mt ON p.id_mitra = mt.id_mitra
@@ -546,13 +656,11 @@ try {
     error_log("Error in penelitian query: " . $e->getMessage());
     $query_fallback = "SELECT p.*, 
                           NULL as nim,
-                          a.judul as artikel_judul, 
                           'N/A' as mahasiswa_nama,
                           mem.nama as member_nama, 
                           pr.nama_produk, 
                           mt.nama_institusi as mitra_nama
                       FROM penelitian p
-                      LEFT JOIN artikel a ON p.id_artikel = a.id_artikel
                       LEFT JOIN member mem ON p.id_member = mem.id_member
                       LEFT JOIN produk pr ON p.id_produk = pr.id_produk
                       LEFT JOIN mitra mt ON p.id_mitra = mt.id_mitra
@@ -928,7 +1036,7 @@ $member_list = $stmt->fetchAll();
     include __DIR__ . '/partials/sidebar.php'; ?>
     <main class="content">
         <div class="content-inner">
-            <h1 class="text-primary mb-4"><i class="ri-flask-line"></i> Kelola Data Member</h1>
+            <h1 class="text-primary mb-4"><i class="ri-flask-line"></i> Manage Research</h1>
 
             <div class="cms-content">
                 <?php 
@@ -943,7 +1051,7 @@ $member_list = $stmt->fetchAll();
                     </div>
                 <?php elseif (isset($_GET['deleted']) && $_GET['deleted'] == 1): ?>
                     <div class="message success">
-                        Research detail successfully deleted!
+                        Research detail successfully deleted!   
                     </div>
                 <?php elseif ($message): ?>
                     <div class="message <?php echo $message_type; ?>">
@@ -953,9 +1061,9 @@ $member_list = $stmt->fetchAll();
 
                 <div class="tabs">
                     <a href="?tab=artikel&page=1"
-                        class="tab <?php echo ($current_tab === 'artikel') ? 'active' : ''; ?>">Artikel</a>
+                        class="tab <?php echo ($current_tab === 'artikel') ? 'active' : ''; ?>">Article</a>
                     <a href="?tab=penelitian&page=1"
-                        class="tab <?php echo ($current_tab === 'penelitian') ? 'active' : ''; ?>">Penelitian</a>
+                        class="tab <?php echo ($current_tab === 'penelitian') ? 'active' : ''; ?>">Research</a>
                     <a href="?tab=research_detail"
                         class="tab <?php echo ($current_tab === 'research_detail') ? 'active' : ''; ?>">Research Detail</a>
                     <a href="?tab=product"
@@ -966,62 +1074,189 @@ $member_list = $stmt->fetchAll();
                 <div id="artikel-tab" class="tab-content <?php echo ($current_tab === 'artikel') ? 'active' : ''; ?>">
                     <!-- Edit Artikel Form (Hidden by default) -->
                     <div id="edit-artikel-section" class="form-section edit-form-section">
-                        <h2>Edit Artikel</h2>
+                        <h2>Edit Article</h2>
                         <form method="POST" action="" id="edit-artikel-form">
                             <input type="hidden" name="action" value="update_artikel">
                             <input type="hidden" name="id" id="edit_artikel_id">
                             <div class="form-group">
-                                <label>Judul Artikel</label>
+                                <label>Article Title</label>
                                 <input type="text" name="judul" id="edit_artikel_judul" required>
                             </div>
                             <div class="form-group">
-                                <label>Tahun</label>
+                                <label>Year</label>
                                 <input type="number" name="tahun" id="edit_artikel_tahun" min="2000" max="2099">
                             </div>
                             <div class="form-group">
-                                <label>Konten</label>
+                                <label>Content</label>
                                 <textarea name="konten" id="edit_artikel_konten" required></textarea>
                             </div>
-                            <button type="submit" class="btn-submit">Update Artikel</button>
-                            <button type="button" class="btn-cancel" onclick="cancelEditArtikel()">Batal</button>
+                            <div class="form-group">
+                                <label>Research (Optional)</label>
+                                <select name="id_penelitian" id="edit_artikel_id_penelitian">
+                                    <option value="">-- Select Research --</option>
+                                    <?php foreach ($penelitian_dropdown as $penelitian): ?>
+                                        <option value="<?php echo $penelitian['id_penelitian']; ?>">
+                                            <?php echo htmlspecialchars($penelitian['judul']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Student (Optional)</label>
+                                <select name="nim" id="edit_artikel_nim">
+                                    <option value="">-- Select Student --</option>
+                                    <?php foreach ($mahasiswa_list as $mhs): ?>
+                                        <option value="<?php echo $mhs['nim']; ?>">
+                                            <?php echo htmlspecialchars($mhs['nama']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Member (Optional)</label>
+                                <select name="id_member" id="edit_artikel_id_member">
+                                    <option value="">-- Select Member --</option>
+                                    <?php foreach ($member_list as $mem): ?>
+                                        <option value="<?php echo $mem['id_member']; ?>">
+                                            <?php echo htmlspecialchars($mem['nama']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Product (Optional)</label>
+                                <select name="id_produk" id="edit_artikel_id_produk">
+                                    <option value="">-- Select Product --</option>
+                                    <?php
+                                    $produk_stmt = $conn->query("SELECT id_produk, nama_produk FROM produk ORDER BY nama_produk");
+                                    $produk_list = $produk_stmt->fetchAll();
+                                    foreach ($produk_list as $prod): ?>
+                                        <option value="<?php echo $prod['id_produk']; ?>">
+                                            <?php echo htmlspecialchars($prod['nama_produk']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Partner (Optional)</label>
+                                <select name="id_mitra" id="edit_artikel_id_mitra">
+                                    <option value="">-- Select Partner --</option>
+                                    <?php
+                                    $mitra_stmt = $conn->query("SELECT id_mitra, nama_institusi FROM mitra ORDER BY nama_institusi");
+                                    $mitra_list = $mitra_stmt->fetchAll();
+                                    foreach ($mitra_list as $mit): ?>
+                                        <option value="<?php echo $mit['id_mitra']; ?>">
+                                            <?php echo htmlspecialchars($mit['nama_institusi']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-submit">Update Article</button>
+                            <button type="button" class="btn-cancel" onclick="cancelEditArtikel()">Cancel</button>
                         </form>
                     </div>
 
                     <div class="form-section">
-                        <h2>Tambah Artikel Baru</h2>
+                        <h2>Add New Article</h2>
                         <form method="POST" action="">
                             <input type="hidden" name="action" value="add_artikel">
                             <div class="form-group">
-                                <label>Judul Artikel</label>
+                                <label>Article Title</label>
                                 <input type="text" name="judul" required>
                             </div>
                             <div class="form-group">
-                                <label>Tahun</label>
+                                <label>Year</label>
                                 <input type="number" name="tahun" min="2000" max="2099">
                             </div>
                             <div class="form-group">
-                                <label>Konten</label>
+                                <label>Content</label>
                                 <textarea name="konten" required></textarea>
                             </div>
-                            <button type="submit" class="btn-submit">Tambah Artikel</button>
+                            <div class="form-group">
+                                <label>Research (Optional)</label>
+                                <select name="id_penelitian">
+                                    <option value="">-- Select Research --</option>
+                                    <?php foreach ($penelitian_dropdown as $penelitian): ?>
+                                        <option value="<?php echo $penelitian['id_penelitian']; ?>">
+                                            <?php echo htmlspecialchars($penelitian['judul']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Student (Optional)</label>
+                                <select name="nim">
+                                    <option value="">-- Select Student --</option>
+                                    <?php foreach ($mahasiswa_list as $mhs): ?>
+                                        <option value="<?php echo $mhs['nim']; ?>">
+                                            <?php echo htmlspecialchars($mhs['nama']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Member (Optional)</label>
+                                <select name="id_member">
+                                    <option value="">-- Select Member --</option>
+                                    <?php foreach ($member_list as $mem): ?>
+                                        <option value="<?php echo $mem['id_member']; ?>">
+                                            <?php echo htmlspecialchars($mem['nama']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Product (Optional)</label>
+                                <select name="id_produk">
+                                    <option value="">-- Select Product --</option>
+                                    <?php
+                                    if (!isset($produk_list)) {
+                                        $produk_stmt = $conn->query("SELECT id_produk, nama_produk FROM produk ORDER BY nama_produk");
+                                        $produk_list = $produk_stmt->fetchAll();
+                                    }
+                                    foreach ($produk_list as $prod): ?>
+                                        <option value="<?php echo $prod['id_produk']; ?>">
+                                            <?php echo htmlspecialchars($prod['nama_produk']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Partner (Optional)</label>
+                                <select name="id_mitra">
+                                    <option value="">-- Select Partner --</option>
+                                    <?php
+                                    if (!isset($mitra_list)) {
+                                        $mitra_stmt = $conn->query("SELECT id_mitra, nama_institusi FROM mitra ORDER BY nama_institusi");
+                                        $mitra_list = $mitra_stmt->fetchAll();
+                                    }
+                                    foreach ($mitra_list as $mit): ?>
+                                        <option value="<?php echo $mit['id_mitra']; ?>">
+                                            <?php echo htmlspecialchars($mit['nama_institusi']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-submit">Add Article</button>
                         </form>
                     </div>
 
                     <div class="data-section">
-                        <h2>Daftar Artikel (<?php echo count($artikels); ?>)</h2>
+                        <h2>Article List (<?php echo count($artikels); ?>)</h2>
                         <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Judul</th>
-                                    <th>Tahun</th>
-                                    <th>Aksi</th>
+                                    <th>Title</th>
+                                    <th>Year</th>
+                                    <th>Research</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($artikels)): ?>
                                     <tr>
-                                        <td colspan="4" class="text-center muted-gray">Belum ada artikel</td>
+                                        <td colspan="5" class="text-center muted-gray">No articles yet</td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($artikels as $artikel): ?>
@@ -1029,21 +1264,22 @@ $member_list = $stmt->fetchAll();
                                             <td><?php echo $artikel['id_artikel']; ?></td>
                                             <td><?php echo htmlspecialchars($artikel['judul']); ?></td>
                                             <td><?php echo $artikel['tahun'] ?? '-'; ?></td>
+                                            <td><?php echo htmlspecialchars($artikel['penelitian_judul'] ?? '-'); ?></td>
                                             <td>
                                                 <div class="action-buttons">
-                                                    <button type="button" class="btn-edit"
-                                                        onclick="editArtikel(<?php echo htmlspecialchars(json_encode($artikel)); ?>)">
-                                                        <i class="ri-edit-line"></i> Edit
-                                                    </button>
-                                                    <form method="POST" class="d-inline"
+                                                <button type="button" class="btn-edit"
+                                                    onclick="editArtikel(<?php echo htmlspecialchars(json_encode($artikel)); ?>)">
+                                                    <i class="ri-edit-line"></i> Edit
+                                                </button>
+                                                <form method="POST" class="d-inline"
                                                         onsubmit="return confirm('Are you sure you want to delete this article?');">
-                                                        <input type="hidden" name="action" value="delete_artikel">
-                                                        <input type="hidden" name="id"
-                                                            value="<?php echo $artikel['id_artikel']; ?>">
-                                                        <button type="submit" class="btn-delete">
+                                                    <input type="hidden" name="action" value="delete_artikel">
+                                                    <input type="hidden" name="id"
+                                                        value="<?php echo $artikel['id_artikel']; ?>">
+                                                    <button type="submit" class="btn-delete">
                                                             <i class="ri-delete-bin-line"></i> Delete
-                                                        </button>
-                                                    </form>
+                                                    </button>
+                                                </form>
                                                 </div>
                                             </td>
                                         </tr>
@@ -1095,9 +1331,9 @@ $member_list = $stmt->fetchAll();
                                 <?php endif; ?>
                             </div>
                             <div class="pagination-info">
-                                Menampilkan <?php echo ($offset_artikel + 1); ?> -
-                                <?php echo min($offset_artikel + $items_per_page, $total_items_artikel); ?> dari
-                                <?php echo $total_items_artikel; ?> artikel
+                                Showing <?php echo ($offset_artikel + 1); ?> -
+                                <?php echo min($offset_artikel + $items_per_page, $total_items_artikel); ?> of
+                                <?php echo $total_items_artikel; ?> articles
                             </div>
                         <?php endif; ?>
                     </div>
@@ -1108,210 +1344,83 @@ $member_list = $stmt->fetchAll();
                     class="tab-content <?php echo ($current_tab === 'penelitian') ? 'active' : ''; ?>">
                     <!-- Edit Penelitian Form (Hidden by default) -->
                     <div id="edit-penelitian-section" class="form-section edit-form-section">
-                        <h2>Edit Penelitian</h2>
+                        <h2>Edit Research</h2>
                         <form method="POST" action="" id="edit-penelitian-form">
                             <input type="hidden" name="action" value="update_penelitian">
                             <input type="hidden" name="id" id="edit_penelitian_id">
                             <div class="form-group">
-                                <label>Judul Penelitian *</label>
+                                <label>Research Title *</label>
                                 <input type="text" name="judul" id="edit_penelitian_judul" required>
                             </div>
                             <div class="form-group">
-                                <label>Tahun</label>
+                                <label>Year</label>
                                 <input type="number" name="tahun" id="edit_penelitian_tahun" min="2000" max="2099">
                             </div>
                             <div class="form-group">
-                                <label>Deskripsi</label>
+                                <label>Description</label>
                                 <textarea name="deskripsi" id="edit_penelitian_deskripsi"></textarea>
                             </div>
                             <div class="form-group">
-                                <label>Artikel (Opsional)</label>
-                                <select name="id_artikel" id="edit_penelitian_id_artikel">
-                                    <option value="">-- Pilih Artikel --</option>
-                                    <?php foreach ($artikels_dropdown as $artikel): ?>
-                                        <option value="<?php echo $artikel['id_artikel']; ?>">
-                                            <?php echo htmlspecialchars($artikel['judul']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Mahasiswa (Opsional)</label>
-                                <select name="nim" id="edit_penelitian_nim">
-                                    <option value="">-- Pilih Mahasiswa --</option>
-                                    <?php foreach ($mahasiswa_list as $mhs): ?>
-                                        <option value="<?php echo $mhs['nim']; ?>">
-                                            <?php echo htmlspecialchars($mhs['nama']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Member (Opsional)</label>
-                                <select name="id_member" id="edit_penelitian_id_member">
-                                    <option value="">-- Pilih Member --</option>
-                                    <?php foreach ($member_list as $mem): ?>
-                                        <option value="<?php echo $mem['id_member']; ?>">
-                                            <?php echo htmlspecialchars($mem['nama']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Produk (Opsional)</label>
-                                <select name="id_produk" id="edit_penelitian_id_produk">
-                                    <option value="">-- Pilih Produk --</option>
-                                    <?php
-                                    $produk_stmt = $conn->query("SELECT id_produk, nama_produk FROM produk ORDER BY nama_produk");
-                                    $produk_list = $produk_stmt->fetchAll();
-                                    foreach ($produk_list as $prod): ?>
-                                        <option value="<?php echo $prod['id_produk']; ?>">
-                                            <?php echo htmlspecialchars($prod['nama_produk']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Mitra (Opsional)</label>
-                                <select name="id_mitra" id="edit_penelitian_id_mitra">
-                                    <option value="">-- Pilih Mitra --</option>
-                                    <?php
-                                    $mitra_stmt = $conn->query("SELECT id_mitra, nama_institusi FROM mitra ORDER BY nama_institusi");
-                                    $mitra_list = $mitra_stmt->fetchAll();
-                                    foreach ($mitra_list as $mit): ?>
-                                        <option value="<?php echo $mit['id_mitra']; ?>">
-                                            <?php echo htmlspecialchars($mit['nama_institusi']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Tanggal Mulai *</label>
+                                <label>Start Date *</label>
                                 <input type="date" name="tgl_mulai" id="edit_penelitian_tgl_mulai" required>
                             </div>
                             <div class="form-group">
-                                <label>Tanggal Selesai</label>
+                                <label>End Date</label>
                                 <input type="date" name="tgl_selesai" id="edit_penelitian_tgl_selesai">
                             </div>
-                            <button type="submit" class="btn-submit">Update Penelitian</button>
-                            <button type="button" class="btn-cancel" onclick="cancelEditPenelitian()">Batal</button>
+                            <button type="submit" class="btn-submit">Update Research</button>
+                            <button type="button" class="btn-cancel" onclick="cancelEditPenelitian()">Cancel</button>
                         </form>
                     </div>
 
                     <div class="form-section">
-                        <h2>Tambah Penelitian Baru</h2>
+                        <h2>Add New Research</h2>
                         <form method="POST" action="">
                             <input type="hidden" name="action" value="add_penelitian">
                             <div class="form-group">
-                                <label>Judul Penelitian *</label>
+                                <label>Research Title *</label>
                                 <input type="text" name="judul" required>
                             </div>
                             <div class="form-group">
-                                <label>Tahun</label>
+                                <label>Year</label>
                                 <input type="number" name="tahun" min="2000" max="2099">
                             </div>
                             <div class="form-group">
-                                <label>Deskripsi</label>
+                                <label>Description</label>
                                 <textarea name="deskripsi"></textarea>
                             </div>
                             <div class="form-group">
-                                <label>Artikel (Opsional)</label>
-                                <select name="id_artikel">
-                                    <option value="">-- Pilih Artikel --</option>
-                                    <?php foreach ($artikels_dropdown as $artikel): ?>
-                                        <option value="<?php echo $artikel['id_artikel']; ?>">
-                                            <?php echo htmlspecialchars($artikel['judul']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Mahasiswa (Opsional)</label>
-                                <select name="nim">
-                                    <option value="">-- Pilih Mahasiswa --</option>
-                                    <?php foreach ($mahasiswa_list as $mhs): ?>
-                                        <option value="<?php echo $mhs['nim']; ?>">
-                                            <?php echo htmlspecialchars($mhs['nama']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Member (Opsional)</label>
-                                <select name="id_member">
-                                    <option value="">-- Pilih Member --</option>
-                                    <?php foreach ($member_list as $mem): ?>
-                                        <option value="<?php echo $mem['id_member']; ?>">
-                                            <?php echo htmlspecialchars($mem['nama']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Produk (Opsional)</label>
-                                <select name="id_produk">
-                                    <option value="">-- Pilih Produk --</option>
-                                    <?php
-                                    if (!isset($produk_list)) {
-                                        $produk_stmt = $conn->query("SELECT id_produk, nama_produk FROM produk ORDER BY nama_produk");
-                                        $produk_list = $produk_stmt->fetchAll();
-                                    }
-                                    foreach ($produk_list as $prod): ?>
-                                        <option value="<?php echo $prod['id_produk']; ?>">
-                                            <?php echo htmlspecialchars($prod['nama_produk']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Mitra (Opsional)</label>
-                                <select name="id_mitra">
-                                    <option value="">-- Pilih Mitra --</option>
-                                    <?php
-                                    if (!isset($mitra_list)) {
-                                        $mitra_stmt = $conn->query("SELECT id_mitra, nama_institusi FROM mitra ORDER BY nama_institusi");
-                                        $mitra_list = $mitra_stmt->fetchAll();
-                                    }
-                                    foreach ($mitra_list as $mit): ?>
-                                        <option value="<?php echo $mit['id_mitra']; ?>">
-                                            <?php echo htmlspecialchars($mit['nama_institusi']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Tanggal Mulai *</label>
+                                <label>Start Date *</label>
                                 <input type="date" name="tgl_mulai" value="<?php echo date('Y-m-d'); ?>" required>
                             </div>
                             <div class="form-group">
-                                <label>Tanggal Selesai</label>
+                                <label>End Date</label>
                                 <input type="date" name="tgl_selesai">
                             </div>
-                            <button type="submit" class="btn-submit">Tambah Penelitian</button>
+                            <button type="submit" class="btn-submit">Add Research</button>
                         </form>
                     </div>
 
                     <div class="data-section">
-                        <h2>Daftar Penelitian (<?php echo count($progress_list); ?>)</h2>
+                        <h2>Research List (<?php echo count($progress_list); ?>)</h2>
                         <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Judul</th>
-                                    <th>Tahun</th>
-                                    <th>Artikel</th>
-                                    <th>Mahasiswa</th>
+                                    <th>Title</th>
+                                    <th>Year</th>
+                                    <th>Student</th>
                                     <th>Member</th>
-                                    <th>Produk</th>
-                                    <th>Mitra</th>
-                                    <th>Tanggal Mulai</th>
-                                    <th>Aksi</th>
+                                    <th>Product</th>
+                                    <th>Partner</th>
+                                    <th>Start Date</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($progress_list)): ?>
                                     <tr>
-                                        <td colspan="10" class="text-center muted-gray">Belum ada penelitian</td>
+                                        <td colspan="9" class="text-center muted-gray">No research yet</td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($progress_list as $penelitian): ?>
@@ -1319,7 +1428,6 @@ $member_list = $stmt->fetchAll();
                                             <td><?php echo $penelitian['id_penelitian']; ?></td>
                                             <td><?php echo htmlspecialchars($penelitian['judul']); ?></td>
                                             <td><?php echo $penelitian['tahun'] ?? '-'; ?></td>
-                                            <td><?php echo htmlspecialchars($penelitian['artikel_judul'] ?? '-'); ?></td>
                                             <td><?php echo htmlspecialchars($penelitian['mahasiswa_nama'] ?? '-'); ?></td>
                                             <td><?php echo htmlspecialchars($penelitian['member_nama'] ?? '-'); ?></td>
                                             <td><?php echo htmlspecialchars($penelitian['nama_produk'] ?? '-'); ?></td>
@@ -1328,19 +1436,19 @@ $member_list = $stmt->fetchAll();
                                             </td>
                                             <td>
                                                 <div class="action-buttons">
-                                                    <button type="button" class="btn-edit"
-                                                        onclick="editPenelitian(<?php echo htmlspecialchars(json_encode($penelitian)); ?>)">
-                                                        <i class="ri-edit-line"></i> Edit
-                                                    </button>
-                                                    <form method="POST" class="d-inline"
+                                                <button type="button" class="btn-edit"
+                                                    onclick="editPenelitian(<?php echo htmlspecialchars(json_encode($penelitian)); ?>)">
+                                                    <i class="ri-edit-line"></i> Edit
+                                                </button>
+                                                <form method="POST" class="d-inline"
                                                         onsubmit="return confirm('Are you sure you want to delete this research?');">
-                                                        <input type="hidden" name="action" value="delete_penelitian">
-                                                        <input type="hidden" name="id"
-                                                            value="<?php echo $penelitian['id_penelitian']; ?>">
-                                                        <button type="submit" class="btn-delete">
+                                                    <input type="hidden" name="action" value="delete_penelitian">
+                                                    <input type="hidden" name="id"
+                                                        value="<?php echo $penelitian['id_penelitian']; ?>">
+                                                    <button type="submit" class="btn-delete">
                                                             <i class="ri-delete-bin-line"></i> Delete
-                                                        </button>
-                                                    </form>
+                                                    </button>
+                                                </form>
                                                 </div>
                                             </td>
                                         </tr>
@@ -1393,9 +1501,9 @@ $member_list = $stmt->fetchAll();
                                 <?php endif; ?>
                             </div>
                             <div class="pagination-info">
-                                Menampilkan <?php echo ($offset_progress + 1); ?> -
-                                <?php echo min($offset_progress + $items_per_page, $total_items_progress); ?> dari
-                                <?php echo $total_items_progress; ?> penelitian
+                                Showing <?php echo ($offset_progress + 1); ?> -
+                                <?php echo min($offset_progress + $items_per_page, $total_items_progress); ?> of
+                                <?php echo $total_items_progress; ?> research
                             </div>
                         <?php endif; ?>
                     </div>
@@ -1429,12 +1537,12 @@ $member_list = $stmt->fetchAll();
                                 </div>
                             </div>
                             <button type="submit" class="btn-submit">Update Research Detail</button>
-                            <button type="button" class="btn-cancel" onclick="cancelEditResearchDetail()">Batal</button>
+                            <button type="button" class="btn-cancel" onclick="cancelEditResearchDetail()">Cancel</button>
                         </form>
                     </div>
 
                     <div class="form-section">
-                        <h2>Tambah Research Detail Baru</h2>
+                        <h2>Add New Research Detail</h2>
                         <form method="POST" action="">
                             <input type="hidden" name="action" value="add_fokus_penelitian">
                             <div class="form-group">
@@ -1455,12 +1563,12 @@ $member_list = $stmt->fetchAll();
                                     <span id="add_detail_count">0</span> characters
                                 </div>
                             </div>
-                            <button type="submit" class="btn-submit">Tambah Research Detail</button>
+                            <button type="submit" class="btn-submit">Add Research Detail</button>
                         </form>
                     </div>
 
                     <div class="data-section">
-                        <h2>Daftar Research Detail (<?php echo count($fokus_penelitian_list); ?>)</h2>
+                        <h2>Research Detail List (<?php echo count($fokus_penelitian_list); ?>)</h2>
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -1468,13 +1576,13 @@ $member_list = $stmt->fetchAll();
                                     <th>Title</th>
                                     <th>Description</th>
                                     <th>Detail</th>
-                                    <th>Aksi</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($fokus_penelitian_list)): ?>
                                     <tr>
-                                        <td colspan="5" class="text-center muted-gray">Belum ada research detail</td>
+                                        <td colspan="5" class="text-center muted-gray">No research detail yet</td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($fokus_penelitian_list as $fp): ?>
@@ -1670,7 +1778,7 @@ $member_list = $stmt->fetchAll();
 
             // Redirect to first page of selected tab (only for artikel and penelitian)
             if (tabName === 'artikel' || tabName === 'penelitian') {
-                window.location.href = '?tab=' + tabName + '&page=1';
+            window.location.href = '?tab=' + tabName + '&page=1';
             } else {
                 window.location.href = '?tab=' + tabName;
             }
@@ -1704,6 +1812,19 @@ $member_list = $stmt->fetchAll();
             document.getElementById('edit_artikel_judul').value = artikel.judul || '';
             document.getElementById('edit_artikel_tahun').value = artikel.tahun || '';
             document.getElementById('edit_artikel_konten').value = artikel.konten || '';
+            document.getElementById('edit_artikel_id_penelitian').value = artikel.id_penelitian || '';
+            if (document.getElementById('edit_artikel_nim')) {
+                document.getElementById('edit_artikel_nim').value = artikel.nim || '';
+            }
+            if (document.getElementById('edit_artikel_id_member')) {
+                document.getElementById('edit_artikel_id_member').value = artikel.id_member || '';
+            }
+            if (document.getElementById('edit_artikel_id_produk')) {
+                document.getElementById('edit_artikel_id_produk').value = artikel.id_produk || '';
+            }
+            if (document.getElementById('edit_artikel_id_mitra')) {
+                document.getElementById('edit_artikel_id_mitra').value = artikel.id_mitra || '';
+            }
 
             document.getElementById('edit-artikel-section').classList.add('active');
             document.querySelector('#artikel-tab .form-section:not(.edit-form-section)').style.display = 'none';
@@ -1722,11 +1843,6 @@ $member_list = $stmt->fetchAll();
             document.getElementById('edit_penelitian_judul').value = penelitian.judul || '';
             document.getElementById('edit_penelitian_tahun').value = penelitian.tahun || '';
             document.getElementById('edit_penelitian_deskripsi').value = penelitian.deskripsi || '';
-            document.getElementById('edit_penelitian_id_artikel').value = penelitian.id_artikel || '';
-            document.getElementById('edit_penelitian_nim').value = penelitian.nim || '';
-            document.getElementById('edit_penelitian_id_member').value = penelitian.id_member || '';
-            document.getElementById('edit_penelitian_id_produk').value = penelitian.id_produk || '';
-            document.getElementById('edit_penelitian_id_mitra').value = penelitian.id_mitra || '';
             document.getElementById('edit_penelitian_tgl_mulai').value = penelitian.tgl_mulai || '';
             document.getElementById('edit_penelitian_tgl_selesai').value = penelitian.tgl_selesai || '';
 

@@ -172,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
 
         if (!$has_title) {
-            $message = 'Minimal satu halaman harus memiliki title!';
+                $message = 'At least one page must have a title!';
             $message_type = 'error';
         } else {
             try {
@@ -203,7 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     'updated_by' => $admin_id ?: null
                 ]);
 
-                $message = 'Settings berhasil diupdate!';
+                $message = 'Settings updated successfully!';
                 $message_type = 'success';
 
                 // Reload settings
@@ -457,7 +457,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <main class="content">
         <div class="content-inner">
             <div class="cms-content">
-                <h1 class="text-primary mb-4"><i class="ri-settings-3-line"></i> Kelola Site Settings</h1>
+                <h1 class="text-primary mb-4"><i class="ri-settings-3-line"></i>Manage Settings</h1>
 
                 <?php if ($message): ?>
                     <div class="message <?php echo $message_type; ?>">
@@ -472,7 +472,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     
                     <div class="tabs">
                         <a href="?tab=page-titles&page=1"
-                            class="tab <?php echo ($current_tab === 'page-titles') ? 'active' : ''; ?>">Artikel</a>
+                            class="tab <?php echo ($current_tab === 'page-titles') ? 'active' : ''; ?>">Articles</a>
                         <a href="?tab=logos&page=1"
                             class="tab <?php echo ($current_tab === 'logos') ? 'active' : ''; ?>">Logos</a>
                         <a href="?tab=footer&page=1"
@@ -486,8 +486,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         id="page-titles">
                         <div class="form-section">
                             <h2><i class="ri-global-line"></i> Page Titles & Subtitles</h2>
-                            <p style="color: #64748b; margin-bottom: 2rem;">Atur title dan subtitle untuk setiap
-                                halaman secara terpisah</p>
+                            <p style="color: #64748b; margin-bottom: 2rem;">Set title and subtitle for each page separately</p>
 
                             <?php
                             $page_labels = [
@@ -536,21 +535,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 <label for="site_logo">Logo Navbar</label>
                                 <?php if (!empty($settings['site_logo'])): ?>
                                     <div class="logo-preview current">
-                                        <strong style="display: block; margin-bottom: 0.5rem; color: #475569;">Logo Saat
-                                            Ini:</strong>
+                                        <strong style="display: block; margin-bottom: 0.5rem; color: #475569;">Current Logo:</strong>
                                         <img src="../<?php echo htmlspecialchars($settings['site_logo']); ?>"
                                             alt="Current Site Logo"
                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                        <span style="display:none; color: #ef4444;">Gambar tidak dapat dimuat</span>
+                                        <span style="display:none; color: #ef4444;">Image cannot be loaded</span>
                                     </div>
                                 <?php endif; ?>
                                 <input type="file" id="site_logo_file" name="site_logo_file" accept="image/*">
-                                <small>Upload logo baru untuk navbar (JPG, PNG, GIF, WEBP - Max 5MB)</small>
+                                <small>Upload new logo for navbar (JPG, PNG, GIF, WEBP - Max 5MB)</small>
                                 <div class="form-group" style="margin-top: 1rem;">
-                                    <label for="site_logo_url">Atau Masukkan URL Logo</label>
+                                    <label for="site_logo_url">Or Enter Logo URL</label>
                                     <input type="url" id="site_logo_url" name="site_logo_url"
                                         placeholder="https://example.com/logo.png">
-                                    <small>Jika menggunakan URL, kosongkan field upload di atas</small>
+                                    <small>If using URL, leave the upload field above empty</small>
                                 </div>
                             </div>
 
@@ -561,21 +559,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 <label for="footer_logo">Logo Footer</label>
                                 <?php if (!empty($settings['footer_logo'])): ?>
                                     <div class="logo-preview current">
-                                        <strong style="display: block; margin-bottom: 0.5rem; color: #475569;">Logo Saat
-                                            Ini:</strong>
+                                        <strong style="display: block; margin-bottom: 0.5rem; color: #475569;">Current Logo:</strong>
                                         <img src="../<?php echo htmlspecialchars($settings['footer_logo']); ?>"
                                             alt="Current Footer Logo"
                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                        <span style="display:none; color: #ef4444;">Gambar tidak dapat dimuat</span>
+                                        <span style="display:none; color: #ef4444;">Image cannot be loaded</span>
                                     </div>
                                 <?php endif; ?>
                                 <input type="file" id="footer_logo_file" name="footer_logo_file" accept="image/*">
-                                <small>Upload logo baru untuk footer (JPG, PNG, GIF, WEBP - Max 5MB)</small>
+                                <small>Upload new logo for footer (JPG, PNG, GIF, WEBP - Max 5MB)</small>
                                 <div class="form-group" style="margin-top: 1rem;">
-                                    <label for="footer_logo_url">Atau Masukkan URL Logo</label>
+                                    <label for="footer_logo_url">Or Enter Logo URL</label>
                                     <input type="url" id="footer_logo_url" name="footer_logo_url"
                                         placeholder="https://example.com/footer-logo.png">
-                                    <small>Jika menggunakan URL, kosongkan field upload di atas</small>
+                                    <small>If using URL, leave the upload field above empty</small>
                                 </div>
                             </div>
                         </div>
@@ -591,14 +588,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 <input type="text" id="footer_title" name="footer_title"
                                     value="<?php echo htmlspecialchars($settings['footer_title'] ?? ''); ?>"
                                     placeholder="Enter footer title">
-                                <small>Judul yang ditampilkan di footer</small>
+                                <small>Title displayed in footer</small>
                             </div>
 
                             <div class="form-group">
                                 <label for="copyright_text">Copyright Text</label>
                                 <textarea id="copyright_text" name="copyright_text"
                                     placeholder="© 2024 InLET. All rights reserved."><?php echo htmlspecialchars($settings['copyright_text'] ?? ''); ?></textarea>
-                                <small>Teks copyright yang ditampilkan di footer</small>
+                                <small>Copyright text displayed in footer</small>
                             </div>
                         </div>
                     </div>
@@ -613,7 +610,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 <input type="email" id="contact_email" name="contact_email"
                                     value="<?php echo htmlspecialchars($settings['contact_email'] ?? ''); ?>"
                                     placeholder="contact@inlet.edu">
-                                <small>Alamat email kontak</small>
+                                <small>Contact email address</small>
                             </div>
 
                             <div class="form-group">
@@ -621,14 +618,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 <input type="tel" id="contact_phone" name="contact_phone"
                                     value="<?php echo htmlspecialchars($settings['contact_phone'] ?? ''); ?>"
                                     placeholder="+62 123 456 7890">
-                                <small>Nomor telepon kontak</small>
+                                <small>Contact phone number</small>
                             </div>
 
                             <div class="form-group">
                                 <label for="contact_address">Address</label>
                                 <textarea id="contact_address" name="contact_address"
                                     placeholder="Jl. Soekarno Hatta No. 9, Malang, Jawa Timur"><?php echo htmlspecialchars($settings['contact_address'] ?? ''); ?></textarea>
-                                <small>Alamat lengkap</small>
+                                <small>Full address</small>
                             </div>
                         </div>
                     </div>
