@@ -152,9 +152,15 @@ $total_items = $stmt->fetchColumn();
 $total_pages = ceil($total_items / $items_per_page);
 
 // Get members with pagination (all fields are already in member table)
+// Order by: Ketua Lab first, then others by name
 $stmt = $conn->prepare("SELECT * 
                       FROM member 
-                      ORDER BY nama
+                      ORDER BY 
+                        CASE 
+                          WHEN LOWER(jabatan) LIKE '%ketua lab%' THEN 0 
+                          ELSE 1 
+                        END,
+                        nama
                       LIMIT :limit OFFSET :offset");
 $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);

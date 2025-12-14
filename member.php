@@ -46,7 +46,15 @@ $offset_members = ($current_page_members - 1) * $items_per_page;
 
 
 // Fetch members with search and pagination
-$query_sql = "SELECT * FROM member $where_sql ORDER BY nama LIMIT :limit OFFSET :offset";
+// Order by: Ketua Lab first, then others by name
+$query_sql = "SELECT * FROM member $where_sql 
+              ORDER BY 
+                CASE 
+                  WHEN LOWER(jabatan) LIKE '%ketua lab%' THEN 0 
+                  ELSE 1 
+                END,
+                nama 
+              LIMIT :limit OFFSET :offset";
 $stmt = $conn->prepare($query_sql);
 foreach ($params as $key => $value) {
     $stmt->bindValue($key, $value);

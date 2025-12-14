@@ -23,7 +23,14 @@ function safeQueryAll($conn, $sql)
 }
 
 // Fetch team
-$team = safeQueryAll($conn, "SELECT * FROM member ORDER BY nama");
+// Order by: Ketua Lab first, then others by name
+$team = safeQueryAll($conn, "SELECT * FROM member 
+                              ORDER BY 
+                                CASE 
+                                  WHEN LOWER(jabatan) LIKE '%ketua lab%' THEN 0 
+                                  ELSE 1 
+                                END,
+                                nama");
 
 // Fetch products
 $products = safeQueryAll($conn, "SELECT * FROM produk ORDER BY id_produk");
