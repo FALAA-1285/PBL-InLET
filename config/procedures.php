@@ -222,11 +222,10 @@ function callProcUpdateAbsensiDirect($p_nim, $p_action, $p_keterangan = null) {
             ];
         }
         
-        $tanggal_hari_ini = date('Y-m-d');
-        
-        // Get existing absensi - dynamically use the detected column
-        $stmt = $conn->prepare("SELECT * FROM absensi WHERE " . $student_col . " = :nim AND tanggal = :tanggal");
-        $stmt->execute(['nim' => $p_nim, 'tanggal' => $tanggal_hari_ini]);
+        // Use CURRENT_DATE from PostgreSQL for consistency with queries
+        // Get existing absensi - dynamically use the detected column, use CAST to ensure date comparison works correctly
+        $stmt = $conn->prepare("SELECT * FROM absensi WHERE " . $student_col . " = :nim AND CAST(tanggal AS DATE) = CAST(CURRENT_DATE AS DATE)");
+        $stmt->execute(['nim' => $p_nim]);
         $v_absensi_hari_ini = $stmt->fetch();
         
         if ($p_action === 'checkin') {
@@ -244,9 +243,9 @@ function callProcUpdateAbsensiDirect($p_nim, $p_action, $p_keterangan = null) {
                 $stmt->execute(['keterangan' => $p_keterangan, 'id' => $v_absensi_hari_ini['id_absensi']]);
                 $id_absensi = $v_absensi_hari_ini['id_absensi'];
             } else {
-                // Dynamically use the detected column
-                $stmt = $conn->prepare("INSERT INTO absensi (" . $student_col . ", tanggal, waktu_datang, keterangan) VALUES (:nim, :tanggal, CURRENT_TIMESTAMP, :keterangan) RETURNING id_absensi");
-                $stmt->execute(['nim' => $p_nim, 'tanggal' => $tanggal_hari_ini, 'keterangan' => $p_keterangan]);
+                // Dynamically use the detected column - use CURRENT_DATE from PostgreSQL
+                $stmt = $conn->prepare("INSERT INTO absensi (" . $student_col . ", tanggal, waktu_datang, keterangan) VALUES (:nim, CURRENT_DATE, CURRENT_TIMESTAMP, :keterangan) RETURNING id_absensi");
+                $stmt->execute(['nim' => $p_nim, 'keterangan' => $p_keterangan]);
                 $id_absensi = $stmt->fetchColumn();
             }
             
@@ -369,7 +368,11 @@ function callReturnPeminjamanDirect($p_id_peminjaman, $p_id_admin_return, $p_kon
             ];
         }
         
-        $tanggal_kembali = date('Y-m-d');
+        // Ensure tanggal_kembali >= tanggal_pinjam to satisfy constraint
+        $tanggal_hari_ini = date('Y-m-d');
+        $tanggal_pinjam = $v_peminjaman['tanggal_pinjam'];
+        // Use max of today and borrow date to ensure tanggal_kembali >= tanggal_pinjam
+        $tanggal_kembali = $tanggal_pinjam > $tanggal_hari_ini ? $tanggal_pinjam : $tanggal_hari_ini;
         
         // Check if history_pengembalian table exists, if not skip insert
         try {

@@ -543,12 +543,20 @@ try {
     $fokus_penelitian_list = [];
 }
 
-// Get produk data
+// Get produk data - show all products, ordered by id descending (newest first)
 try {
-    $stmt = $conn->query("SELECT * FROM produk ORDER BY id_produk");
+    $stmt = $conn->query("SELECT * FROM produk ORDER BY id_produk DESC");
     $produk_list = $stmt->fetchAll();
 } catch (PDOException $e) {
     $produk_list = [];
+}
+
+// Get penelitian data for dropdown (for artikel form)
+try {
+    $stmt = $conn->query("SELECT id_penelitian, judul FROM penelitian ORDER BY tahun DESC, judul");
+    $penelitian_dropdown = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $penelitian_dropdown = [];
 }
 
 // Get page numbers - check if we're on the correct tab
@@ -1420,10 +1428,6 @@ $member_list = $stmt->fetchAll();
                                     <th>ID</th>
                                     <th>Title</th>
                                     <th>Year</th>
-                                    <th>Student</th>
-                                    <th>Member</th>
-                                    <th>Product</th>
-                                    <th>Partner</th>
                                     <th>Start Date</th>
                                     <th>Action</th>
                                 </tr>
@@ -1431,7 +1435,7 @@ $member_list = $stmt->fetchAll();
                             <tbody>
                                 <?php if (empty($progress_list)): ?>
                                     <tr>
-                                        <td colspan="9" class="text-center muted-gray">No research yet</td>
+                                        <td colspan="5" class="text-center muted-gray">No research yet</td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($progress_list as $penelitian): ?>
@@ -1439,10 +1443,6 @@ $member_list = $stmt->fetchAll();
                                             <td><?php echo $penelitian['id_penelitian']; ?></td>
                                             <td><?php echo htmlspecialchars($penelitian['judul']); ?></td>
                                             <td><?php echo $penelitian['tahun'] ?? '-'; ?></td>
-                                            <td><?php echo htmlspecialchars($penelitian['mahasiswa_nama'] ?? '-'); ?></td>
-                                            <td><?php echo htmlspecialchars($penelitian['member_nama'] ?? '-'); ?></td>
-                                            <td><?php echo htmlspecialchars($penelitian['nama_produk'] ?? '-'); ?></td>
-                                            <td><?php echo htmlspecialchars($penelitian['mitra_nama'] ?? '-'); ?></td>
                                             <td><?php echo $penelitian['tgl_mulai'] ? date('d M Y', strtotime($penelitian['tgl_mulai'])) : '-'; ?>
                                             </td>
                                             <td>
@@ -1756,7 +1756,21 @@ $member_list = $stmt->fetchAll();
                                                 <?php endif; ?>
                                             </td>
                                             <td><?php echo htmlspecialchars($produk['nama_produk']); ?></td>
-                                            <td><?php echo htmlspecialchars($produk['deskripsi'] ?? '-'); ?></td>
+                                            <td>
+                                                <?php if (!empty($produk['deskripsi'])): ?>
+                                                    <?php 
+                                                    $deskripsi = htmlspecialchars($produk['deskripsi']);
+                                                    // Truncate long descriptions
+                                                    if (strlen($deskripsi) > 100) {
+                                                        echo substr($deskripsi, 0, 100) . '...';
+                                                    } else {
+                                                        echo $deskripsi;
+                                                    }
+                                                    ?>
+                                                <?php else: ?>
+                                                    <span class="muted-gray">-</span>
+                                                <?php endif; ?>
+                                            </td>
                                             <td>
                                                 <div class="action-buttons">
                                                     <button type="button" class="btn-edit"

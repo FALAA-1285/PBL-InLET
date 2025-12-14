@@ -118,24 +118,37 @@ $current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
 // Get total count
-$count_stmt = $conn->query("SELECT COUNT(*) FROM mitra");
-$total_items = $count_stmt->fetchColumn();
-$total_pages = ceil($total_items / $items_per_page);
+try {
+    $count_stmt = $conn->query("SELECT COUNT(*) FROM mitra");
+    $total_items = $count_stmt->fetchColumn();
+    $total_pages = ceil($total_items / $items_per_page);
+} catch (PDOException $e) {
+    $total_items = 0;
+    $total_pages = 0;
+}
 
 // Get mitra with pagination
-$stmt = $conn->prepare("SELECT * FROM mitra ORDER BY nama_institusi LIMIT :limit OFFSET :offset");
-$stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-$stmt->execute();
-$mitra_list = $stmt->fetchAll();
+try {
+    $stmt = $conn->prepare("SELECT * FROM mitra ORDER BY nama_institusi LIMIT :limit OFFSET :offset");
+    $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $mitra_list = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $mitra_list = [];
+}
 
 // Get mitra for edit
 $edit_mitra = null;
 if (isset($_GET['edit'])) {
-    $edit_id = intval($_GET['edit']);
-    $stmt = $conn->prepare("SELECT * FROM mitra WHERE id_mitra = :id");
-    $stmt->execute(['id' => $edit_id]);
-    $edit_mitra = $stmt->fetch();
+    try {
+        $edit_id = intval($_GET['edit']);
+        $stmt = $conn->prepare("SELECT * FROM mitra WHERE id_mitra = :id");
+        $stmt->execute(['id' => $edit_id]);
+        $edit_mitra = $stmt->fetch();
+    } catch (PDOException $e) {
+        $edit_mitra = null;
+    }
 }
 ?>
 <!DOCTYPE html>

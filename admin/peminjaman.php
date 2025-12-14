@@ -173,6 +173,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($result['success']) {
                 $message = $result['message'];
                 $message_type = 'success';
+                // Redirect to prevent resubmission
+                header('Location: peminjaman.php?returned=1&return_filter_type=' . urlencode($return_filter_type ?? '') . '&return_filter_search=' . urlencode($return_filter_search ?? ''));
+                exit;
             } else {
                 $message = $result['message'];
                 $message_type = 'error';
@@ -191,6 +194,11 @@ if (isset($_GET['approved']) && $_GET['approved'] == '1') {
 
 if (isset($_GET['rejected']) && $_GET['rejected'] == '1') {
     $message = 'Request rejected successfully!';
+    $message_type = 'success';
+}
+
+if (isset($_GET['returned']) && $_GET['returned'] == '1') {
+    $message = 'Item returned successfully!';
     $message_type = 'success';
 }
 
@@ -282,7 +290,8 @@ $stmt->execute();
 }
 $request_list = $stmt->fetchAll();
 
-// Get active loans (dipinjam) for return section - only show approved items
+// Get active loans (dipinjam) for return section
+// Show only approved items (both alat and ruang need approval)
 $return_query = "
     SELECT
         p.id_peminjaman,
@@ -306,7 +315,7 @@ $return_query = "
     LEFT JOIN alat_lab alat ON p.id_alat = alat.id_alat_lab
     LEFT JOIN ruang_lab ruang ON p.id_ruang = ruang.id_ruang_lab
     WHERE p.status = 'dipinjam'
-    AND (p.keterangan IS NOT NULL AND p.keterangan LIKE '%[APPROVED]%')
+    AND (p.keterangan IS NOT NULL AND p.keterangan LIKE '%[APPROVED]%') -- Only approved items (both alat and ruang)
 ";
 
 // Apply filters for return section
