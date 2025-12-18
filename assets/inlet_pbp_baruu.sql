@@ -2,12 +2,567 @@
 -- PostgreSQL database dump
 --
 
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+\restrict 9HCm3mc6FpSrfS1QiZsTXQoIiIxVBcSMLQU3Udc4sAOPL7lRY8bRh4hXPv59Kaz
+=======
+\restrict YM77hedTVLLAKQbTcEBGAv7TbB8ZUWNRV6xnZDqjWtocHGsfv2DPogfn4K6jPov
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 \restrict bpSimOsKLgSBDNW46QyuKpgMphnhkBYC8p74cGPgSMP93pGj6QJdGCrdtIA3CNe
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 
 -- Dumped from database version 15.14
 -- Dumped by pg_dump version 15.14
 
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- Started on 2025-12-04 08:46:38
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 235 (class 1259 OID 35226)
+-- Name: absensi; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.absensi (
+    id_absensi integer NOT NULL,
+    nim character varying(20) NOT NULL,
+    waktu_datang timestamp without time zone,
+    waktu_pulang timestamp without time zone,
+    keterangan text,
+    tanggal date DEFAULT CURRENT_DATE NOT NULL
+);
+
+
+ALTER TABLE public.absensi OWNER TO postgres;
+
+--
+-- TOC entry 234 (class 1259 OID 35225)
+-- Name: absensi_id_absensi_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.absensi_id_absensi_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.absensi_id_absensi_seq OWNER TO postgres;
+
+--
+-- TOC entry 3593 (class 0 OID 0)
+-- Dependencies: 234
+-- Name: absensi_id_absensi_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.absensi_id_absensi_seq OWNED BY public.absensi.id_absensi;
+
+
+--
+-- TOC entry 219 (class 1259 OID 35149)
+-- Name: admin; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.admin (
+    id_admin integer NOT NULL,
+    username character varying(100) NOT NULL,
+    password_hash character varying(255) NOT NULL,
+    role character varying(50) DEFAULT 'user'::character varying,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.admin OWNER TO postgres;
+
+--
+-- TOC entry 218 (class 1259 OID 35148)
+-- Name: admin_id_admin_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.admin_id_admin_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.admin_id_admin_seq OWNER TO postgres;
+
+--
+-- TOC entry 3594 (class 0 OID 0)
+-- Dependencies: 218
+-- Name: admin_id_admin_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.admin_id_admin_seq OWNED BY public.admin.id_admin;
+
+
+--
+-- TOC entry 237 (class 1259 OID 35236)
+-- Name: alat_lab; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.alat_lab (
+    id_alat_lab integer NOT NULL,
+    nama_alat character varying(255) NOT NULL,
+    deskripsi text,
+    stock integer DEFAULT 0,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    id_admin integer
+);
+
+
+ALTER TABLE public.alat_lab OWNER TO postgres;
+
+--
+-- TOC entry 236 (class 1259 OID 35235)
+-- Name: alat_lab_id_alat_lab_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.alat_lab_id_alat_lab_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.alat_lab_id_alat_lab_seq OWNER TO postgres;
+
+--
+-- TOC entry 3595 (class 0 OID 0)
+-- Dependencies: 236
+-- Name: alat_lab_id_alat_lab_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.alat_lab_id_alat_lab_seq OWNED BY public.alat_lab.id_alat_lab;
+
+
+--
+-- TOC entry 229 (class 1259 OID 35197)
+-- Name: artikel; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.artikel (
+    id_artikel integer NOT NULL,
+    judul character varying(255) NOT NULL,
+    tahun integer,
+    konten character varying(4000)
+);
+
+
+ALTER TABLE public.artikel OWNER TO postgres;
+
+--
+-- TOC entry 228 (class 1259 OID 35196)
+-- Name: artikel_id_artikel_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.artikel_id_artikel_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.artikel_id_artikel_seq OWNER TO postgres;
+
+--
+-- TOC entry 3596 (class 0 OID 0)
+-- Dependencies: 228
+-- Name: artikel_id_artikel_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.artikel_id_artikel_seq OWNED BY public.artikel.id_artikel;
+
+
+--
+-- TOC entry 227 (class 1259 OID 35187)
+-- Name: berita; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.berita (
+    id_berita integer NOT NULL,
+    judul character varying(255) NOT NULL,
+    konten character varying(4000),
+    gambar_thumbnail character varying(255),
+    created_at timestamp with time zone DEFAULT now(),
+    id_admin integer
+);
+
+
+ALTER TABLE public.berita OWNER TO postgres;
+
+--
+-- TOC entry 226 (class 1259 OID 35186)
+-- Name: berita_id_berita_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.berita_id_berita_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.berita_id_berita_seq OWNER TO postgres;
+
+--
+-- TOC entry 3597 (class 0 OID 0)
+-- Dependencies: 226
+-- Name: berita_id_berita_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.berita_id_berita_seq OWNED BY public.berita.id_berita;
+
+
+--
+-- TOC entry 217 (class 1259 OID 35135)
+-- Name: buku_tamu; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.buku_tamu (
+    id_buku_tamu integer NOT NULL,
+    nama character varying(150) NOT NULL,
+    email character varying(150) NOT NULL,
+    institusi character varying(200) NOT NULL,
+    no_hp character varying(50) NOT NULL,
+    pesan character varying(2000),
+    created_at timestamp with time zone DEFAULT now(),
+    is_read boolean DEFAULT false,
+    admin_response character varying(2000)
+);
+
+
+ALTER TABLE public.buku_tamu OWNER TO postgres;
+
+--
+-- TOC entry 216 (class 1259 OID 35134)
+-- Name: buku_tamu_id_buku_tamu_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.buku_tamu_id_buku_tamu_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.buku_tamu_id_buku_tamu_seq OWNER TO postgres;
+
+--
+-- TOC entry 3598 (class 0 OID 0)
+-- Dependencies: 216
+-- Name: buku_tamu_id_buku_tamu_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.buku_tamu_id_buku_tamu_seq OWNED BY public.buku_tamu.id_buku_tamu;
+
+
+--
+-- TOC entry 254 (class 1259 OID 42428)
+-- Name: contact_info; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.contact_info (
+    id_contact integer NOT NULL,
+    contact_email character varying(255),
+    contact_phone character varying(100),
+    contact_address character varying(255)
+);
+
+
+ALTER TABLE public.contact_info OWNER TO postgres;
+
+--
+-- TOC entry 253 (class 1259 OID 42427)
+-- Name: contact_info_id_contact_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.contact_info_id_contact_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.contact_info_id_contact_seq OWNER TO postgres;
+
+--
+-- TOC entry 3599 (class 0 OID 0)
+-- Dependencies: 253
+-- Name: contact_info_id_contact_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.contact_info_id_contact_seq OWNED BY public.contact_info.id_contact;
+
+
+--
+-- TOC entry 243 (class 1259 OID 35269)
+-- Name: fokus_penelitian; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.fokus_penelitian (
+    id_fp integer NOT NULL,
+    title character varying(200) NOT NULL,
+    deskripsi text,
+    detail character varying(150) NOT NULL
+);
+
+
+ALTER TABLE public.fokus_penelitian OWNER TO postgres;
+
+--
+-- TOC entry 242 (class 1259 OID 35268)
+-- Name: fokus_penelitian_id_fp_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.fokus_penelitian_id_fp_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.fokus_penelitian_id_fp_seq OWNER TO postgres;
+
+--
+-- TOC entry 3600 (class 0 OID 0)
+-- Dependencies: 242
+-- Name: fokus_penelitian_id_fp_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.fokus_penelitian_id_fp_seq OWNED BY public.fokus_penelitian.id_fp;
+
+
+--
+-- TOC entry 252 (class 1259 OID 42419)
+-- Name: footer_settings; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.footer_settings (
+    id_footer integer NOT NULL,
+    footer_logo character varying(255),
+    footer_title character varying(255),
+    footer_subtitle character varying(255),
+    copyright_text text
+);
+
+
+ALTER TABLE public.footer_settings OWNER TO postgres;
+
+--
+-- TOC entry 251 (class 1259 OID 42418)
+-- Name: footer_settings_id_footer_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.footer_settings_id_footer_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.footer_settings_id_footer_seq OWNER TO postgres;
+
+--
+-- TOC entry 3601 (class 0 OID 0)
+-- Dependencies: 251
+-- Name: footer_settings_id_footer_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.footer_settings_id_footer_seq OWNED BY public.footer_settings.id_footer;
+
+
+--
+-- TOC entry 215 (class 1259 OID 35122)
+-- Name: gallery; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.gallery (
+    id_gallery integer NOT NULL,
+    id_berita integer,
+    gambar character varying(500),
+    judul character varying(255),
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.gallery OWNER TO postgres;
+
+--
+-- TOC entry 214 (class 1259 OID 35121)
+-- Name: gallery_id_gallery_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.gallery_id_gallery_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.gallery_id_gallery_seq OWNER TO postgres;
+
+--
+-- TOC entry 3602 (class 0 OID 0)
+-- Dependencies: 214
+-- Name: gallery_id_gallery_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.gallery_id_gallery_seq OWNED BY public.gallery.id_gallery;
+
+
+--
+-- TOC entry 221 (class 1259 OID 35160)
+-- Name: mahasiswa; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.mahasiswa (
+    nim character varying(20) NOT NULL,
+    nama character varying(150) NOT NULL,
+    tahun integer,
+    status character varying(20) DEFAULT 'regular'::character varying NOT NULL,
+    id_admin integer,
+    CONSTRAINT chk_mahasiswa_status CHECK (((status)::text = ANY ((ARRAY['magang'::character varying, 'skripsi'::character varying, 'regular'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.mahasiswa OWNER TO postgres;
+
+--
+-- TOC entry 220 (class 1259 OID 35159)
+-- Name: mahasiswa_id_mahasiswa_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.mahasiswa_id_mahasiswa_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.mahasiswa_id_mahasiswa_seq OWNER TO postgres;
+
+--
+-- TOC entry 3603 (class 0 OID 0)
+-- Dependencies: 220
+-- Name: mahasiswa_id_mahasiswa_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.mahasiswa_id_mahasiswa_seq OWNED BY public.mahasiswa.nim;
+
+
+--
+-- TOC entry 223 (class 1259 OID 35169)
+-- Name: member; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.member (
+    id_member integer NOT NULL,
+    nama character varying(150) NOT NULL,
+    email character varying(150),
+    jabatan character varying(100),
+    foto character varying(255),
+    bidang_keahlian character varying(255),
+    notlp character varying(30),
+    deskripsi text,
+    alamat text,
+    id_admin integer
+);
+
+
+ALTER TABLE public.member OWNER TO postgres;
+
+--
+-- TOC entry 222 (class 1259 OID 35168)
+-- Name: member_id_member_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.member_id_member_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.member_id_member_seq OWNER TO postgres;
+
+--
+-- TOC entry 3604 (class 0 OID 0)
+-- Dependencies: 222
+-- Name: member_id_member_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.member_id_member_seq OWNED BY public.member.id_member;
+
+
+--
+-- TOC entry 225 (class 1259 OID 35178)
+-- Name: mitra; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.mitra (
+    id_mitra integer NOT NULL,
+    nama_institusi character varying(255) NOT NULL,
+    logo character varying(255)
+);
+
+
+ALTER TABLE public.mitra OWNER TO postgres;
+
+--
+-- TOC entry 224 (class 1259 OID 35177)
+-- Name: mitra_id_mitra_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.mitra_id_mitra_seq
+=======
+-- Started on 2025-12-04 09:36:32
+=======
 -- Started on 2025-12-14 21:23:39
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -362,6 +917,7 @@ ALTER TABLE public.absensi OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.absensi_id_absensi_seq
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -370,6 +926,48 @@ CREATE SEQUENCE public.absensi_id_absensi_seq
     CACHE 1;
 
 
+<<<<<<< HEAD
+ALTER TABLE public.mitra_id_mitra_seq OWNER TO postgres;
+
+--
+-- TOC entry 3605 (class 0 OID 0)
+-- Dependencies: 224
+-- Name: mitra_id_mitra_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.mitra_id_mitra_seq OWNED BY public.mitra.id_mitra;
+
+
+--
+-- TOC entry 239 (class 1259 OID 35248)
+-- Name: peminjaman; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.peminjaman (
+    id_peminjaman integer NOT NULL,
+    id_alat integer NOT NULL,
+    nama_peminjam character varying(255) NOT NULL,
+    tanggal_pinjam date NOT NULL,
+    tanggal_kembali date,
+    status character varying(50) DEFAULT 'dipinjam'::character varying,
+    keterangan text,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    id_ruang integer,
+    waktu_pinjam time without time zone,
+    waktu_kembali time without time zone,
+    CONSTRAINT chk_waktu_logical CHECK (((tanggal_pinjam IS NULL) OR (tanggal_kembali IS NULL) OR ((waktu_pinjam IS NULL) OR (waktu_kembali IS NULL)) OR ((tanggal_pinjam < tanggal_kembali) OR ((tanggal_pinjam = tanggal_kembali) AND (waktu_kembali > waktu_pinjam)))))
+);
+
+
+ALTER TABLE public.peminjaman OWNER TO postgres;
+
+--
+-- TOC entry 238 (class 1259 OID 35247)
+-- Name: peminjaman_id_peminjaman_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.peminjaman_id_peminjaman_seq
+=======
 ALTER TABLE public.absensi_id_absensi_seq OWNER TO postgres;
 
 --
@@ -403,6 +1001,7 @@ ALTER TABLE public.admin OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.admin_id_admin_seq
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -411,6 +1010,49 @@ CREATE SEQUENCE public.admin_id_admin_seq
     CACHE 1;
 
 
+<<<<<<< HEAD
+ALTER TABLE public.peminjaman_id_peminjaman_seq OWNER TO postgres;
+
+--
+-- TOC entry 3606 (class 0 OID 0)
+-- Dependencies: 238
+-- Name: peminjaman_id_peminjaman_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.peminjaman_id_peminjaman_seq OWNED BY public.peminjaman.id_peminjaman;
+
+
+--
+-- TOC entry 231 (class 1259 OID 35206)
+-- Name: penelitian; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.penelitian (
+    id_penelitian integer NOT NULL,
+    id_artikel integer,
+    nim character varying(20),
+    judul character varying(255) NOT NULL,
+    tahun integer,
+    id_member integer,
+    deskripsi text,
+    created_at timestamp with time zone DEFAULT now(),
+    id_produk integer,
+    id_mitra integer,
+    tgl_mulai date DEFAULT CURRENT_DATE NOT NULL,
+    tgl_selesai date,
+    id_fp integer
+);
+
+
+ALTER TABLE public.penelitian OWNER TO postgres;
+
+--
+-- TOC entry 230 (class 1259 OID 35205)
+-- Name: penelitian_id_penelitian_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.penelitian_id_penelitian_seq
+=======
 ALTER TABLE public.admin_id_admin_seq OWNER TO postgres;
 
 --
@@ -446,6 +1088,7 @@ ALTER TABLE public.alat_lab OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.alat_lab_id_alat_lab_seq
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -454,6 +1097,43 @@ CREATE SEQUENCE public.alat_lab_id_alat_lab_seq
     CACHE 1;
 
 
+<<<<<<< HEAD
+ALTER TABLE public.penelitian_id_penelitian_seq OWNER TO postgres;
+
+--
+-- TOC entry 3607 (class 0 OID 0)
+-- Dependencies: 230
+-- Name: penelitian_id_penelitian_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.penelitian_id_penelitian_seq OWNED BY public.penelitian.id_penelitian;
+
+
+--
+-- TOC entry 245 (class 1259 OID 35289)
+-- Name: pengunjung; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.pengunjung (
+    id_pengunjung integer NOT NULL,
+    nama character varying(150),
+    email character varying(150),
+    asal_institusi character varying(200),
+    created_at timestamp with time zone DEFAULT now(),
+    no_hp character varying(20),
+    pesan text
+);
+
+
+ALTER TABLE public.pengunjung OWNER TO postgres;
+
+--
+-- TOC entry 244 (class 1259 OID 35288)
+-- Name: pengunjung_id_pengunjung_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.pengunjung_id_pengunjung_seq
+=======
 ALTER TABLE public.alat_lab_id_alat_lab_seq OWNER TO postgres;
 
 --
@@ -491,6 +1171,7 @@ ALTER TABLE public.artikel OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.artikel_id_artikel_seq
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -499,6 +1180,39 @@ CREATE SEQUENCE public.artikel_id_artikel_seq
     CACHE 1;
 
 
+<<<<<<< HEAD
+ALTER TABLE public.pengunjung_id_pengunjung_seq OWNER TO postgres;
+
+--
+-- TOC entry 3608 (class 0 OID 0)
+-- Dependencies: 244
+-- Name: pengunjung_id_pengunjung_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.pengunjung_id_pengunjung_seq OWNED BY public.pengunjung.id_pengunjung;
+
+
+--
+-- TOC entry 233 (class 1259 OID 35217)
+-- Name: produk; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.produk (
+    id_produk integer NOT NULL,
+    nama_produk character varying(255) NOT NULL,
+    deskripsi text
+);
+
+
+ALTER TABLE public.produk OWNER TO postgres;
+
+--
+-- TOC entry 232 (class 1259 OID 35216)
+-- Name: produk_id_produk_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.produk_id_produk_seq
+=======
 ALTER TABLE public.artikel_id_artikel_seq OWNER TO postgres;
 
 --
@@ -533,6 +1247,7 @@ ALTER TABLE public.berita OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.berita_id_berita_seq
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -541,6 +1256,41 @@ CREATE SEQUENCE public.berita_id_berita_seq
     CACHE 1;
 
 
+<<<<<<< HEAD
+ALTER TABLE public.produk_id_produk_seq OWNER TO postgres;
+
+--
+-- TOC entry 3609 (class 0 OID 0)
+-- Dependencies: 232
+-- Name: produk_id_produk_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.produk_id_produk_seq OWNED BY public.produk.id_produk;
+
+
+--
+-- TOC entry 241 (class 1259 OID 35260)
+-- Name: ruang_lab; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.ruang_lab (
+    id_ruang_lab integer NOT NULL,
+    nama_ruang character varying(150) NOT NULL,
+    status character varying(30) DEFAULT 'tersedia'::character varying NOT NULL,
+    id_admin integer,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.ruang_lab OWNER TO postgres;
+
+--
+-- TOC entry 240 (class 1259 OID 35259)
+-- Name: ruang_lab_id_ruang_lab_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.ruang_lab_id_ruang_lab_seq
+=======
 ALTER TABLE public.berita_id_berita_seq OWNER TO postgres;
 
 --
@@ -578,6 +1328,7 @@ ALTER TABLE public.buku_tamu OWNER TO postgres;
 --
 
 CREATE SEQUENCE public.buku_tamu_id_buku_tamu_seq
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -586,6 +1337,51 @@ CREATE SEQUENCE public.buku_tamu_id_buku_tamu_seq
     CACHE 1;
 
 
+<<<<<<< HEAD
+ALTER TABLE public.ruang_lab_id_ruang_lab_seq OWNER TO postgres;
+
+--
+-- TOC entry 3610 (class 0 OID 0)
+-- Dependencies: 240
+-- Name: ruang_lab_id_ruang_lab_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.ruang_lab_id_ruang_lab_seq OWNED BY public.ruang_lab.id_ruang_lab;
+
+
+--
+-- TOC entry 255 (class 1259 OID 42455)
+-- Name: settings; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.settings (
+    id_setting integer NOT NULL,
+    site_title character varying(255) NOT NULL,
+    site_subtitle text,
+    site_logo character varying(255),
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_by character varying(255),
+    id_footer integer,
+    id_contact integer,
+    page_titles jsonb DEFAULT '{}'::jsonb,
+    footer_logo character varying(255),
+    footer_title character varying(255),
+    copyright_text text,
+    contact_email character varying(255),
+    contact_phone character varying(100),
+    contact_address text
+);
+
+
+ALTER TABLE public.settings OWNER TO postgres;
+
+--
+-- TOC entry 248 (class 1259 OID 35410)
+-- Name: view_alat_dipinjam; Type: VIEW; Schema: public; Owner: postgres
+--
+
+=======
 ALTER TABLE public.buku_tamu_id_buku_tamu_seq OWNER TO postgres;
 
 --
@@ -1221,6 +2017,7 @@ ALTER SEQUENCE public.video_id_video_seq OWNED BY public.video.id_video;
 -- Name: view_alat_dipinjam; Type: VIEW; Schema: public; Owner: postgres
 --
 
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
 CREATE VIEW public.view_alat_dipinjam AS
  SELECT pj.id_peminjaman,
     pj.id_alat,
@@ -1323,8 +2120,17 @@ CREATE SEQUENCE public.visitor_id_visitor_seq
 ALTER TABLE public.visitor_id_visitor_seq OWNER TO postgres;
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3611 (class 0 OID 0)
+=======
+-- TOC entry 3615 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 246
+=======
 -- TOC entry 3647 (class 0 OID 0)
 -- Dependencies: 256
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: visitor_id_visitor_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -1332,7 +2138,15 @@ ALTER SEQUENCE public.visitor_id_visitor_seq OWNED BY public.visitor.id_visitor;
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3301 (class 2604 OID 35229)
+=======
+-- TOC entry 3305 (class 2604 OID 35229)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3320 (class 2604 OID 47310)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: absensi id_absensi; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1340,7 +2154,15 @@ ALTER TABLE ONLY public.absensi ALTER COLUMN id_absensi SET DEFAULT nextval('pub
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3287 (class 2604 OID 35152)
+=======
+-- TOC entry 3291 (class 2604 OID 35152)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3306 (class 2604 OID 47313)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: admin id_admin; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1348,7 +2170,15 @@ ALTER TABLE ONLY public.admin ALTER COLUMN id_admin SET DEFAULT nextval('public.
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3303 (class 2604 OID 35239)
+=======
+-- TOC entry 3307 (class 2604 OID 35239)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3322 (class 2604 OID 47315)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: alat_lab id_alat_lab; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1356,7 +2186,15 @@ ALTER TABLE ONLY public.alat_lab ALTER COLUMN id_alat_lab SET DEFAULT nextval('p
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3296 (class 2604 OID 35200)
+=======
+-- TOC entry 3300 (class 2604 OID 35200)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3315 (class 2604 OID 47317)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: artikel id_artikel; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1364,7 +2202,15 @@ ALTER TABLE ONLY public.artikel ALTER COLUMN id_artikel SET DEFAULT nextval('pub
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3294 (class 2604 OID 35190)
+=======
+-- TOC entry 3298 (class 2604 OID 35190)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3313 (class 2604 OID 47319)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: berita id_berita; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1372,7 +2218,15 @@ ALTER TABLE ONLY public.berita ALTER COLUMN id_berita SET DEFAULT nextval('publi
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3284 (class 2604 OID 35138)
+=======
+-- TOC entry 3288 (class 2604 OID 35138)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3303 (class 2604 OID 47321)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: buku_tamu id_buku_tamu; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1380,7 +2234,15 @@ ALTER TABLE ONLY public.buku_tamu ALTER COLUMN id_buku_tamu SET DEFAULT nextval(
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3321 (class 2604 OID 42431)
+=======
+-- TOC entry 3325 (class 2604 OID 42431)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3343 (class 2604 OID 47323)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: contact_info id_contact; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1388,7 +2250,15 @@ ALTER TABLE ONLY public.contact_info ALTER COLUMN id_contact SET DEFAULT nextval
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3313 (class 2604 OID 35272)
+=======
+-- TOC entry 3317 (class 2604 OID 35272)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3332 (class 2604 OID 47325)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: fokus_penelitian id_fp; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1396,7 +2266,15 @@ ALTER TABLE ONLY public.fokus_penelitian ALTER COLUMN id_fp SET DEFAULT nextval(
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3320 (class 2604 OID 42422)
+=======
+-- TOC entry 3324 (class 2604 OID 42422)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3344 (class 2604 OID 47327)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: footer_settings id_footer; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1404,7 +2282,15 @@ ALTER TABLE ONLY public.footer_settings ALTER COLUMN id_footer SET DEFAULT nextv
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3281 (class 2604 OID 35125)
+=======
+-- TOC entry 3285 (class 2604 OID 35125)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3300 (class 2604 OID 47329)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: gallery id_gallery; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1412,15 +2298,36 @@ ALTER TABLE ONLY public.gallery ALTER COLUMN id_gallery SET DEFAULT nextval('pub
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3290 (class 2604 OID 35536)
+-- Name: mahasiswa nim; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.mahasiswa ALTER COLUMN nim SET DEFAULT nextval('public.mahasiswa_id_mahasiswa_seq'::regclass);
+
+
+--
+-- TOC entry 3292 (class 2604 OID 35172)
+=======
+-- TOC entry 3294 (class 2604 OID 35536)
+-- Name: mahasiswa nim; Type: DEFAULT; Schema: public; Owner: postgres
+=======
 -- TOC entry 3309 (class 2604 OID 47331)
 -- Name: mahasiswa id_mahasiswa; Type: DEFAULT; Schema: public; Owner: postgres
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 --
 
 ALTER TABLE ONLY public.mahasiswa ALTER COLUMN id_mahasiswa SET DEFAULT nextval('public.mahasiswa_id_mahasiswa_seq'::regclass);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+-- TOC entry 3296 (class 2604 OID 35172)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3311 (class 2604 OID 47333)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: member id_member; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1428,7 +2335,15 @@ ALTER TABLE ONLY public.member ALTER COLUMN id_member SET DEFAULT nextval('publi
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3293 (class 2604 OID 35181)
+=======
+-- TOC entry 3297 (class 2604 OID 35181)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3312 (class 2604 OID 47335)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: mitra id_mitra; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1436,7 +2351,15 @@ ALTER TABLE ONLY public.mitra ALTER COLUMN id_mitra SET DEFAULT nextval('public.
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3307 (class 2604 OID 35251)
+=======
+-- TOC entry 3311 (class 2604 OID 35251)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3326 (class 2604 OID 47337)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: peminjaman id_peminjaman; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1444,7 +2367,15 @@ ALTER TABLE ONLY public.peminjaman ALTER COLUMN id_peminjaman SET DEFAULT nextva
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3297 (class 2604 OID 35209)
+=======
+-- TOC entry 3301 (class 2604 OID 35209)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3316 (class 2604 OID 47339)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: penelitian id_penelitian; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1452,7 +2383,15 @@ ALTER TABLE ONLY public.penelitian ALTER COLUMN id_penelitian SET DEFAULT nextva
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3314 (class 2604 OID 35292)
+=======
+-- TOC entry 3318 (class 2604 OID 35292)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3337 (class 2604 OID 47340)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: pengunjung id_pengunjung; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1460,7 +2399,15 @@ ALTER TABLE ONLY public.pengunjung ALTER COLUMN id_pengunjung SET DEFAULT nextva
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3300 (class 2604 OID 35220)
+=======
+-- TOC entry 3304 (class 2604 OID 35220)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3319 (class 2604 OID 47341)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: produk id_produk; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1468,7 +2415,15 @@ ALTER TABLE ONLY public.produk ALTER COLUMN id_produk SET DEFAULT nextval('publi
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3310 (class 2604 OID 35263)
+=======
+-- TOC entry 3314 (class 2604 OID 35263)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3329 (class 2604 OID 47343)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: ruang_lab id_ruang_lab; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1476,6 +2431,13 @@ ALTER TABLE ONLY public.ruang_lab ALTER COLUMN id_ruang_lab SET DEFAULT nextval(
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3316 (class 2604 OID 35302)
+=======
+-- TOC entry 3320 (class 2604 OID 35302)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3333 (class 2604 OID 47346)
 -- Name: settings id_setting; Type: DEFAULT; Schema: public; Owner: postgres
 --
@@ -1493,6 +2455,7 @@ ALTER TABLE ONLY public.video ALTER COLUMN id_video SET DEFAULT nextval('public.
 
 --
 -- TOC entry 3339 (class 2604 OID 47348)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: visitor id_visitor; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1500,8 +2463,17 @@ ALTER TABLE ONLY public.visitor ALTER COLUMN id_visitor SET DEFAULT nextval('pub
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3570 (class 0 OID 35226)
+=======
+-- TOC entry 3574 (class 0 OID 35226)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 235
+=======
 -- TOC entry 3599 (class 0 OID 46534)
 -- Dependencies: 243
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: absensi; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1513,8 +2485,17 @@ COPY public.absensi (id_absensi, id_mhs, waktu_datang, waktu_pulang, keterangan,
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3554 (class 0 OID 35149)
+=======
+-- TOC entry 3558 (class 0 OID 35149)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 219
+=======
 -- TOC entry 3583 (class 0 OID 46457)
 -- Dependencies: 227
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: admin; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1525,8 +2506,17 @@ COPY public.admin (id_admin, username, password_hash, role, created_at) FROM std
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3572 (class 0 OID 35236)
+=======
+-- TOC entry 3576 (class 0 OID 35236)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 237
+=======
 -- TOC entry 3601 (class 0 OID 46544)
 -- Dependencies: 245
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: alat_lab; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1537,8 +2527,17 @@ COPY public.alat_lab (id_alat_lab, nama_alat, deskripsi, stock, created_at, upda
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3564 (class 0 OID 35197)
+=======
+-- TOC entry 3568 (class 0 OID 35197)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 229
+=======
 -- TOC entry 3593 (class 0 OID 46505)
 -- Dependencies: 237
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: artikel; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1557,8 +2556,17 @@ COPY public.artikel (id_artikel, judul, tahun, konten, id_penelitian, nim, id_me
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3562 (class 0 OID 35187)
+=======
+-- TOC entry 3566 (class 0 OID 35187)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 227
+=======
 -- TOC entry 3591 (class 0 OID 46495)
 -- Dependencies: 235
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: berita; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1577,20 +2585,45 @@ COPY public.berita (id_berita, judul, konten, gambar_thumbnail, created_at, id_a
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3552 (class 0 OID 35135)
+=======
+-- TOC entry 3556 (class 0 OID 35135)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 217
+=======
 -- TOC entry 3581 (class 0 OID 46443)
 -- Dependencies: 225
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: buku_tamu; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.buku_tamu (id_buku_tamu, nama, email, institusi, no_hp, pesan, created_at, is_read, admin_response) FROM stdin;
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+3	Dicky	dicky.darmawan41@sma.belajar.id	UB	13674676	wjegfyhqjewf	2025-12-02 15:39:23.575032+07	f	\N
+=======
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 3	Dicky	dicky.darmawan41@sma.belajar.id	UB	13674676	wjegfyhqjewf	2025-12-02 15:39:23.575032+07	t	\N
 4	Fata Haidar Aly	fata@gmail.com	ITTS	08888888888	haloo	2025-12-07 22:59:53.270576+07	t	\N
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 \.
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3586 (class 0 OID 42428)
+=======
+-- TOC entry 3590 (class 0 OID 42428)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 254
+=======
 -- TOC entry 3614 (class 0 OID 46822)
 -- Dependencies: 261
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: contact_info; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1600,8 +2633,17 @@ COPY public.contact_info (id_contact, contact_email, contact_phone, contact_addr
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3578 (class 0 OID 35269)
+=======
+-- TOC entry 3582 (class 0 OID 35269)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 243
+=======
 -- TOC entry 3607 (class 0 OID 46577)
 -- Dependencies: 251
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: fokus_penelitian; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1614,8 +2656,17 @@ COPY public.fokus_penelitian (id_fp, title, deskripsi, detail) FROM stdin;
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3584 (class 0 OID 42419)
+=======
+-- TOC entry 3588 (class 0 OID 42419)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 252
+=======
 -- TOC entry 3616 (class 0 OID 46828)
 -- Dependencies: 263
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: footer_settings; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1625,8 +2676,17 @@ COPY public.footer_settings (id_footer, footer_logo, footer_title, footer_subtit
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3550 (class 0 OID 35122)
+=======
+-- TOC entry 3554 (class 0 OID 35122)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 215
+=======
 -- TOC entry 3579 (class 0 OID 46430)
 -- Dependencies: 223
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: gallery; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1656,8 +2716,17 @@ COPY public.gallery (id_gallery, id_berita, gambar, judul, created_at, updated_a
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3556 (class 0 OID 35160)
+=======
+-- TOC entry 3560 (class 0 OID 35160)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 221
+=======
 -- TOC entry 3585 (class 0 OID 46468)
 -- Dependencies: 229
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: mahasiswa; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1669,8 +2738,17 @@ COPY public.mahasiswa (id_mahasiswa, nama, tahun, status, id_admin) FROM stdin;
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3558 (class 0 OID 35169)
+=======
+-- TOC entry 3562 (class 0 OID 35169)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 223
+=======
 -- TOC entry 3587 (class 0 OID 46477)
 -- Dependencies: 231
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: member; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1689,8 +2767,17 @@ COPY public.member (id_member, nama, email, jabatan, foto, bidang_keahlian, notl
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3560 (class 0 OID 35178)
+=======
+-- TOC entry 3564 (class 0 OID 35178)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 225
+=======
 -- TOC entry 3589 (class 0 OID 46486)
 -- Dependencies: 233
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: mitra; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1703,8 +2790,17 @@ COPY public.mitra (id_mitra, nama_institusi, logo) FROM stdin;
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3574 (class 0 OID 35248)
+=======
+-- TOC entry 3578 (class 0 OID 35248)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 239
+=======
 -- TOC entry 3603 (class 0 OID 46556)
 -- Dependencies: 247
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: peminjaman; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1728,8 +2824,17 @@ COPY public.peminjaman (id_peminjaman, id_alat, nama_peminjam, tanggal_pinjam, t
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3566 (class 0 OID 35206)
+=======
+-- TOC entry 3570 (class 0 OID 35206)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 231
+=======
 -- TOC entry 3595 (class 0 OID 46514)
 -- Dependencies: 239
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: penelitian; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1739,8 +2844,17 @@ COPY public.penelitian (id_penelitian, id_artikel, id_mhs, judul, tahun, id_memb
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3580 (class 0 OID 35289)
+=======
+-- TOC entry 3584 (class 0 OID 35289)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 245
+=======
 -- TOC entry 3611 (class 0 OID 46597)
 -- Dependencies: 255
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: pengunjung; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1749,8 +2863,17 @@ COPY public.pengunjung (id_pengunjung, nama, email, asal_institusi, created_at, 
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3568 (class 0 OID 35217)
+=======
+-- TOC entry 3572 (class 0 OID 35217)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 233
+=======
 -- TOC entry 3597 (class 0 OID 46525)
 -- Dependencies: 241
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: produk; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1764,8 +2887,17 @@ COPY public.produk (id_produk, nama_produk, deskripsi, gambar, try) FROM stdin;
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3576 (class 0 OID 35260)
+=======
+-- TOC entry 3580 (class 0 OID 35260)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 241
+=======
 -- TOC entry 3605 (class 0 OID 46568)
 -- Dependencies: 249
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: ruang_lab; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1776,8 +2908,17 @@ COPY public.ruang_lab (id_ruang_lab, nama_ruang, status, id_admin, created_at) F
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3587 (class 0 OID 42455)
+=======
+-- TOC entry 3591 (class 0 OID 42455)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 255
+=======
 -- TOC entry 3609 (class 0 OID 46586)
 -- Dependencies: 253
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: settings; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1787,6 +2928,14 @@ COPY public.settings (id_setting, site_title, site_subtitle, site_logo, created_
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3582 (class 0 OID 35299)
+=======
+-- TOC entry 3586 (class 0 OID 35299)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 247
+=======
 -- TOC entry 3620 (class 0 OID 47155)
 -- Dependencies: 267
 -- Data for Name: video; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -1804,6 +2953,7 @@ COPY public.video (id_video, title, href_link, created_at) FROM stdin;
 --
 -- TOC entry 3613 (class 0 OID 46607)
 -- Dependencies: 257
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Data for Name: visitor; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1812,8 +2962,17 @@ COPY public.visitor (id_visitor, id_pengunjung, visit_count, last_visit, first_v
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3612 (class 0 OID 0)
+=======
+-- TOC entry 3616 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 234
+=======
 -- TOC entry 3648 (class 0 OID 0)
 -- Dependencies: 242
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: absensi_id_absensi_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1821,8 +2980,17 @@ SELECT pg_catalog.setval('public.absensi_id_absensi_seq', 3, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3613 (class 0 OID 0)
+=======
+-- TOC entry 3617 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 218
+=======
 -- TOC entry 3649 (class 0 OID 0)
 -- Dependencies: 226
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: admin_id_admin_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1830,8 +2998,17 @@ SELECT pg_catalog.setval('public.admin_id_admin_seq', 4, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3614 (class 0 OID 0)
+=======
+-- TOC entry 3618 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 236
+=======
 -- TOC entry 3650 (class 0 OID 0)
 -- Dependencies: 244
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: alat_lab_id_alat_lab_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1839,8 +3016,17 @@ SELECT pg_catalog.setval('public.alat_lab_id_alat_lab_seq', 8, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3615 (class 0 OID 0)
+=======
+-- TOC entry 3619 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 228
+=======
 -- TOC entry 3651 (class 0 OID 0)
 -- Dependencies: 236
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: artikel_id_artikel_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1848,8 +3034,17 @@ SELECT pg_catalog.setval('public.artikel_id_artikel_seq', 15, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3616 (class 0 OID 0)
+=======
+-- TOC entry 3620 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 226
+=======
 -- TOC entry 3652 (class 0 OID 0)
 -- Dependencies: 234
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: berita_id_berita_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1857,8 +3052,17 @@ SELECT pg_catalog.setval('public.berita_id_berita_seq', 12, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3617 (class 0 OID 0)
+=======
+-- TOC entry 3621 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 216
+=======
 -- TOC entry 3653 (class 0 OID 0)
 -- Dependencies: 224
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: buku_tamu_id_buku_tamu_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1866,8 +3070,17 @@ SELECT pg_catalog.setval('public.buku_tamu_id_buku_tamu_seq', 5, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3618 (class 0 OID 0)
+=======
+-- TOC entry 3622 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 253
+=======
 -- TOC entry 3654 (class 0 OID 0)
 -- Dependencies: 262
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: contact_info_id_contact_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1875,8 +3088,17 @@ SELECT pg_catalog.setval('public.contact_info_id_contact_seq', 1, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3619 (class 0 OID 0)
+=======
+-- TOC entry 3623 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 242
+=======
 -- TOC entry 3655 (class 0 OID 0)
 -- Dependencies: 250
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: fokus_penelitian_id_fp_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1884,8 +3106,17 @@ SELECT pg_catalog.setval('public.fokus_penelitian_id_fp_seq', 5, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3620 (class 0 OID 0)
+=======
+-- TOC entry 3624 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 251
+=======
 -- TOC entry 3656 (class 0 OID 0)
 -- Dependencies: 264
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: footer_settings_id_footer_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1893,8 +3124,17 @@ SELECT pg_catalog.setval('public.footer_settings_id_footer_seq', 1, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3621 (class 0 OID 0)
+=======
+-- TOC entry 3625 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 214
+=======
 -- TOC entry 3657 (class 0 OID 0)
 -- Dependencies: 222
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: gallery_id_gallery_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1902,8 +3142,17 @@ SELECT pg_catalog.setval('public.gallery_id_gallery_seq', 25, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3622 (class 0 OID 0)
+=======
+-- TOC entry 3626 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 220
+=======
 -- TOC entry 3658 (class 0 OID 0)
 -- Dependencies: 228
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: mahasiswa_id_mahasiswa_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1911,6 +3160,14 @@ SELECT pg_catalog.setval('public.mahasiswa_id_mahasiswa_seq', 5, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3623 (class 0 OID 0)
+=======
+-- TOC entry 3627 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 222
+=======
 -- TOC entry 3659 (class 0 OID 0)
 -- Dependencies: 265
 -- Name: mahasiswa_nim_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
@@ -1922,6 +3179,7 @@ SELECT pg_catalog.setval('public.mahasiswa_nim_seq', 1, false);
 --
 -- TOC entry 3660 (class 0 OID 0)
 -- Dependencies: 230
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: member_id_member_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1929,8 +3187,17 @@ SELECT pg_catalog.setval('public.member_id_member_seq', 15, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3624 (class 0 OID 0)
+=======
+-- TOC entry 3628 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 224
+=======
 -- TOC entry 3661 (class 0 OID 0)
 -- Dependencies: 232
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: mitra_id_mitra_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1938,8 +3205,17 @@ SELECT pg_catalog.setval('public.mitra_id_mitra_seq', 13, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3625 (class 0 OID 0)
+=======
+-- TOC entry 3629 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 238
+=======
 -- TOC entry 3662 (class 0 OID 0)
 -- Dependencies: 246
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: peminjaman_id_peminjaman_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1947,8 +3223,17 @@ SELECT pg_catalog.setval('public.peminjaman_id_peminjaman_seq', 17, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3626 (class 0 OID 0)
+=======
+-- TOC entry 3630 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 230
+=======
 -- TOC entry 3663 (class 0 OID 0)
 -- Dependencies: 238
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: penelitian_id_penelitian_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1956,8 +3241,17 @@ SELECT pg_catalog.setval('public.penelitian_id_penelitian_seq', 4, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3627 (class 0 OID 0)
+=======
+-- TOC entry 3631 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 244
+=======
 -- TOC entry 3664 (class 0 OID 0)
 -- Dependencies: 254
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: pengunjung_id_pengunjung_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1965,8 +3259,17 @@ SELECT pg_catalog.setval('public.pengunjung_id_pengunjung_seq', 1, false);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3628 (class 0 OID 0)
+=======
+-- TOC entry 3632 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 232
+=======
 -- TOC entry 3665 (class 0 OID 0)
 -- Dependencies: 240
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: produk_id_produk_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1974,8 +3277,17 @@ SELECT pg_catalog.setval('public.produk_id_produk_seq', 5, true);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3629 (class 0 OID 0)
+=======
+-- TOC entry 3633 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 240
+=======
 -- TOC entry 3666 (class 0 OID 0)
 -- Dependencies: 248
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: ruang_lab_id_ruang_lab_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1983,6 +3295,14 @@ SELECT pg_catalog.setval('public.ruang_lab_id_ruang_lab_seq', 1, false);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3630 (class 0 OID 0)
+=======
+-- TOC entry 3634 (class 0 OID 0)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Dependencies: 246
+=======
 -- TOC entry 3667 (class 0 OID 0)
 -- Dependencies: 252
 -- Name: settings_id_setting_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
@@ -2003,6 +3323,7 @@ SELECT pg_catalog.setval('public.video_id_video_seq', 5, true);
 --
 -- TOC entry 3669 (class 0 OID 0)
 -- Dependencies: 256
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: visitor_id_visitor_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -2010,7 +3331,15 @@ SELECT pg_catalog.setval('public.visitor_id_visitor_seq', 1, false);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3364 (class 2606 OID 35234)
+=======
+-- TOC entry 3368 (class 2606 OID 35234)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3386 (class 2606 OID 46542)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: absensi absensi_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2019,7 +3348,15 @@ ALTER TABLE ONLY public.absensi
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3337 (class 2606 OID 35156)
+=======
+-- TOC entry 3341 (class 2606 OID 35156)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3359 (class 2606 OID 46464)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: admin admin_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2028,7 +3365,15 @@ ALTER TABLE ONLY public.admin
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3339 (class 2606 OID 35158)
+=======
+-- TOC entry 3343 (class 2606 OID 35158)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3361 (class 2606 OID 46466)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: admin admin_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2037,7 +3382,15 @@ ALTER TABLE ONLY public.admin
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3366 (class 2606 OID 35246)
+=======
+-- TOC entry 3370 (class 2606 OID 35246)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3388 (class 2606 OID 46554)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: alat_lab alat_lab_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2046,7 +3399,15 @@ ALTER TABLE ONLY public.alat_lab
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3354 (class 2606 OID 35204)
+=======
+-- TOC entry 3358 (class 2606 OID 35204)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3376 (class 2606 OID 46512)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: artikel artikel_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2055,7 +3416,15 @@ ALTER TABLE ONLY public.artikel
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3350 (class 2606 OID 35195)
+=======
+-- TOC entry 3354 (class 2606 OID 35195)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3372 (class 2606 OID 46503)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: berita berita_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2064,7 +3433,15 @@ ALTER TABLE ONLY public.berita
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3332 (class 2606 OID 35144)
+=======
+-- TOC entry 3336 (class 2606 OID 35144)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3354 (class 2606 OID 46452)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: buku_tamu buku_tamu_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2073,7 +3450,15 @@ ALTER TABLE ONLY public.buku_tamu
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3385 (class 2606 OID 42435)
+=======
+-- TOC entry 3389 (class 2606 OID 42435)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3407 (class 2606 OID 46854)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: contact_info contact_info_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2082,7 +3467,15 @@ ALTER TABLE ONLY public.contact_info
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3376 (class 2606 OID 35276)
+=======
+-- TOC entry 3380 (class 2606 OID 35276)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3398 (class 2606 OID 46584)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: fokus_penelitian fokus_penelitian_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2091,7 +3484,15 @@ ALTER TABLE ONLY public.fokus_penelitian
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3383 (class 2606 OID 42426)
+=======
+-- TOC entry 3387 (class 2606 OID 42426)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3409 (class 2606 OID 46856)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: footer_settings footer_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2100,7 +3501,15 @@ ALTER TABLE ONLY public.footer_settings
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3328 (class 2606 OID 35131)
+=======
+-- TOC entry 3332 (class 2606 OID 35131)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3350 (class 2606 OID 46439)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: gallery gallery_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2109,7 +3518,15 @@ ALTER TABLE ONLY public.gallery
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3342 (class 2606 OID 35542)
+=======
+-- TOC entry 3346 (class 2606 OID 35542)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3364 (class 2606 OID 46475)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: mahasiswa mahasiswa_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2118,7 +3535,15 @@ ALTER TABLE ONLY public.mahasiswa
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3346 (class 2606 OID 35176)
+=======
+-- TOC entry 3350 (class 2606 OID 35176)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3368 (class 2606 OID 46484)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: member member_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2127,7 +3552,15 @@ ALTER TABLE ONLY public.member
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3348 (class 2606 OID 35185)
+=======
+-- TOC entry 3352 (class 2606 OID 35185)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3370 (class 2606 OID 46493)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: mitra mitra_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2136,7 +3569,15 @@ ALTER TABLE ONLY public.mitra
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3371 (class 2606 OID 35258)
+=======
+-- TOC entry 3375 (class 2606 OID 35258)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3393 (class 2606 OID 46566)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: peminjaman peminjaman_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2145,7 +3586,15 @@ ALTER TABLE ONLY public.peminjaman
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3359 (class 2606 OID 35215)
+=======
+-- TOC entry 3363 (class 2606 OID 35215)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3381 (class 2606 OID 46523)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: penelitian penelitian_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2154,7 +3603,15 @@ ALTER TABLE ONLY public.penelitian
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3378 (class 2606 OID 35297)
+=======
+-- TOC entry 3382 (class 2606 OID 35297)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3402 (class 2606 OID 46605)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: pengunjung pengunjung_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2163,7 +3620,15 @@ ALTER TABLE ONLY public.pengunjung
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3362 (class 2606 OID 35224)
+=======
+-- TOC entry 3366 (class 2606 OID 35224)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3384 (class 2606 OID 46532)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: produk produk_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2172,7 +3637,15 @@ ALTER TABLE ONLY public.produk
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3374 (class 2606 OID 35267)
+=======
+-- TOC entry 3378 (class 2606 OID 35267)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3396 (class 2606 OID 46575)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: ruang_lab ruang_lab_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2181,7 +3654,15 @@ ALTER TABLE ONLY public.ruang_lab
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3387 (class 2606 OID 42463)
+=======
+-- TOC entry 3391 (class 2606 OID 42463)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3400 (class 2606 OID 46595)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: settings settings_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2190,6 +3671,13 @@ ALTER TABLE ONLY public.settings
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3381 (class 2606 OID 35309)
+=======
+-- TOC entry 3385 (class 2606 OID 35309)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3411 (class 2606 OID 47163)
 -- Name: video video_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
@@ -2200,6 +3688,7 @@ ALTER TABLE ONLY public.video
 
 --
 -- TOC entry 3405 (class 2606 OID 46617)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: visitor visitor_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2208,7 +3697,15 @@ ALTER TABLE ONLY public.visitor
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3367 (class 1259 OID 35315)
+=======
+-- TOC entry 3371 (class 1259 OID 35315)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3389 (class 1259 OID 46623)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_alatlab_id_admin; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2216,7 +3713,15 @@ CREATE INDEX idx_alatlab_id_admin ON public.alat_lab USING btree (id_admin);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3351 (class 1259 OID 35311)
+=======
+-- TOC entry 3355 (class 1259 OID 35311)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3373 (class 1259 OID 46619)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_berita_created_at; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2224,7 +3729,15 @@ CREATE INDEX idx_berita_created_at ON public.berita USING btree (created_at DESC
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3352 (class 1259 OID 35310)
+=======
+-- TOC entry 3356 (class 1259 OID 35310)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3374 (class 1259 OID 46618)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_berita_id_admin; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2232,7 +3745,15 @@ CREATE INDEX idx_berita_id_admin ON public.berita USING btree (id_admin);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3333 (class 1259 OID 35145)
+=======
+-- TOC entry 3337 (class 1259 OID 35145)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3355 (class 1259 OID 46453)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_buku_tamu_created_at; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2240,7 +3761,15 @@ CREATE INDEX idx_buku_tamu_created_at ON public.buku_tamu USING btree (created_a
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3334 (class 1259 OID 35147)
+=======
+-- TOC entry 3338 (class 1259 OID 35147)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3356 (class 1259 OID 46455)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_buku_tamu_email; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2248,7 +3777,15 @@ CREATE INDEX idx_buku_tamu_email ON public.buku_tamu USING btree (email);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3335 (class 1259 OID 35146)
+=======
+-- TOC entry 3339 (class 1259 OID 35146)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3357 (class 1259 OID 46454)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_buku_tamu_is_read; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2256,7 +3793,15 @@ CREATE INDEX idx_buku_tamu_is_read ON public.buku_tamu USING btree (is_read);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3329 (class 1259 OID 35132)
+=======
+-- TOC entry 3333 (class 1259 OID 35132)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3351 (class 1259 OID 46440)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_gallery_created; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2264,7 +3809,15 @@ CREATE INDEX idx_gallery_created ON public.gallery USING btree (created_at);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3330 (class 1259 OID 35133)
+=======
+-- TOC entry 3334 (class 1259 OID 35133)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3352 (class 1259 OID 46441)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_gallery_id_berita; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2272,7 +3825,15 @@ CREATE INDEX idx_gallery_id_berita ON public.gallery USING btree (id_berita);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3340 (class 1259 OID 35312)
+=======
+-- TOC entry 3344 (class 1259 OID 35312)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3362 (class 1259 OID 46620)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_mahasiswa_id_admin; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2280,7 +3841,15 @@ CREATE INDEX idx_mahasiswa_id_admin ON public.mahasiswa USING btree (id_admin);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3343 (class 1259 OID 35313)
+=======
+-- TOC entry 3347 (class 1259 OID 35313)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3365 (class 1259 OID 46621)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_member_id_admin; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2288,7 +3857,15 @@ CREATE INDEX idx_member_id_admin ON public.member USING btree (id_admin);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3344 (class 1259 OID 35314)
+=======
+-- TOC entry 3348 (class 1259 OID 35314)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3366 (class 1259 OID 46622)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_member_nama; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2296,7 +3873,15 @@ CREATE INDEX idx_member_nama ON public.member USING btree (nama);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3368 (class 1259 OID 35316)
+=======
+-- TOC entry 3372 (class 1259 OID 35316)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3390 (class 1259 OID 46624)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_peminjaman_id_alat; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2304,7 +3889,15 @@ CREATE INDEX idx_peminjaman_id_alat ON public.peminjaman USING btree (id_alat);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3369 (class 1259 OID 35317)
+=======
+-- TOC entry 3373 (class 1259 OID 35317)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3391 (class 1259 OID 46625)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_peminjaman_status; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2312,7 +3905,15 @@ CREATE INDEX idx_peminjaman_status ON public.peminjaman USING btree (status);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3360 (class 1259 OID 35319)
+=======
+-- TOC entry 3364 (class 1259 OID 35319)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3382 (class 1259 OID 46627)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_produk_nama; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2320,7 +3921,15 @@ CREATE INDEX idx_produk_nama ON public.produk USING btree (nama_produk);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3355 (class 1259 OID 35320)
+=======
+-- TOC entry 3359 (class 1259 OID 35320)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3377 (class 1259 OID 46628)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_progress_artikel; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2328,7 +3937,15 @@ CREATE INDEX idx_progress_artikel ON public.penelitian USING btree (id_artikel);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3356 (class 1259 OID 35321)
+=======
+-- TOC entry 3360 (class 1259 OID 35321)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3378 (class 1259 OID 46629)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_progress_member; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2336,7 +3953,15 @@ CREATE INDEX idx_progress_member ON public.penelitian USING btree (id_member);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3357 (class 1259 OID 42400)
+=======
+-- TOC entry 3361 (class 1259 OID 42400)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3379 (class 1259 OID 46630)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_progress_mhs; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2344,7 +3969,15 @@ CREATE INDEX idx_progress_mhs ON public.penelitian USING btree (id_mhs);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3372 (class 1259 OID 35318)
+=======
+-- TOC entry 3376 (class 1259 OID 35318)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3394 (class 1259 OID 46626)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_ruanglab_nama; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2352,7 +3985,15 @@ CREATE INDEX idx_ruanglab_nama ON public.ruang_lab USING btree (nama_ruang);
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3379 (class 1259 OID 35323)
+=======
+-- TOC entry 3383 (class 1259 OID 35323)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3403 (class 1259 OID 46631)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: idx_visitor_pengunjung; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -2360,6 +4001,13 @@ CREATE INDEX idx_visitor_pengunjung ON public.visitor USING btree (id_pengunjung
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3397 (class 2606 OID 35329)
+=======
+-- TOC entry 3401 (class 2606 OID 35329)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3416 (class 2606 OID 47252)
 -- Name: artikel artikel_id_member_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
@@ -2406,6 +4054,7 @@ ALTER TABLE ONLY public.absensi
 
 --
 -- TOC entry 3427 (class 2606 OID 46723)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: alat_lab fk_alatlab_admin; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2414,7 +4063,15 @@ ALTER TABLE ONLY public.alat_lab
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3391 (class 2606 OID 35334)
+=======
+-- TOC entry 3395 (class 2606 OID 35334)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3415 (class 2606 OID 46728)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: berita fk_berita_admin; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2423,7 +4080,15 @@ ALTER TABLE ONLY public.berita
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3388 (class 2606 OID 35339)
+=======
+-- TOC entry 3392 (class 2606 OID 35339)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3412 (class 2606 OID 46733)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: gallery fk_gallery_berita; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2432,7 +4097,15 @@ ALTER TABLE ONLY public.gallery
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3389 (class 2606 OID 35344)
+=======
+-- TOC entry 3393 (class 2606 OID 35344)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3413 (class 2606 OID 46738)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: mahasiswa fk_mahasiswa_admin; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2441,7 +4114,15 @@ ALTER TABLE ONLY public.mahasiswa
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3390 (class 2606 OID 35349)
+=======
+-- TOC entry 3394 (class 2606 OID 35349)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3414 (class 2606 OID 46743)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: member fk_member_admin; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2450,7 +4131,15 @@ ALTER TABLE ONLY public.member
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3398 (class 2606 OID 35354)
+=======
+-- TOC entry 3402 (class 2606 OID 35354)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3428 (class 2606 OID 46748)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: peminjaman fk_peminjaman_alat; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2459,7 +4148,15 @@ ALTER TABLE ONLY public.peminjaman
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3399 (class 2606 OID 35359)
+=======
+-- TOC entry 3403 (class 2606 OID 35359)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3429 (class 2606 OID 46753)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: peminjaman fk_peminjaman_ruang; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2468,7 +4165,15 @@ ALTER TABLE ONLY public.peminjaman
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3392 (class 2606 OID 35364)
+=======
+-- TOC entry 3396 (class 2606 OID 35364)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3420 (class 2606 OID 46758)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: penelitian fk_penelitian_fokus; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2477,7 +4182,15 @@ ALTER TABLE ONLY public.penelitian
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3393 (class 2606 OID 35369)
+=======
+-- TOC entry 3397 (class 2606 OID 35369)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3421 (class 2606 OID 46763)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: penelitian fk_penelitian_mitra; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2486,7 +4199,15 @@ ALTER TABLE ONLY public.penelitian
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3394 (class 2606 OID 35374)
+=======
+-- TOC entry 3398 (class 2606 OID 35374)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3422 (class 2606 OID 46768)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: penelitian fk_penelitian_produk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2495,7 +4216,15 @@ ALTER TABLE ONLY public.penelitian
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3400 (class 2606 OID 35394)
+=======
+-- TOC entry 3404 (class 2606 OID 35394)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3430 (class 2606 OID 46788)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: ruang_lab fk_ruang_admin; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2504,6 +4233,13 @@ ALTER TABLE ONLY public.ruang_lab
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3395 (class 2606 OID 35379)
+=======
+-- TOC entry 3399 (class 2606 OID 35379)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3431 (class 2606 OID 46793)
 -- Name: settings fk_settings_admin; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
@@ -2514,6 +4250,7 @@ ALTER TABLE ONLY public.settings
 
 --
 -- TOC entry 3423 (class 2606 OID 46773)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: penelitian progress_id_artikel_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2522,7 +4259,15 @@ ALTER TABLE ONLY public.penelitian
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3396 (class 2606 OID 35384)
+=======
+-- TOC entry 3400 (class 2606 OID 35384)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3424 (class 2606 OID 46778)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: penelitian progress_id_member_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2531,8 +4276,17 @@ ALTER TABLE ONLY public.penelitian
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3402 (class 2606 OID 42469)
+=======
+-- TOC entry 3406 (class 2606 OID 42469)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Name: settings settings_id_contact_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+=======
 -- TOC entry 3425 (class 2606 OID 46783)
 -- Name: penelitian progress_id_mhs_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 --
 
 ALTER TABLE ONLY public.penelitian
@@ -2540,7 +4294,28 @@ ALTER TABLE ONLY public.penelitian
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 3403 (class 2606 OID 42464)
+=======
+-- TOC entry 3407 (class 2606 OID 42464)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+-- Name: settings settings_id_footer_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.settings
+    ADD CONSTRAINT settings_id_footer_fkey FOREIGN KEY (id_footer) REFERENCES public.footer_settings(id_footer);
+
+
+--
+<<<<<<< HEAD
+-- TOC entry 3401 (class 2606 OID 35404)
+=======
+-- TOC entry 3405 (class 2606 OID 35404)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3432 (class 2606 OID 46798)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: visitor visitor_id_pengunjung_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2549,6 +4324,13 @@ ALTER TABLE ONLY public.visitor
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 2142 (class 826 OID 35120)
+=======
+-- TOC entry 2146 (class 826 OID 35120)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 3626 (class 0 OID 0)
 -- Dependencies: 13
 -- Name: SCHEMA public; Type: ACL; Schema: -; Owner: pg_database_owner
@@ -2560,6 +4342,7 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 
 --
 -- TOC entry 2160 (class 826 OID 46428)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: DEFAULT PRIVILEGES FOR SEQUENCES; Type: DEFAULT ACL; Schema: public; Owner: postgres
 --
 
@@ -2567,18 +4350,42 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENC
 
 
 --
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- TOC entry 2141 (class 826 OID 35119)
+=======
+-- TOC entry 2145 (class 826 OID 35119)
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- TOC entry 2161 (class 826 OID 46427)
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 -- Name: DEFAULT PRIVILEGES FOR TABLES; Type: DEFAULT ACL; Schema: public; Owner: postgres
 --
 
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES  TO postgres;
 
 
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+-- Completed on 2025-12-04 08:46:39
+=======
+-- Completed on 2025-12-04 09:36:32
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 -- Completed on 2025-12-14 21:23:39
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 
 --
 -- PostgreSQL database dump complete
 --
 
+<<<<<<< HEAD:assets/inlet_pbl.sql
+<<<<<<< HEAD
+\unrestrict 9HCm3mc6FpSrfS1QiZsTXQoIiIxVBcSMLQU3Udc4sAOPL7lRY8bRh4hXPv59Kaz
+=======
+\unrestrict YM77hedTVLLAKQbTcEBGAv7TbB8ZUWNRV6xnZDqjWtocHGsfv2DPogfn4K6jPov
+>>>>>>> cc6ae99129ae72cfe03f044e42a065e661bc4a54
+=======
 \unrestrict bpSimOsKLgSBDNW46QyuKpgMphnhkBYC8p74cGPgSMP93pGj6QJdGCrdtIA3CNe
+>>>>>>> f5ee55d652d242e4963fd2e7ba8c5e287ec1fa96:assets/inlet_pbp_baruu.sql
 

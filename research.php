@@ -15,7 +15,7 @@ function getYoutubeEmbedUrl($url)
 
     $url = trim($url);
     if ($url === '') {
-        return null;
+        return null;   
     }
 
     $videoId = null;
