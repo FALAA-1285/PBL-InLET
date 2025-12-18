@@ -97,19 +97,27 @@ $total_items = $count_stmt->fetchColumn();
 $total_pages = ceil($total_items / $items_per_page);
 
 // Get mahasiswa with pagination - use id_mahasiswa as nim for compatibility
-$stmt = $conn->prepare("SELECT id_mahasiswa as nim, nama, tahun, status, id_admin FROM mahasiswa ORDER BY nama LIMIT :limit OFFSET :offset");
-$stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-$stmt->execute();
-$mahasiswa_list = $stmt->fetchAll();
+try {
+    $stmt = $conn->prepare("SELECT id_mahasiswa as nim, nama, tahun, status, id_admin FROM mahasiswa ORDER BY nama LIMIT :limit OFFSET :offset");
+    $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $mahasiswa_list = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $mahasiswa_list = [];
+}
 
 // Get mahasiswa for edit
 $edit_mahasiswa = null;
 if (isset($_GET['edit'])) {
-    $edit_id = intval($_GET['edit']);
-    $stmt = $conn->prepare("SELECT id_mahasiswa as nim, nama, tahun, status, id_admin FROM mahasiswa WHERE id_mahasiswa = :id");
-    $stmt->execute(['id' => $edit_id]);
-    $edit_mahasiswa = $stmt->fetch();
+    try {
+        $edit_id = intval($_GET['edit']);
+        $stmt = $conn->prepare("SELECT id_mahasiswa as nim, nama, tahun, status, id_admin FROM mahasiswa WHERE id_mahasiswa = :id");
+        $stmt->execute(['id' => $edit_id]);
+        $edit_mahasiswa = $stmt->fetch();
+    } catch (PDOException $e) {
+        $edit_mahasiswa = null;
+    }
 }
 ?>
 <!DOCTYPE html>

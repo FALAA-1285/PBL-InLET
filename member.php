@@ -46,7 +46,15 @@ $offset_members = ($current_page_members - 1) * $items_per_page;
 
 
 // Fetch members with search and pagination
-$query_sql = "SELECT * FROM member $where_sql ORDER BY nama LIMIT :limit OFFSET :offset";
+// Order by: Ketua Lab first, then others by name
+$query_sql = "SELECT * FROM member $where_sql 
+              ORDER BY 
+                CASE 
+                  WHEN LOWER(jabatan) LIKE '%ketua lab%' THEN 0 
+                  ELSE 1 
+                END,
+                nama 
+              LIMIT :limit OFFSET :offset";
 $stmt = $conn->prepare($query_sql);
 foreach ($params as $key => $value) {
     $stmt->bindValue($key, $value);
@@ -172,29 +180,30 @@ function getInitials($name)
                                         <?php endif; ?>
                                     </div>
 
-                                    <div class="member-info">
+                                    <div class="member-info text-center">
                                         <h3 class="member-name"><?php echo htmlspecialchars($member['nama']); ?></h3>
-
-                                        <div class="member-role">
-                                            <?php echo htmlspecialchars($member['jabatan'] ?: 'Member'); ?>
-                                        </div>
-
-                                        <?php if ($member['deskripsi']): ?>
-                                            <p class="member-desc" title="<?php echo htmlspecialchars($member['deskripsi']); ?>">
+                                        <div class="member-role"><?php echo htmlspecialchars($member['jabatan'] ?: 'Member'); ?></div>
+                                        <?php if (!empty($member['email'])): ?>
+                                            <div class="member-email">
+                                                <?php echo htmlspecialchars($member['email']); ?>
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($member['google_scholar'])): ?>
+                                            <div class="member-scholar">
+                                                <a href="<?php echo htmlspecialchars($member['google_scholar']); ?>" target="_blank" title="Google Scholar">
+                                                    <img src="assets/google-scholar.png" alt="Google Scholar" width="28">
+                                                </a>
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($member['deskripsi'])): ?>
+                                            <p class="member-desc" style="display:none;">
                                                 <?php echo htmlspecialchars($member['deskripsi']); ?>
                                             </p>
-                                        <?php else: ?>
-                                            <p class="member-desc text-muted fst-italic">No description available.</p>
+                                            <a href="javascript:void(0)" class="member-toggle">
+                                                More Info
+                                            </a>
                                         <?php endif; ?>
                                     </div>
-
-                                    <?php if ($member['email']): ?>
-                                        <div class="member-footer">
-                                            <a href="mailto:<?php echo htmlspecialchars($member['email']); ?>" class="btn-email">
-                                                <i class="fas fa-envelope me-2"></i>Contact via Email
-                                            </a>
-                                        </div>
-                                    <?php endif; ?>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -287,6 +296,25 @@ function getInitials($name)
     <div class="footer-wrap">
         <?php include 'includes/footer.php'; ?>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".member-toggle").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    const desc = btn.previousElementSibling;
+                    if (!desc) return;
+
+                    if (desc.style.display === "block") {
+                        desc.style.display = "none";
+                        btn.textContent = "More Info";
+                    } else {
+                        desc.style.display = "block";
+                        btn.textContent = "Less Info";
+                    }
+                });
+            });
+        });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

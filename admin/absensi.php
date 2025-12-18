@@ -34,11 +34,11 @@ $offset = ($current_page - 1) * $items_per_page;
 $filter = $_GET['filter'] ?? 'all'; // 'all', 'today', 'week', 'month'
 $date_filter = '';
 if ($filter === 'today') {
-    $date_filter = " AND tanggal = CURRENT_DATE";
+    $date_filter = " AND CAST(tanggal AS DATE) = CAST(CURRENT_DATE AS DATE)";
 } elseif ($filter === 'week') {
-    $date_filter = " AND tanggal >= CURRENT_DATE - INTERVAL '7 days'";
+    $date_filter = " AND CAST(tanggal AS DATE) >= CAST(CURRENT_DATE AS DATE) - INTERVAL '7 days'";
 } elseif ($filter === 'month') {
-    $date_filter = " AND tanggal >= CURRENT_DATE - INTERVAL '30 days'";
+    $date_filter = " AND CAST(tanggal AS DATE) >= CAST(CURRENT_DATE AS DATE) - INTERVAL '30 days'";
 }
 
 // Get total count (using database column name 'tanggal')
@@ -126,9 +126,10 @@ try {
 
 // Get statistics
 $stats = [];
-$stats['today'] = $conn->query("SELECT COUNT(*) FROM absensi WHERE tanggal = CURRENT_DATE")->fetchColumn();
-$stats['week'] = $conn->query("SELECT COUNT(*) FROM absensi WHERE tanggal >= CURRENT_DATE - INTERVAL '7 days'")->fetchColumn();
-$stats['month'] = $conn->query("SELECT COUNT(*) FROM absensi WHERE tanggal >= CURRENT_DATE - INTERVAL '30 days'")->fetchColumn();
+// Use CAST to ensure date comparison works correctly
+$stats['today'] = $conn->query("SELECT COUNT(*) FROM absensi WHERE CAST(tanggal AS DATE) = CAST(CURRENT_DATE AS DATE)")->fetchColumn();
+$stats['week'] = $conn->query("SELECT COUNT(*) FROM absensi WHERE CAST(tanggal AS DATE) >= CAST(CURRENT_DATE AS DATE) - INTERVAL '7 days'")->fetchColumn();
+$stats['month'] = $conn->query("SELECT COUNT(*) FROM absensi WHERE CAST(tanggal AS DATE) >= CAST(CURRENT_DATE AS DATE) - INTERVAL '30 days'")->fetchColumn();
 $stats['total'] = $conn->query("SELECT COUNT(*) FROM absensi")->fetchColumn();
 ?>
 <!DOCTYPE html>

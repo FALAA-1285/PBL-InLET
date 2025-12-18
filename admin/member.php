@@ -7,6 +7,17 @@ $conn = getDBConnection();
 $message = '';
 $message_type = '';
 
+// Ensure google_scholar column exists in member table
+try {
+    $check_col = $conn->query("SELECT column_name FROM information_schema.columns WHERE table_name = 'member' AND column_name = 'google_scholar'");
+    if ($check_col->rowCount() == 0) {
+        $conn->exec("ALTER TABLE member ADD COLUMN google_scholar TEXT");
+    }
+} catch (PDOException $e) {
+    // Column might already exist or error, continue anyway
+    error_log("Note: Could not add google_scholar column: " . $e->getMessage());
+}
+
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
@@ -34,9 +45,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $no_tlp = $_POST['no_tlp'] ?? '';
                 $deskripsi = $_POST['deskripsi'] ?? '';
                 $bidang_keahlian = $_POST['bidang_keahlian'] ?? '';
+                $google_scholar = $_POST['google_scholar'] ?? '';
                 $admin_id = $_SESSION['id_admin'] ?? null;
 
-                $stmt = $conn->prepare("INSERT INTO member (nama, email, jabatan, foto, bidang_keahlian, alamat, notlp, deskripsi) VALUES (:nama, :email, :jabatan, :foto, :keahlian, :alamat, :notlp, :deskripsi)");
+                $stmt = $conn->prepare("INSERT INTO member (nama, email, jabatan, foto, bidang_keahlian, alamat, notlp, deskripsi, google_scholar) VALUES (:nama, :email, :jabatan, :foto, :keahlian, :alamat, :notlp, :deskripsi, :google_scholar)");
                 $stmt->execute([
                     'nama' => $nama,
                     'email' => $email ?: null,
@@ -45,7 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'keahlian' => $bidang_keahlian ?: null,
                     'alamat' => $alamat ?: null,
                     'notlp' => $no_tlp ?: null,
-                    'deskripsi' => $deskripsi ?: null
+                    'deskripsi' => $deskripsi ?: null,
+                    'google_scholar' => $google_scholar ?: null
                 ]);
 
                 $message = 'Member successfully added!';
@@ -84,8 +97,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $deskripsi = $_POST['deskripsi'] ?? '';
 
                 $bidang_keahlian = $_POST['bidang_keahlian'] ?? '';
+                $google_scholar = $_POST['google_scholar'] ?? '';
                 
-                $stmt = $conn->prepare("UPDATE member SET nama = :nama, email = :email, jabatan = :jabatan, foto = :foto, bidang_keahlian = :keahlian, alamat = :alamat, notlp = :notlp, deskripsi = :deskripsi WHERE id_member = :id");
+                $stmt = $conn->prepare("UPDATE member SET nama = :nama, email = :email, jabatan = :jabatan, foto = :foto, bidang_keahlian = :keahlian, alamat = :alamat, notlp = :notlp, deskripsi = :deskripsi, google_scholar = :google_scholar WHERE id_member = :id");
                 $stmt->execute([
                     'id' => $id,
                     'nama' => $nama,
@@ -95,7 +109,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'keahlian' => $bidang_keahlian ?: null,
                     'alamat' => $alamat ?: null,
                     'notlp' => $no_tlp ?: null,
-                    'deskripsi' => $deskripsi ?: null
+                    'deskripsi' => $deskripsi ?: null,
+                    'google_scholar' => $google_scholar ?: null
                 ]);
 
                 $message = 'Member successfully updated!';
@@ -152,9 +167,15 @@ $total_items = $stmt->fetchColumn();
 $total_pages = ceil($total_items / $items_per_page);
 
 // Get members with pagination (all fields are already in member table)
+// Order by: Ketua Lab first, then others by name
 $stmt = $conn->prepare("SELECT * 
                       FROM member 
-                      ORDER BY nama
+                      ORDER BY 
+                        CASE 
+                          WHEN LOWER(jabatan) LIKE '%ketua lab%' THEN 0 
+                          ELSE 1 
+                        END,
+                        nama
                       LIMIT :limit OFFSET :offset");
 $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
@@ -482,10 +503,10 @@ $members = $stmt->fetchAll();
                                 placeholder="Area of expertise (optional)">
                         </div>
                         <div class="form-group">
-                            <label>Upload Foto (File)</label>
+                            <label>Upload Photo (File)</label>
                             <input type="file" name="foto_file"
                                 accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
-                            <small class="d-block mt-2 text-muted small">Maksimal 5MB. Format: JPG, PNG, GIF,
+                            <small class="d-block mt-2 text-muted small">Maximum 5MB. Format: JPG, PNG, GIF,
                                 WEBP</small>
                         </div>
                         <div class="form-group">
@@ -506,6 +527,11 @@ $members = $stmt->fetchAll();
                         <div class="form-group">
                             <label>Description</label>
                             <textarea name="deskripsi" id="edit_deskripsi"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Google Scholar URL</label>
+                            <input type="url" name="google_scholar" id="edit_google_scholar" placeholder="https://scholar.google.com/citations?user=...">
+                            <small class="d-block mt-2 text-muted small">Link to Google Scholar profile</small>
                         </div>
                         <button type="submit" class="btn-submit">Update Member</button>
                         <button type="button" class="btn-cancel" onclick="cancelEdit()">Cancel</button>
@@ -556,6 +582,11 @@ $members = $stmt->fetchAll();
                         <div class="form-group">
                             <label>Description</label>
                             <textarea name="deskripsi"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Google Scholar URL</label>
+                            <input type="url" name="google_scholar" placeholder="https://scholar.google.com/citations?user=...">
+                            <small class="d-block mt-2 text-muted small">Link to Google Scholar profile</small>
                         </div>
                         <button type="submit" class="btn-submit">Add Member</button>
                     </form>
@@ -672,6 +703,7 @@ $members = $stmt->fetchAll();
             document.getElementById('edit_alamat').value = member.alamat || '';
             document.getElementById('edit_no_tlp').value = member.notlp || '';
             document.getElementById('edit_deskripsi').value = member.deskripsi || '';
+            document.getElementById('edit_google_scholar').value = member.google_scholar || '';
 
             // Show edit form, hide add form
             document.getElementById('edit-form-section').classList.add('active');

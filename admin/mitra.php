@@ -118,24 +118,37 @@ $current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
 // Get total count
-$count_stmt = $conn->query("SELECT COUNT(*) FROM mitra");
-$total_items = $count_stmt->fetchColumn();
-$total_pages = ceil($total_items / $items_per_page);
+try {
+    $count_stmt = $conn->query("SELECT COUNT(*) FROM mitra");
+    $total_items = $count_stmt->fetchColumn();
+    $total_pages = ceil($total_items / $items_per_page);
+} catch (PDOException $e) {
+    $total_items = 0;
+    $total_pages = 0;
+}
 
 // Get mitra with pagination
-$stmt = $conn->prepare("SELECT * FROM mitra ORDER BY nama_institusi LIMIT :limit OFFSET :offset");
-$stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-$stmt->execute();
-$mitra_list = $stmt->fetchAll();
+try {
+    $stmt = $conn->prepare("SELECT * FROM mitra ORDER BY nama_institusi LIMIT :limit OFFSET :offset");
+    $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $mitra_list = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $mitra_list = [];
+}
 
 // Get mitra for edit
 $edit_mitra = null;
 if (isset($_GET['edit'])) {
-    $edit_id = intval($_GET['edit']);
-    $stmt = $conn->prepare("SELECT * FROM mitra WHERE id_mitra = :id");
-    $stmt->execute(['id' => $edit_id]);
-    $edit_mitra = $stmt->fetch();
+    try {
+        $edit_id = intval($_GET['edit']);
+        $stmt = $conn->prepare("SELECT * FROM mitra WHERE id_mitra = :id");
+        $stmt->execute(['id' => $edit_id]);
+        $edit_mitra = $stmt->fetch();
+    } catch (PDOException $e) {
+        $edit_mitra = null;
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -386,7 +399,7 @@ if (isset($_GET['edit'])) {
     <main class="content">
         <div class="content-inner">
             <div class="cms-content">
-                <h1 class="text-primary mb-4"><i class="ri-community-line"></i> Kelola Mitra Lab</h1>
+                <h1 class="text-primary mb-4"><i class="ri-community-line"></i> Manage Lab Partners</h1>
 
                 <?php if ($message): ?>
                     <div class="message <?php echo $message_type; ?>">
@@ -405,7 +418,7 @@ if (isset($_GET['edit'])) {
                         <?php endif; ?>
 
                         <div class="form-group">
-                            <label for="nama_institusi">Nama Institusi *</label>
+                            <label for="nama_institusi">Institution Name *</label>
                             <input type="text" id="nama_institusi" name="nama_institusi"
                                 value="<?php echo htmlspecialchars($edit_mitra['nama_institusi'] ?? ''); ?>" required>
                         </div>
@@ -418,7 +431,7 @@ if (isset($_GET['edit'])) {
                         </div>
 
                         <div class="form-group">
-                            <label for="logo_file">Atau Upload Logo</label>
+                            <label for="logo_file">Or Upload Logo</label>
                             <input type="file" id="logo_file" name="logo_file" accept="image/*">
                         </div>
 
@@ -426,14 +439,14 @@ if (isset($_GET['edit'])) {
                             <?php echo $edit_mitra ? 'Update Partner' : 'Add Partner'; ?>
                         </button>
                         <?php if ($edit_mitra): ?>
-                            <a href="mitra.php" class="btn-cancel">Batal</a>
+                            <a href="mitra.php" class="btn-cancel">Cancel</a>
                         <?php endif; ?>
                     </form>
                 </div>
 
                 <!-- Data List -->
                 <div class="data-section">
-                    <h2>Daftar Mitra (<?php echo $total_items; ?>)</h2>
+                    <h2>Partner List (<?php echo $total_items; ?>)</h2>
 
                     <?php if (empty($mitra_list)): ?>
                         <p class="muted-gray">No partners registered yet.</p>
@@ -444,8 +457,8 @@ if (isset($_GET['edit'])) {
                                     <tr>
                                         <th>ID</th>
                                         <th>Logo</th>
-                                        <th>Nama Institusi</th>
-                                        <th>Aksi</th>
+                                        <th>Institution Name</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>

@@ -73,7 +73,8 @@ try {
             pj.created_at
         FROM peminjaman pj
         JOIN ruang_lab r ON r.id_ruang_lab = pj.id_ruang
-        WHERE pj.status = 'dipinjam'";
+        WHERE pj.status = 'dipinjam'
+        AND (pj.keterangan IS NOT NULL AND pj.keterangan LIKE '%[APPROVED]%')";
     $conn->exec($view_ruang_dipinjam_sql);
 } catch (PDOException $e) {
 }
@@ -237,10 +238,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $message = 'Room not available';
                     $message_type = 'error';
                 } else {
-                    // Check if ada peminjaman di waktu yang sama
+                    // Check if ada peminjaman di waktu yang sama (only check approved ones)
                     $conflict_stmt = $conn->prepare("SELECT COUNT(*) as cnt FROM peminjaman
                         WHERE id_ruang = :id_ruang
                         AND status = 'dipinjam'
+                        AND (keterangan IS NOT NULL AND keterangan LIKE '%[APPROVED]%')
                         AND tanggal_pinjam = :tanggal
                         AND :waktu_pinjam < waktu_kembali
                         AND :waktu_kembali > waktu_pinjam");
@@ -469,7 +471,7 @@ try {
     $ruang_info = null;
 }
 
-// Get jadwal peminjaman ruangan (all active bookings for calendar)
+// Get jadwal peminjaman ruangan (only approved active bookings for calendar)
 try {
     $jadwal_stmt = $conn->query("
         SELECT 
@@ -483,6 +485,7 @@ try {
         FROM peminjaman pj
         WHERE pj.id_ruang IS NOT NULL 
         AND pj.status = 'dipinjam'
+        AND (pj.keterangan IS NOT NULL AND pj.keterangan LIKE '%[APPROVED]%')
         ORDER BY pj.tanggal_pinjam, pj.waktu_pinjam
     ");
     $jadwal_ruang = $jadwal_stmt->fetchAll();

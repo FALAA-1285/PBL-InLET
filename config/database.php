@@ -2,9 +2,10 @@
 // Database Configuration
 define('DB_HOST', '127.0.0.1');
 define('DB_PORT', '5432');
-define('DB_NAME', 'pbl_inlet'); // Ganti dengan nama database Anda
+define('DB_NAME', 'inlet_pbl'); // Ganti dengan nama database Anda
 define('DB_USER', 'postgres'); // Ganti dengan username PostgreSQL Anda
-define('DB_PASS', '123456789'); // Ganti dengan password PostgreSQL Anda
+define('DB_PASS', '12345678'); // Ganti dengan password PostgreSQL Anda
+
 
 
 // Koneksi ke PostgreSQL

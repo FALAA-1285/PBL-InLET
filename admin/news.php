@@ -637,7 +637,7 @@ if (!in_array($active_tab, ['news', 'video'])) {
     include __DIR__ . '/partials/sidebar.php'; ?>
     <main class="content">
         <div class="content-inner">
-            <h1 class="text-primary mb-4"><i class="ri-newspaper-line"></i> Manage Members</h1>
+            <h1 class="text-primary mb-4"><i class="ri-newspaper-line"></i> Manage News</h1>
 
 
             <div class="cms-content">
@@ -675,10 +675,10 @@ if (!in_array($active_tab, ['news', 'video'])) {
                             <textarea name="konten" id="edit_konten" required></textarea>
                         </div>
                         <div class="form-group">
-                            <label>Upload Gambar Thumbnail (File)</label>
+                            <label>Upload Thumbnail Image (File)</label>
                             <input type="file" name="gambar_file"
                                 accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
-                            <small class="d-block mt-2 text-muted small">Maksimal 5MB. Format: JPG, PNG, GIF,
+                            <small class="d-block mt-2 text-muted small">Maximum 5MB. Format: JPG, PNG, GIF,
                                 WEBP</small>
                         </div>
                         <div class="form-group">
@@ -689,7 +689,7 @@ if (!in_array($active_tab, ['news', 'video'])) {
                                 ignored</small>
                         </div>
                         <div class="form-group">
-                            <label>Tanggal *</label>
+                            <label>Date *</label>
                             <input type="date" name="tanggal" id="edit_tanggal" required>
                         </div>
                         <button type="submit" class="btn-submit">Update News</button>
@@ -710,10 +710,10 @@ if (!in_array($active_tab, ['news', 'video'])) {
                             <textarea name="konten" required></textarea>
                         </div>
                         <div class="form-group">
-                            <label>Upload Gambar Thumbnail (File)</label>
+                            <label>Upload Thumbnail Image (File)</label>
                             <input type="file" name="gambar_file"
                                 accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
-                            <small class="d-block mt-2 text-muted small">Maksimal 5MB. Format: JPG, PNG, GIF,
+                            <small class="d-block mt-2 text-muted small">Maximum 5MB. Format: JPG, PNG, GIF,
                                 WEBP</small>
                         </div>
                         <div class="form-group">
@@ -723,7 +723,7 @@ if (!in_array($active_tab, ['news', 'video'])) {
                                 ignored</small>
                         </div>
                         <div class="form-group">
-                            <label>Tanggal *</label>
+                            <label>Date *</label>
                             <input type="date" name="tanggal" required>
                         </div>
                         <button type="submit" class="btn-submit">Add News</button>

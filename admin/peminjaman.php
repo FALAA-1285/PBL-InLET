@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         exit;
                     } else {
                         $message = 'This loan is no longer pending.';
-                        $message_type = 'error';
+            $message_type = 'error';
                     }
                 } else {
                     $message = 'Loan record not found!';
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Invalid request ID!';
             $message_type = 'error';
         } elseif (empty($alasan_reject)) {
-            $message = 'Alasan reject harus diisi!';
+            $message = 'Rejection reason must be filled!';
             $message_type = 'error';
         } elseif (!$hasRequestTable) {
             // If table doesn't exist, update peminjaman status to 'ditolak' or delete it
@@ -118,11 +118,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     } catch (PDOException $e2) {
                         // If delete fails, just update keterangan
-                        $stmt = $conn->prepare("UPDATE peminjaman SET keterangan = COALESCE(keterangan || E'\n', '') || 'Rejected: ' || :alasan WHERE id_peminjaman = :id");
-                        $stmt->execute([
-                            'id' => $id_request,
-                            'alasan' => $alasan_reject
-                        ]);
+                    $stmt = $conn->prepare("UPDATE peminjaman SET keterangan = COALESCE(keterangan || E'\n', '') || 'Rejected: ' || :alasan WHERE id_peminjaman = :id");
+                    $stmt->execute([
+                        'id' => $id_request,
+                        'alasan' => $alasan_reject
+                    ]);
                         // Redirect to refresh the page
                         header('Location: peminjaman.php?rejected=1&filter_type=' . urlencode($filter_type) . '&filter_search=' . urlencode($filter_search));
                         exit;
@@ -173,6 +173,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($result['success']) {
                 $message = $result['message'];
                 $message_type = 'success';
+                // Redirect to prevent resubmission
+                header('Location: peminjaman.php?returned=1&return_filter_type=' . urlencode($return_filter_type ?? '') . '&return_filter_search=' . urlencode($return_filter_search ?? ''));
+                exit;
             } else {
                 $message = $result['message'];
                 $message_type = 'error';
@@ -191,6 +194,11 @@ if (isset($_GET['approved']) && $_GET['approved'] == '1') {
 
 if (isset($_GET['rejected']) && $_GET['rejected'] == '1') {
     $message = 'Request rejected successfully!';
+    $message_type = 'success';
+}
+
+if (isset($_GET['returned']) && $_GET['returned'] == '1') {
+    $message = 'Item returned successfully!';
     $message_type = 'success';
 }
 
@@ -278,11 +286,12 @@ if (!empty($filter_search)) {
 if (!empty($params)) {
     $stmt->execute($params);
 } else {
-    $stmt->execute();
+$stmt->execute();
 }
 $request_list = $stmt->fetchAll();
 
-// Get active loans (dipinjam) for return section - only show approved items
+// Get active loans (dipinjam) for return section
+// Show only approved items (both alat and ruang need approval)
 $return_query = "
     SELECT
         p.id_peminjaman,
@@ -306,7 +315,7 @@ $return_query = "
     LEFT JOIN alat_lab alat ON p.id_alat = alat.id_alat_lab
     LEFT JOIN ruang_lab ruang ON p.id_ruang = ruang.id_ruang_lab
     WHERE p.status = 'dipinjam'
-    AND (p.keterangan IS NOT NULL AND p.keterangan LIKE '%[APPROVED]%')
+    AND (p.keterangan IS NOT NULL AND p.keterangan LIKE '%[APPROVED]%') -- Only approved items (both alat and ruang)
 ";
 
 // Apply filters for return section
@@ -339,6 +348,253 @@ if (!empty($return_params)) {
 }
 $return_list = $return_stmt->fetchAll();
 
+// Get history - combine rejected and returned items
+$history_filter_status = $_GET['history_filter_status'] ?? 'all'; // 'all', 'rejected', 'returned'
+$history_filter_type = $_GET['history_filter_type'] ?? '';
+$history_filter_search = $_GET['history_filter_search'] ?? '';
+
+// Build history query parts
+$rejected_where = [];
+$returned_where = [];
+
+// Status filter
+if ($history_filter_status === 'rejected') {
+    // Only show rejected
+} elseif ($history_filter_status === 'returned') {
+    // Only show returned
+} else {
+    // Show all (both rejected and returned)
+}
+
+// Type filter
+if (!empty($history_filter_type)) {
+    if ($history_filter_type === 'alat') {
+        $rejected_where[] = ($hasRequestTable ? "r.id_alat" : "p.id_alat") . " > 0";
+        $returned_where[] = "p.id_alat > 0";
+    } elseif ($history_filter_type === 'ruang') {
+        $rejected_where[] = ($hasRequestTable ? "r.id_ruang" : "p.id_ruang") . " IS NOT NULL";
+        $returned_where[] = "p.id_ruang IS NOT NULL";
+    }
+}
+
+// Search filter
+if (!empty($history_filter_search)) {
+    $rejected_where[] = "(COALESCE(alat.nama_alat, ruang.nama_ruang) ILIKE :history_filter_search)";
+    $returned_where[] = "(COALESCE(alat2.nama_alat, ruang2.nama_ruang) ILIKE :history_filter_search)";
+}
+
+// Build UNION query
+$history_query_parts = [];
+
+// Rejected part
+if ($history_filter_status === 'all' || $history_filter_status === 'rejected') {
+    if ($hasRequestTable) {
+        $rejected_query = "
+            SELECT
+                r.id_request as id_peminjaman,
+                r.nama_peminjam,
+                r.tanggal_pinjam,
+                NULL as tanggal_kembali,
+                r.waktu_pinjam,
+                r.waktu_kembali,
+                r.keterangan,
+                'rejected' as history_status,
+                r.created_at,
+                CASE
+                    WHEN r.id_ruang IS NOT NULL THEN 'ruang'
+                    WHEN r.id_alat IS NOT NULL AND r.id_alat > 0 THEN 'alat'
+                    ELSE 'unknown'
+                END as type,
+                COALESCE(alat.nama_alat, ruang.nama_ruang) as item_name,
+                r.id_alat,
+                r.id_ruang
+            FROM request_peminjaman r
+            LEFT JOIN alat_lab alat ON r.id_alat = alat.id_alat_lab
+            LEFT JOIN ruang_lab ruang ON r.id_ruang = ruang.id_ruang_lab
+            WHERE r.status = 'rejected'
+        ";
+        if (!empty($rejected_where)) {
+            $rejected_query .= " AND " . implode(" AND ", $rejected_where);
+        }
+        $history_query_parts[] = $rejected_query;
+    } else {
+        $rejected_query = "
+            SELECT
+                p.id_peminjaman,
+                p.nama_peminjam,
+                p.tanggal_pinjam,
+                p.tanggal_kembali,
+                p.waktu_pinjam,
+                p.waktu_kembali,
+                p.keterangan,
+                'rejected' as history_status,
+                p.created_at,
+                CASE
+                    WHEN p.id_ruang IS NOT NULL THEN 'ruang'
+                    WHEN p.id_alat IS NOT NULL AND p.id_alat > 0 THEN 'alat'
+                    ELSE 'unknown'
+                END as type,
+                COALESCE(alat.nama_alat, ruang.nama_ruang) as item_name,
+                p.id_alat,
+                p.id_ruang
+            FROM peminjaman p
+            LEFT JOIN alat_lab alat ON p.id_alat = alat.id_alat_lab
+            LEFT JOIN ruang_lab ruang ON p.id_ruang = ruang.id_ruang_lab
+            WHERE (p.status = 'ditolak' OR p.keterangan LIKE '%Rejected:%')
+        ";
+        if (!empty($rejected_where)) {
+            $rejected_query .= " AND " . implode(" AND ", $rejected_where);
+        }
+        $history_query_parts[] = $rejected_query;
+    }
+}
+
+// Returned part
+if ($history_filter_status === 'all' || $history_filter_status === 'returned') {
+    $returned_query = "
+        SELECT
+            p.id_peminjaman,
+            p.nama_peminjam,
+            p.tanggal_pinjam,
+            p.tanggal_kembali,
+            p.waktu_pinjam,
+            p.waktu_kembali,
+            p.keterangan,
+            'returned' as history_status,
+            p.created_at,
+            CASE
+                WHEN p.id_ruang IS NOT NULL THEN 'ruang'
+                WHEN p.id_alat IS NOT NULL AND p.id_alat > 0 THEN 'alat'
+                ELSE 'unknown'
+            END as type,
+            COALESCE(alat2.nama_alat, ruang2.nama_ruang) as item_name,
+            p.id_alat,
+            p.id_ruang
+        FROM peminjaman p
+        LEFT JOIN alat_lab alat2 ON p.id_alat = alat2.id_alat_lab
+        LEFT JOIN ruang_lab ruang2 ON p.id_ruang = ruang2.id_ruang_lab
+        WHERE p.status = 'dikembalikan'
+    ";
+    if (!empty($returned_where)) {
+        $returned_query .= " AND " . implode(" AND ", $returned_where);
+    }
+    $history_query_parts[] = $returned_query;
+}
+
+// Combine with UNION ALL
+if (empty($history_query_parts)) {
+    // No history to show
+    $history_query = "SELECT NULL as id_peminjaman, NULL as nama_peminjam, NULL as tanggal_pinjam, NULL as tanggal_kembali, NULL as waktu_pinjam, NULL as waktu_kembali, NULL as keterangan, NULL as history_status, NULL as created_at, NULL as type, NULL as item_name, NULL as id_alat, NULL as id_ruang WHERE 1=0";
+} elseif (count($history_query_parts) > 1) {
+    $history_query = "SELECT * FROM ((" . implode(") UNION ALL (", $history_query_parts) . ")) AS history_combined ORDER BY created_at DESC";
+} else {
+    $history_query = $history_query_parts[0] . " ORDER BY created_at DESC";
+}
+
+// Pagination for history
+$history_items_per_page = 10;
+$history_current_page = isset($_GET['history_page']) ? max(1, intval($_GET['history_page'])) : 1;
+$history_offset = ($history_current_page - 1) * $history_items_per_page;
+
+// Get total count for history - count separately and sum
+$history_total_items = 0;
+
+// Rejected count
+if ($history_filter_status === 'all' || $history_filter_status === 'rejected') {
+    if ($hasRequestTable) {
+        $rejected_count_query = "
+            SELECT COUNT(*)
+            FROM request_peminjaman r
+            LEFT JOIN alat_lab alat ON r.id_alat = alat.id_alat_lab
+            LEFT JOIN ruang_lab ruang ON r.id_ruang = ruang.id_ruang_lab
+            WHERE r.status = 'rejected'
+        ";
+        if (!empty($rejected_where)) {
+            $rejected_count_query .= " AND " . implode(" AND ", $rejected_where);
+        }
+        $rejected_count_stmt = $conn->prepare($rejected_count_query);
+        $rejected_count_params = [];
+        if (!empty($history_filter_search)) {
+            $rejected_count_params['history_filter_search'] = '%' . $history_filter_search . '%';
+        }
+        if (!empty($rejected_count_params)) {
+            $rejected_count_stmt->execute($rejected_count_params);
+        } else {
+            $rejected_count_stmt->execute();
+        }
+        $history_total_items += (int) $rejected_count_stmt->fetchColumn();
+    } else {
+        $rejected_count_query = "
+            SELECT COUNT(*)
+            FROM peminjaman p
+            LEFT JOIN alat_lab alat ON p.id_alat = alat.id_alat_lab
+            LEFT JOIN ruang_lab ruang ON p.id_ruang = ruang.id_ruang_lab
+            WHERE (p.status = 'ditolak' OR p.keterangan LIKE '%Rejected:%')
+        ";
+        if (!empty($rejected_where)) {
+            $rejected_count_query .= " AND " . implode(" AND ", $rejected_where);
+        }
+        $rejected_count_stmt = $conn->prepare($rejected_count_query);
+        $rejected_count_params = [];
+        if (!empty($history_filter_search)) {
+            $rejected_count_params['history_filter_search'] = '%' . $history_filter_search . '%';
+        }
+        if (!empty($rejected_count_params)) {
+            $rejected_count_stmt->execute($rejected_count_params);
+        } else {
+            $rejected_count_stmt->execute();
+        }
+        $history_total_items += (int) $rejected_count_stmt->fetchColumn();
+    }
+}
+
+// Returned count
+if ($history_filter_status === 'all' || $history_filter_status === 'returned') {
+    $returned_count_query = "
+        SELECT COUNT(*)
+        FROM peminjaman p
+        LEFT JOIN alat_lab alat2 ON p.id_alat = alat2.id_alat_lab
+        LEFT JOIN ruang_lab ruang2 ON p.id_ruang = ruang2.id_ruang_lab
+        WHERE p.status = 'dikembalikan'
+    ";
+    if (!empty($returned_where)) {
+        $returned_count_query .= " AND " . implode(" AND ", $returned_where);
+    }
+    $returned_count_stmt = $conn->prepare($returned_count_query);
+    $returned_count_params = [];
+    if (!empty($history_filter_search)) {
+        $returned_count_params['history_filter_search'] = '%' . $history_filter_search . '%';
+    }
+    if (!empty($returned_count_params)) {
+        $returned_count_stmt->execute($returned_count_params);
+    } else {
+        $returned_count_stmt->execute();
+    }
+    $history_total_items += (int) $returned_count_stmt->fetchColumn();
+}
+$history_total_pages = (int) ceil($history_total_items / max(1, $history_items_per_page));
+
+// Add LIMIT and OFFSET to history query
+$history_query .= " LIMIT :history_limit OFFSET :history_offset";
+
+$history_stmt = $conn->prepare($history_query);
+$history_params = [];
+if (!empty($history_filter_search)) {
+    $history_params['history_filter_search'] = '%' . $history_filter_search . '%';
+}
+$history_params['history_limit'] = $history_items_per_page;
+$history_params['history_offset'] = $history_offset;
+
+foreach ($history_params as $key => $value) {
+    if ($key === 'history_limit' || $key === 'history_offset') {
+        $history_stmt->bindValue(':' . $key, $value, PDO::PARAM_INT);
+    } else {
+        $history_stmt->bindValue(':' . $key, $value);
+    }
+}
+$history_stmt->execute();
+$history_list = $history_stmt->fetchAll();
+
 // Get all alat and ruang for filter dropdowns
 $alat_list = $conn->query("SELECT id_alat_lab, nama_alat FROM alat_lab ORDER BY nama_alat")->fetchAll();
 $ruang_list = $conn->query("SELECT id_ruang_lab, nama_ruang FROM ruang_lab ORDER BY nama_ruang")->fetchAll();
@@ -349,7 +605,7 @@ $ruang_list = $conn->query("SELECT id_ruang_lab, nama_ruang FROM ruang_lab ORDER
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tool Loan Management - CMS InLET</title>
+    <title>Manage Loan - CMS InLET</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <link rel="stylesheet" href="admin.css">
@@ -651,6 +907,56 @@ $ruang_list = $conn->query("SELECT id_ruang_lab, nama_ruang FROM ruang_lab ORDER
             color: #92400e;
         }
 
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .pagination a,
+        .pagination span {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--dark);
+            transition: all 0.3s;
+            display: inline-block;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .pagination a:hover {
+            background: var(--light);
+            border-color: var(--primary);
+        }
+
+        .pagination .active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .pagination .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            background: #f3f4f6;
+        }
+
+        .pagination-info {
+            text-align: center;
+            margin-top: 1rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+            padding: 0.5rem;
+        }
+
         .modal-overlay {
             display: none;
             position: fixed;
@@ -733,15 +1039,15 @@ $ruang_list = $conn->query("SELECT id_ruang_lab, nama_ruang FROM ruang_lab ORDER
                                 <label>Type</label>
                                 <select name="filter_type" class="form-group" style="width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 10px;">
                                     <option value="">All Types</option>
-                                    <option value="alat" <?php echo $filter_type === 'alat' ? 'selected' : ''; ?>>Alat</option>
-                                    <option value="ruang" <?php echo $filter_type === 'ruang' ? 'selected' : ''; ?>>Ruang</option>
+                                    <option value="alat" <?php echo $filter_type === 'alat' ? 'selected' : ''; ?>>Tool</option>
+                                    <option value="ruang" <?php echo $filter_type === 'ruang' ? 'selected' : ''; ?>>Room</option>
                                 </select>
                             </div>
                             <div class="filter-group">
-                                <label>Cek Nama Barang</label>
+                                <label>Check Item Name</label>
                                 <input type="text" name="filter_search" class="form-group" 
                                     style="width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 10px;"
-                                    placeholder="Cari nama barang/alat/ruang..." 
+                                    placeholder="Search item/tool/room name..." 
                                     value="<?php echo htmlspecialchars($filter_search); ?>">
                             </div>
                             <div class="filter-group">
@@ -792,8 +1098,8 @@ $ruang_list = $conn->query("SELECT id_ruang_lab, nama_ruang FROM ruang_lab ORDER
                                             <td><?php echo date('d M Y H:i', strtotime($request['created_at'])); ?></td>
                                             <td>
                                                 <button type="button" class="btn-return" onclick="showApproveModal(<?php echo $request['id_request']; ?>)">
-                                                    <i class="ri-check-line"></i> Approve
-                                                </button>
+                                                        <i class="ri-check-line"></i> Approve
+                                                    </button>
                                                 <button type="button" class="btn-delete" onclick="showRejectModal(<?php echo $request['id_request']; ?>)">
                                                     <i class="ri-close-line"></i> Reject
                                                 </button>
@@ -820,15 +1126,15 @@ $ruang_list = $conn->query("SELECT id_ruang_lab, nama_ruang FROM ruang_lab ORDER
                                 <label>Type</label>
                                 <select name="return_filter_type" class="form-group" style="width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 10px;">
                                     <option value="">All Types</option>
-                                    <option value="alat" <?php echo $return_filter_type === 'alat' ? 'selected' : ''; ?>>Alat</option>
-                                    <option value="ruang" <?php echo $return_filter_type === 'ruang' ? 'selected' : ''; ?>>Ruang</option>
+                                    <option value="alat" <?php echo $return_filter_type === 'alat' ? 'selected' : ''; ?>>Tool</option>
+                                    <option value="ruang" <?php echo $return_filter_type === 'ruang' ? 'selected' : ''; ?>>Room</option>
                                 </select>
                             </div>
                             <div class="filter-group">
-                                <label>Cek Nama Barang</label>
+                                <label>Check Item Name</label>
                                 <input type="text" name="return_filter_search" class="form-group" 
                                     style="width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 10px;"
-                                    placeholder="Cari nama barang/alat/ruang..." 
+                                    placeholder="Search item/tool/room name..." 
                                     value="<?php echo htmlspecialchars($return_filter_search); ?>">
                             </div>
                             <div class="filter-group">
@@ -888,6 +1194,169 @@ $ruang_list = $conn->query("SELECT id_ruang_lab, nama_ruang FROM ruang_lab ORDER
                     <?php endif; ?>
                 </div>
 
+                <!-- History -->
+                <div class="data-section">
+                    <h2>History (<?php echo $history_total_items; ?>)</h2>
+
+                    <!-- History Filters -->
+                    <div class="filters" style="margin-bottom: 1.5rem; padding: 1.5rem; background: var(--light); border-radius: 10px;">
+                        <h3 style="margin-top: 0; color: var(--primary); margin-bottom: 1rem; font-size: 1rem;">History Filters</h3>
+                        <form method="GET" class="filter-row">
+                            <input type="hidden" name="filter_type" value="<?php echo htmlspecialchars($filter_type); ?>">
+                            <input type="hidden" name="filter_search" value="<?php echo htmlspecialchars($filter_search); ?>">
+                            <input type="hidden" name="return_filter_type" value="<?php echo htmlspecialchars($return_filter_type); ?>">
+                            <input type="hidden" name="return_filter_search" value="<?php echo htmlspecialchars($return_filter_search); ?>">
+                            <div class="filter-group">
+                                <label>Status</label>
+                                <select name="history_filter_status" class="form-group" style="width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 10px;">
+                                    <option value="all" <?php echo $history_filter_status === 'all' ? 'selected' : ''; ?>>All</option>
+                                    <option value="rejected" <?php echo $history_filter_status === 'rejected' ? 'selected' : ''; ?>>Rejected</option>
+                                    <option value="returned" <?php echo $history_filter_status === 'returned' ? 'selected' : ''; ?>>Returned</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Type</label>
+                                <select name="history_filter_type" class="form-group" style="width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 10px;">
+                                    <option value="">All Types</option>
+                                    <option value="alat" <?php echo $history_filter_type === 'alat' ? 'selected' : ''; ?>>Tool</option>
+                                    <option value="ruang" <?php echo $history_filter_type === 'ruang' ? 'selected' : ''; ?>>Room</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Check Item Name</label>
+                                <input type="text" name="history_filter_search" class="form-group" 
+                                    style="width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0; border-radius: 10px;"
+                                    placeholder="Search item/tool/room name..." 
+                                    value="<?php echo htmlspecialchars($history_filter_search); ?>">
+                            </div>
+                            <div class="filter-group">
+                                <button type="submit" class="filter-btn">Apply Filter</button>
+                                <a href="peminjaman.php" class="clear-filter">Clear</a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <?php if (empty($history_list)): ?>
+                        <p class="muted-gray">No history found.</p>
+                    <?php else: ?>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Status</th>
+                                        <th>Type</th>
+                                        <th>Item</th>
+                                        <th>Borrower</th>
+                                        <th>Borrow Date</th>
+                                        <th>Return Date</th>
+                                        <th>Time</th>
+                                        <th>Notes/Reason</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($history_list as $history): ?>
+                                        <tr>
+                                            <td><?php echo $history['id_peminjaman']; ?></td>
+                                            <td>
+                                                <?php if ($history['history_status'] === 'rejected'): ?>
+                                                    <span class="type-badge" style="background: #ef4444; color: white;">Rejected</span>
+                                                <?php elseif ($history['history_status'] === 'returned'): ?>
+                                                    <span class="type-badge" style="background: #10b981; color: white;">Returned</span>
+                                                <?php else: ?>
+                                                    <span class="type-badge"><?php echo ucfirst($history['history_status']); ?></span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <span class="type-badge type-<?php echo $history['type']; ?>">
+                                                    <?php echo ucfirst($history['type']); ?>
+                                                </span>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($history['item_name'] ?? '-'); ?></td>
+                                            <td><?php echo htmlspecialchars($history['nama_peminjam']); ?></td>
+                                            <td><?php echo date('d M Y', strtotime($history['tanggal_pinjam'])); ?></td>
+                                            <td><?php echo $history['tanggal_kembali'] ? date('d M Y', strtotime($history['tanggal_kembali'])) : '-'; ?></td>
+                                            <td>
+                                                <?php if ($history['waktu_pinjam'] && $history['waktu_kembali']): ?>
+                                                    <?php echo substr($history['waktu_pinjam'], 0, 5); ?> - <?php echo substr($history['waktu_kembali'], 0, 5); ?>
+                                                <?php else: ?>
+                                                    <span class="muted-gray">-</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php 
+                                                $keterangan = $history['keterangan'] ?? '';
+                                                if ($history['history_status'] === 'rejected') {
+                                                    // Extract rejection reason from keterangan
+                                                    if (preg_match('/Rejected:\s*(.+?)(?:\n|$)/i', $keterangan, $matches)) {
+                                                        echo htmlspecialchars(trim($matches[1]));
+                                                    } elseif (strpos($keterangan, 'Rejected:') !== false) {
+                                                        $reason = substr($keterangan, strpos($keterangan, 'Rejected:') + 9);
+                                                        echo htmlspecialchars(trim($reason));
+                                                    } else {
+                                                        echo htmlspecialchars($keterangan ?: '-');
+                                                    }
+                                                } else {
+                                                    echo htmlspecialchars($keterangan ?: '-');
+                                                }
+                                                ?>
+                                            </td>
+                                            <td><?php echo date('d M Y H:i', strtotime($history['created_at'])); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination for History -->
+                        <?php if ($history_total_pages > 1): ?>
+                            <div class="pagination">
+                                <?php if ($history_current_page > 1): ?>
+                                    <a href="?history_page=<?php echo $history_current_page - 1; ?>&history_filter_status=<?php echo urlencode($history_filter_status); ?>&history_filter_type=<?php echo urlencode($history_filter_type); ?>&history_filter_search=<?php echo urlencode($history_filter_search); ?>&filter_type=<?php echo urlencode($filter_type); ?>&filter_search=<?php echo urlencode($filter_search); ?>&return_filter_type=<?php echo urlencode($return_filter_type); ?>&return_filter_search=<?php echo urlencode($return_filter_search); ?>">&laquo; Previous</a>
+                                <?php else: ?>
+                                    <span class="disabled">&laquo; Previous</span>
+                                <?php endif; ?>
+                                
+                                <?php
+                                $history_start_page = max(1, $history_current_page - 2);
+                                $history_end_page = min($history_total_pages, $history_current_page + 2);
+                                
+                                if ($history_start_page > 1): ?>
+                                    <a href="?history_page=1&history_filter_status=<?php echo urlencode($history_filter_status); ?>&history_filter_type=<?php echo urlencode($history_filter_type); ?>&history_filter_search=<?php echo urlencode($history_filter_search); ?>&filter_type=<?php echo urlencode($filter_type); ?>&filter_search=<?php echo urlencode($filter_search); ?>&return_filter_type=<?php echo urlencode($return_filter_type); ?>&return_filter_search=<?php echo urlencode($return_filter_search); ?>">1</a>
+                                    <?php if ($history_start_page > 2): ?>
+                                        <span>...</span>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                                
+                                <?php for ($i = $history_start_page; $i <= $history_end_page; $i++): ?>
+                                    <?php if ($i == $history_current_page): ?>
+                                        <span class="active"><?php echo $i; ?></span>
+                                    <?php else: ?>
+                                        <a href="?history_page=<?php echo $i; ?>&history_filter_status=<?php echo urlencode($history_filter_status); ?>&history_filter_type=<?php echo urlencode($history_filter_type); ?>&history_filter_search=<?php echo urlencode($history_filter_search); ?>&filter_type=<?php echo urlencode($filter_type); ?>&filter_search=<?php echo urlencode($filter_search); ?>&return_filter_type=<?php echo urlencode($return_filter_type); ?>&return_filter_search=<?php echo urlencode($return_filter_search); ?>"><?php echo $i; ?></a>
+                                    <?php endif; ?>
+                                <?php endfor; ?>
+                                
+                                <?php if ($history_end_page < $history_total_pages): ?>
+                                    <?php if ($history_end_page < $history_total_pages - 1): ?>
+                                        <span>...</span>
+                                    <?php endif; ?>
+                                    <a href="?history_page=<?php echo $history_total_pages; ?>&history_filter_status=<?php echo urlencode($history_filter_status); ?>&history_filter_type=<?php echo urlencode($history_filter_type); ?>&history_filter_search=<?php echo urlencode($history_filter_search); ?>&filter_type=<?php echo urlencode($filter_type); ?>&filter_search=<?php echo urlencode($filter_search); ?>&return_filter_type=<?php echo urlencode($return_filter_type); ?>&return_filter_search=<?php echo urlencode($return_filter_search); ?>"><?php echo $history_total_pages; ?></a>
+                                <?php endif; ?>
+                                
+                                <?php if ($history_current_page < $history_total_pages): ?>
+                                    <a href="?history_page=<?php echo $history_current_page + 1; ?>&history_filter_status=<?php echo urlencode($history_filter_status); ?>&history_filter_type=<?php echo urlencode($history_filter_type); ?>&history_filter_search=<?php echo urlencode($history_filter_search); ?>&filter_type=<?php echo urlencode($filter_type); ?>&filter_search=<?php echo urlencode($filter_search); ?>&return_filter_type=<?php echo urlencode($return_filter_type); ?>&return_filter_search=<?php echo urlencode($return_filter_search); ?>">Next &raquo;</a>
+                                <?php else: ?>
+                                    <span class="disabled">Next &raquo;</span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="pagination-info">
+                                Showing <?php echo ($history_offset + 1); ?> - <?php echo min($history_offset + $history_items_per_page, $history_total_items); ?> of <?php echo $history_total_items; ?> history records
+                            </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </div>
+
                 <!-- Approve Modal -->
                 <div id="approveModal" class="modal-overlay">
                     <div class="modal-content">
@@ -934,10 +1403,10 @@ $ruang_list = $conn->query("SELECT id_ruang_lab, nama_ruang FROM ruang_lab ORDER
                             <div class="form-group">
                                 <label for="kondisi_barang">Item Condition *</label>
                                 <select id="kondisi_barang" name="kondisi_barang" required>
-                                    <option value="baik">Baik</option>
-                                    <option value="rusak_ringan">Rusak Ringan</option>
-                                    <option value="rusak_berat">Rusak Berat</option>
-                                    <option value="hilang">Hilang</option>
+                                    <option value="baik">Good</option>
+                                    <option value="rusak_ringan">Minor Damage</option>
+                                    <option value="rusak_berat">Major Damage</option>
+                                    <option value="hilang">Lost</option>
                                 </select>
                             </div>
                             <div class="form-group">

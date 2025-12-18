@@ -130,27 +130,66 @@ $total_pages_artikel = ceil($total_items_artikel / $items_per_page);
 $stmt = $conn->query("SELECT DISTINCT tahun FROM artikel WHERE tahun IS NOT NULL ORDER BY tahun DESC");
 $years_list = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-// Progress pagination
+// Progress pagination - using penelitian (research) table
 $current_page_progress = isset($_GET['page_progress']) ? max(1, intval($_GET['page_progress'])) : 1;
 $offset_progress = ($current_page_progress - 1) * $items_per_page;
 
-// Count progress items
-$stmt = $conn->query("SELECT COUNT(*) FROM penelitian");
-$total_items_progress = $stmt->fetchColumn();
+// Count progress items from penelitian
+try {
+    $stmt = $conn->query("SELECT COUNT(*) FROM penelitian");
+    $total_items_progress = $stmt->fetchColumn();
+} catch (PDOException $e) {
+    $total_items_progress = 0;
+}
 $total_pages_progress = ceil($total_items_progress / $items_per_page);
 
-// Fetch progress with pagination
-$stmt = $conn->prepare("SELECT p.*, a.judul as artikel_judul, m.nama as mahasiswa_nama, mem.nama as member_nama
+// Fetch progress with pagination from penelitian
+try {
+    $stmt = $conn->prepare("SELECT p.*
                       FROM penelitian p
-                      LEFT JOIN artikel a ON p.id_artikel = a.id_artikel
-                      LEFT JOIN mahasiswa m ON p.id_mhs = m.id_mahasiswa
-                      LEFT JOIN member mem ON p.id_member = mem.id_member
-                      ORDER BY p.created_at DESC
+                      ORDER BY p.created_at DESC, p.tgl_mulai DESC
                       LIMIT :limit OFFSET :offset");
-$stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset_progress, PDO::PARAM_INT);
-$stmt->execute();
-$progress_list = $stmt->fetchAll();
+    $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset_progress, PDO::PARAM_INT);
+    $stmt->execute();
+    $progress_list = $stmt->fetchAll();
+    
+    // Check if id_penelitian column exists in artikel table
+    try {
+        $check_col = $conn->query("SELECT column_name FROM information_schema.columns WHERE table_name = 'artikel' AND column_name = 'id_penelitian'");
+        $has_id_penelitian = $check_col->rowCount() > 0;
+    } catch (PDOException $e) {
+        $has_id_penelitian = false;
+    }
+    
+    // Get all articles grouped by research for display in published articles table
+    if ($has_id_penelitian) {
+        $stmt_articles = $conn->query("SELECT a.*, p.id_penelitian, p.judul as penelitian_judul 
+                                       FROM artikel a 
+                                       LEFT JOIN penelitian p ON a.id_penelitian = p.id_penelitian 
+                                       ORDER BY p.id_penelitian, a.tahun DESC, a.judul");
+    } else {
+        // Fallback if column doesn't exist yet
+        $stmt_articles = $conn->query("SELECT a.*, NULL as id_penelitian, NULL as penelitian_judul 
+                                       FROM artikel a 
+                                       ORDER BY a.tahun DESC, a.judul");
+    }
+    $all_articles = $stmt_articles->fetchAll();
+    
+    // Group articles by research
+    $articles_by_research = [];
+    foreach ($all_articles as $article) {
+        $research_id = $article['id_penelitian'] ?? 'unassigned';
+        if (!isset($articles_by_research[$research_id])) {
+            $articles_by_research[$research_id] = [];
+        }
+        $articles_by_research[$research_id][] = $article;
+    }
+} catch (PDOException $e) {
+    $progress_list = [];
+    $all_articles = [];
+    $articles_by_research = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -163,6 +202,7 @@ $progress_list = $stmt->fetchAll();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style-research.css">
 </head>
 
@@ -181,152 +221,6 @@ $progress_list = $stmt->fetchAll();
             </div>
         </section>
 
-        <section class="research" id="focus-areas">
-            <div class="research-container">
-                <div class="section-title">
-                    <h2>Core Research Focus Areas</h2>
-                    <p>A deep dive into the six pillars of our innovation.</p>
-                </div>
-
-                <div class="row justify-content-center mb-4">
-                    <div class="col-md-6">
-                        <form method="GET" action="" class="d-flex gap-2">
-                            <select name="year" class="form-select">
-                                <option value="">Search by year...</option>
-                                <?php foreach ($years_list as $year): ?>
-                                    <option value="<?= $year ?>" <?= $search_year == $year ? 'selected' : '' ?>>
-                                        <?= $year ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <button type="submit" class="btn btn-primary">Search</button>
-                            <?php if (!empty($search_year)): ?>
-                                <a href="research.php" class="btn btn-secondary">Reset</a>
-                            <?php endif; ?>
-                        </form>
-                        <?php if (!empty($search_year)): ?>
-                            <p class="mt-2 text-muted">
-                                Showing <?php echo $total_items_artikel; ?> articles for year
-                                <?php echo htmlspecialchars($search_year); ?>
-                            </p>
-                        <?php endif; ?>
-                    </div>
-                </div>
-
-                <?php if (empty($artikels)): ?>
-                    <div class="empty-data-alert" role="alert">
-                        <i class="fas fa-book fa-3x mb-3 text-muted"></i>
-                        <p class="mb-1">No research articles published yet.</p>
-                        <p class="small text-muted">Please log in as an admin to add articles via the CMS.</p>
-                    </div>
-                <?php else: ?>
-                    <div class="row g-4 justify-content-center">
-                        <?php foreach ($artikels as $artikel): ?>
-                            <?php
-                            // Extract URL from konten
-                            $url = extractUrlFromContent($artikel['konten'] ?? '');
-                            ?>
-                            <div class="col-xl-4 col-md-6">
-                                <div class="card-surface research-card h-100">
-                                    <div>
-                                        <?php if ($url): ?>
-                                            <h4>
-                                                <a href="<?php echo htmlspecialchars($url); ?>" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;">
-                                                    <?php echo htmlspecialchars($artikel['judul']); ?>
-                                                </a>
-                                            </h4>
-                                        <?php else: ?>
-                                            <h4><?php echo htmlspecialchars($artikel['judul']); ?></h4>
-                                        <?php endif; ?>
-                                        <?php if ($artikel['tahun']): ?>
-                                            <div class="research-meta">Year: <?php echo $artikel['tahun']; ?></div>
-                                        <?php endif; ?>
-                                    </div>
-                                    <!-- Konten tidak ditampilkan, hanya digunakan untuk extract URL -->
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-
-                <?php if ($total_pages_artikel > 1): ?>
-                    <nav aria-label="Articles pagination" class="mt-5">
-                        <ul class="pagination justify-content-center pagination-gap">
-                            <?php
-                            $page_url = "?";
-                            if (!empty($search_year)) {
-                                $page_url .= "year=" . urlencode($search_year) . "&";
-                            }
-                            ?>
-
-                            <?php if ($current_page_artikel > 1): ?>
-                                <li class="page-item">
-                                    <a class="page-link"
-                                        href="<?= $page_url ?>page_artikel=<?php echo $current_page_artikel - 1; ?>#focus-areas"
-                                        aria-label="Previous">
-                                        <span aria-hidden="true">&laquo; Previous</span>
-                                    </a>
-                                </li>
-                            <?php else: ?>
-                                <li class="page-item disabled">
-                                    <span class="page-link" aria-hidden="true">&laquo; Previous</span>
-                                </li>
-                            <?php endif; ?>
-
-                            <?php
-                            $start_page = max(1, $current_page_artikel - 2);
-                            $end_page = min($total_pages_artikel, $current_page_artikel + 2);
-
-                            if ($start_page > 1): ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="<?= $page_url ?>page_artikel=1#focus-areas">1</a>
-                                </li>
-                                <?php if ($start_page > 2): ?>
-                                    <li class="page-item disabled">
-                                        <span class="page-link">...</span>
-                                    </li>
-                                <?php endif; ?>
-                            <?php endif; ?>
-
-                            <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
-                                <li class="page-item <?php echo ($i == $current_page_artikel) ? 'active' : ''; ?>">
-                                    <a class="page-link"
-                                        href="<?= $page_url ?>page_artikel=<?php echo $i; ?>#focus-areas"><?php echo $i; ?></a>
-                                </li>
-                            <?php endfor; ?>
-
-                            <?php if ($end_page < $total_pages_artikel): ?>
-                                <?php if ($end_page < $total_pages_artikel - 1): ?>
-                                    <li class="page-item disabled">
-                                        <span class="page-link">...</span>
-                                    </li>
-                                <?php endif; ?>
-                                <li class="page-item">
-                                    <a class="page-link"
-                                        href="<?= $page_url ?>page_artikel=<?php echo $total_pages_artikel; ?>#focus-areas"><?php echo $total_pages_artikel; ?></a>
-                                </li>
-                            <?php endif; ?>
-
-                            <?php if ($current_page_artikel < $total_pages_artikel): ?>
-                                <li class="page-item">
-                                    <a class="page-link"
-                                        href="<?= $page_url ?>page_artikel=<?php echo $current_page_artikel + 1; ?>#focus-areas"
-                                        aria-label="Next">
-                                        <span aria-hidden="true">Next &raquo;</span>
-                                    </a>
-                                </li>
-                            <?php else: ?>
-                                <li class="page-item disabled">
-                                    <span class="page-link" aria-hidden="true">Next &raquo;</span>
-                                </li>
-                            <?php endif; ?>
-                        </ul>
-
-                    </nav>
-                <?php endif; ?>
-            </div>
-        </section>
-
         <?php if (!empty($progress_list)): ?>
             <section id="progress" class="research progress-white">
                 <div class="research-container">
@@ -334,22 +228,43 @@ $progress_list = $stmt->fetchAll();
                         <h2>Research Progress</h2>
                         <p>Latest updates on our research projects.</p>
                     </div>
-                    <div class="row g-4 justify-content-center">
+                    <div class="research-progress-list">
                         <?php foreach ($progress_list as $progress): ?>
-                            <div class="col-xl-4 col-md-6">
-                                <div class="card-surface research-card h-100">
-                                    <div>
-                                        <h4><?php echo htmlspecialchars($progress['judul']); ?></h4>
-                                        <?php if ($progress['tahun']): ?>
-                                            <div class="research-meta">Year: <?php echo $progress['tahun']; ?></div>
-                                        <?php endif; ?>
+                            <div class="research-progress-card">
+                                <div class="research-progress-header">
+                                    <div class="research-progress-title-section">
+                                        <h3 class="research-progress-title"><?php echo htmlspecialchars($progress['judul'] ?? 'Research Project'); ?></h3>
+                                        <p class="research-progress-subtitle"><?php echo htmlspecialchars(strtoupper($progress['judul'] ?? 'RESEARCH PROJECT')); ?></p>
                                     </div>
-                                    <?php if ($progress['deskripsi']): ?>
-                                        <p><?php echo htmlspecialchars($progress['deskripsi']); ?></p>
-                                    <?php endif; ?>
-                                    <?php $embedUrl = getYoutubeEmbedUrl($progress['video_url'] ?? ''); ?>
+                                    <div class="research-progress-period">
+                                        <?php 
+                                        $tgl_mulai = $progress['tgl_mulai'] ?? null;
+                                        $tgl_selesai = $progress['tgl_selesai'] ?? null;
+                                        
+                                        if ($tgl_mulai) {
+                                            $date_mulai = date('F Y', strtotime($tgl_mulai));
+                                            if ($tgl_selesai) {
+                                                $date_selesai = date('F Y', strtotime($tgl_selesai));
+                                                $period_text = $date_mulai . ' - ' . $date_selesai;
+                                            } else {
+                                                $period_text = $date_mulai . ' - Present';
+                                            }
+                                        } else {
+                                            $period_text = 'January 2021 - Present';
+                                        }
+                                        ?>
+                                        <span class="period-text"><?php echo htmlspecialchars($period_text); ?></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="research-progress-description">
+                                    <p><?php echo htmlspecialchars($progress['deskripsi'] ?? 'Research description not available.'); ?></p>
+                                </div>
+                                
+                                <?php if (!empty($progress['video_url'])): ?>
+                                    <?php $embedUrl = getYoutubeEmbedUrl($progress['video_url']); ?>
                                     <?php if ($embedUrl): ?>
-                                        <div class="research-video">
+                                        <div class="research-progress-video">
                                             <div class="video-wrapper">
                                                 <iframe src="<?php echo htmlspecialchars($embedUrl); ?>"
                                                     title="YouTube video player" frameborder="0"
@@ -358,23 +273,58 @@ $progress_list = $stmt->fetchAll();
                                             </div>
                                         </div>
                                     <?php endif; ?>
-                                    <?php if ($progress['artikel_judul'] || $progress['mahasiswa_nama'] || $progress['member_nama']): ?>
-                                        <div class="mt-2 pt-3 border-top small text-muted">
-                                            <?php if ($progress['artikel_judul']): ?>
-                                                <p><strong>Article:</strong> <?php echo htmlspecialchars($progress['artikel_judul']); ?>
-                                                </p>
-                                            <?php endif; ?>
-                                            <?php if ($progress['mahasiswa_nama']): ?>
-                                                <p><strong>Student:</strong>
-                                                    <?php echo htmlspecialchars($progress['mahasiswa_nama']); ?></p>
-                                            <?php endif; ?>
-                                            <?php if ($progress['member_nama']): ?>
-                                                <p><strong>Member:</strong> <?php echo htmlspecialchars($progress['member_nama']); ?>
-                                                </p>
-                                            <?php endif; ?>
+                                <?php endif; ?>
+                                
+                                <?php 
+                                // Get articles for this specific research
+                                $research_articles = [];
+                                if (isset($articles_by_research[$progress['id_penelitian']])) {
+                                    $research_articles = $articles_by_research[$progress['id_penelitian']];
+                                }
+                                ?>
+                                <?php if (!empty($research_articles)): ?>
+                                    <div class="published-articles-section">
+                                        <div class="published-articles-header">
+                                            <h4 class="published-articles-title">Published article :</h4>
+                                            <button class="btn-show-details" onclick="toggleArticleDetails(this, '<?php echo $progress['id_penelitian']; ?>')">
+                                                <span class="btn-text">Show Details</span>
+                                                <i class="fas fa-chevron-down btn-icon"></i>
+                                            </button>
                                         </div>
-                                    <?php endif; ?>
-                                </div>
+                                        <div class="published-articles-content" id="articles-<?php echo $progress['id_penelitian']; ?>" style="display: none;">
+                                            <table class="published-articles-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>No</th>
+                                                        <th>Title</th>
+                                                        <th>Year</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php 
+                                                    $article_no = 1;
+                                                    foreach ($research_articles as $artikel): 
+                                                        $article_url = extractUrlFromContent($artikel['konten'] ?? '');
+                                                    ?>
+                                                        <tr>
+                                                            <td><?php echo $article_no++; ?></td>
+                                                            <td>
+                                                                <?php if ($article_url): ?>
+                                                                    <a href="<?php echo htmlspecialchars($article_url); ?>" target="_blank" rel="noopener noreferrer" class="article-link">
+                                                                        <?php echo htmlspecialchars($artikel['judul']); ?>
+                                                                    </a>
+                                                                <?php else: ?>
+                                                                    <span class="article-title"><?php echo htmlspecialchars($artikel['judul']); ?></span>
+                                                                <?php endif; ?>
+                                                            </td>
+                                                            <td class="article-year"><?php echo htmlspecialchars($artikel['tahun'] ?? '-'); ?></td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -467,6 +417,77 @@ $progress_list = $stmt->fetchAll();
         <?php include 'includes/footer.php'; ?>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+        <script>
+            function toggleDetails(button) {
+                const card = button.closest('.research-progress-card');
+                const details = card.querySelector('.research-progress-details');
+                const btnText = button.querySelector('.btn-text');
+                
+                if (details.style.display === 'none') {
+                    details.style.display = 'block';
+                    btnText.textContent = 'Hide details';
+                } else {
+                    details.style.display = 'none';
+                    btnText.textContent = 'Show details';
+                }
+            }
+            
+            function toggleArticleDetails(button, researchId) {
+                const content = document.getElementById('articles-' + researchId);
+                const btnText = button.querySelector('.btn-text');
+                const btnIcon = button.querySelector('.btn-icon');
+                
+                if (!content) return;
+                
+                if (content.style.display === 'none' || content.style.display === '') {
+                    // Show details
+                    content.style.display = 'block';
+                    content.style.maxHeight = '0';
+                    content.style.opacity = '0';
+                    content.style.overflow = 'hidden';
+                    content.style.transition = 'max-height 0.3s ease, opacity 0.3s ease';
+                    
+                    // Force reflow
+                    content.offsetHeight;
+                    
+                    // Animate to full height
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    content.style.opacity = '1';
+                    
+                    btnText.textContent = 'Hide Details';
+                    btnIcon.classList.remove('fa-chevron-down');
+                    btnIcon.classList.add('fa-chevron-up');
+                    button.classList.add('active');
+                    
+                    // Remove max-height after animation to allow natural height
+                    setTimeout(() => {
+                        content.style.maxHeight = 'none';
+                        content.style.overflow = 'visible';
+                    }, 300);
+                } else {
+                    // Hide details
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    content.style.overflow = 'hidden';
+                    
+                    // Force reflow
+                    content.offsetHeight;
+                    
+                    // Animate to collapsed
+                    content.style.maxHeight = '0';
+                    content.style.opacity = '0';
+                    
+                    btnText.textContent = 'Show Details';
+                    btnIcon.classList.remove('fa-chevron-up');
+                    btnIcon.classList.add('fa-chevron-down');
+                    button.classList.remove('active');
+                    
+                    // Hide after animation
+                    setTimeout(() => {
+                        content.style.display = 'none';
+                    }, 300);
+                }
+            }
+        </script>
+    </body>
 
 </html>

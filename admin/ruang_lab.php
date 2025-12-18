@@ -114,28 +114,41 @@ $current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
 // Get total count
-$count_stmt = $conn->query("SELECT COUNT(*) FROM ruang_lab");
-$total_items = $count_stmt->fetchColumn();
-$total_pages = ceil($total_items / $items_per_page);
+try {
+    $count_stmt = $conn->query("SELECT COUNT(*) FROM ruang_lab");
+    $total_items = $count_stmt->fetchColumn();
+    $total_pages = ceil($total_items / $items_per_page);
+} catch (PDOException $e) {
+    $total_items = 0;
+    $total_pages = 0;
+}
 
 // Get ruang lab with pagination
-$stmt = $conn->prepare("SELECT r.*, 
-    (SELECT COUNT(*) FROM peminjaman WHERE id_ruang = r.id_ruang_lab AND status = 'dipinjam') as jumlah_dipinjam
-    FROM ruang_lab r 
-    ORDER BY nama_ruang
-    LIMIT :limit OFFSET :offset");
-$stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-$stmt->execute();
-$ruang_list = $stmt->fetchAll();
+try {
+    $stmt = $conn->prepare("SELECT r.*, 
+        (SELECT COUNT(*) FROM peminjaman WHERE id_ruang = r.id_ruang_lab AND status = 'dipinjam') as jumlah_dipinjam
+        FROM ruang_lab r 
+        ORDER BY nama_ruang
+        LIMIT :limit OFFSET :offset");
+    $stmt->bindValue(':limit', $items_per_page, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $ruang_list = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $ruang_list = [];
+}
 
 // Get ruang for edit
 $edit_ruang = null;
 if (isset($_GET['edit'])) {
-    $edit_id = intval($_GET['edit']);
-    $stmt = $conn->prepare("SELECT * FROM ruang_lab WHERE id_ruang_lab = :id");
-    $stmt->execute(['id' => $edit_id]);
-    $edit_ruang = $stmt->fetch();
+    try {
+        $edit_id = intval($_GET['edit']);
+        $stmt = $conn->prepare("SELECT * FROM ruang_lab WHERE id_ruang_lab = :id");
+        $stmt->execute(['id' => $edit_id]);
+        $edit_ruang = $stmt->fetch();
+    } catch (PDOException $e) {
+        $edit_ruang = null;
+    }
 }
 ?>
 <!DOCTYPE html>
