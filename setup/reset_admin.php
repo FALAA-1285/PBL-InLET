@@ -1,10 +1,5 @@
 <?php
-/**
- * Script untuk Reset dan Membuat Admin Baru
- * 
- * PERINGATAN: Hapus file ini setelah digunakan untuk keamanan!
- * File ini hanya untuk setup awal atau reset admin.
- */
+// Reset dan Membuat Admin Baru
 
 require_once '../config/database.php';
 

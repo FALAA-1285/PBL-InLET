@@ -1,9 +1,5 @@
 <?php
-/**
- * Script untuk membuat view view_alat_dipinjam
- * Jalankan script ini untuk membuat view jika belum ada
- */
-
+//  membuat view view_alat_dipinjam
 require_once __DIR__ . '/../config/database.php';
 
 $conn = getDBConnection();

@@ -1,10 +1,5 @@
 <?php
-/**
- * Test Database Connection
- * 
- * File ini untuk test koneksi database
- * Hapus file ini setelah setup selesai untuk keamanan
- */
+// Test Database Connection
 
 require_once 'config/database.php';
 

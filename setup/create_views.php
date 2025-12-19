@@ -1,8 +1,5 @@
 <?php
-/**
- * Script untuk membuat views yang diperlukan di database
- * Jalankan script ini sekali untuk membuat views jika belum ada
- */
+// untuk membuat views yang diperlukan di database
 
 require_once '../config/database.php';
 

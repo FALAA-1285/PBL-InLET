@@ -136,7 +136,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     
                     // Insert multiple records untuk setiap unit yang dipinjam
-                    // id_alat is NOT NULL, so we must provide it
                     $stmt = $conn->prepare("INSERT INTO peminjaman (id_alat, nama_peminjam, tanggal_pinjam, tanggal_kembali, status, keterangan) 
                         VALUES (:id_alat, :nama_peminjam, :tanggal_pinjam, :tanggal_kembali, 'dipinjam', :keterangan)");
                 
@@ -271,7 +270,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 $dummy_stmt->execute();
                             }
                         } catch (PDOException $dummy_e) {
-                            // If error (e.g., already exists), try to continue anyway
                             // Check if it's a duplicate key error, which means it already exists
                             if (strpos($dummy_e->getMessage(), 'duplicate key') === false && 
                                 strpos($dummy_e->getMessage(), '23505') === false) {
@@ -289,7 +287,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                         
                         // Insert peminjaman
-                        // id_alat is NOT NULL, so we use 0 as placeholder for room borrowing
                         $stmt = $conn->prepare("INSERT INTO peminjaman 
                             (id_alat, id_ruang, nama_peminjam, tanggal_pinjam, waktu_pinjam, waktu_kembali, status, keterangan) 
                             VALUES (0, :id_ruang, :nama_peminjam, :tanggal_pinjam, :waktu_pinjam, :waktu_kembali, 'dipinjam', :keterangan)");

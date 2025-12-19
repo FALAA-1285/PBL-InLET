@@ -46,8 +46,7 @@ try {
     $videos = [];
 }
 
-// ---------- GALLERY SOURCE ----------
-// Gallery table creation moved to inlet_pbl_clean.sql
+// Gallery source
 $all_gallery = [];
 try {
     $gallery_stmt = $conn->query("SELECT gambar, judul FROM gallery ORDER BY created_at DESC");
@@ -64,7 +63,7 @@ if (empty($all_gallery)) {
     }, $all_gallery);
 }
 
-// ---------- AJAX endpoint for load_more gallery ----------
+// AJAX endpoint for load_more gallery
 if (isset($_GET['action']) && $_GET['action'] === 'load_gallery') {
     $limit = 12;
     $gpage = isset($_GET['gpage']) ? max(1, (int) $_GET['gpage']) : 1;
@@ -75,10 +74,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'load_gallery') {
     exit;
 }
 
-// ---------- NEWS count + fetch ----------
-
-
-//$total_pages = ($items_per_page > 0 && $total_items > 0) ? ceil($total_items / $items_per_page) : 1;
+// news count
 
 // Gallery initial load
 $gallery_items_per_page = 12;

@@ -1,10 +1,5 @@
 <?php
-/**
- * Setup Script - Create Admin User
- * 
- * Jalankan script ini sekali untuk membuat admin user pertama
- * Setelah admin dibuat, hapus atau rename file ini untuk keamanan
- */
+// Setup Script - Create Admin User
 
 require_once '../config/database.php';
 

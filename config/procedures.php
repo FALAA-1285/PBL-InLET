@@ -1,15 +1,9 @@
 <?php
-/**
- * Database Procedures Helper Functions
- * Wrapper functions untuk memanggil stored procedures dari PostgreSQL
- */
 
 require_once __DIR__ . '/database.php';
 
-/**
- * Helper function untuk cek stok tersedia (menggantikan fn_stok_tersedia)
- * @return int Stok tersedia
- */
+
+// Helper function untuk cek stok tersedia (menggantikan fn_stok_tersedia)
 function getStokTersedia($id_alat) {
     try {
         $conn = getDBConnection();
@@ -31,10 +25,7 @@ function getStokTersedia($id_alat) {
     }
 }
 
-/**
- * Helper function untuk cek konflik ruang (menggantikan fn_cek_konflik_ruang)
- * @return bool True jika ada konflik
- */
+// untuk cek konflik ruang
 function cekKonflikRuang($id_ruang, $tanggal_pinjam, $waktu_pinjam, $waktu_kembali) {
     try {
         $conn = getDBConnection();
@@ -60,10 +51,7 @@ function cekKonflikRuang($id_ruang, $tanggal_pinjam, $waktu_pinjam, $waktu_kemba
     }
 }
 
-/**
- * Call create_request procedure
- * @return array ['success' => bool, 'id_request' => int|null, 'code' => int, 'message' => string]
- */
+//  Call create_request procedure
 function callCreateRequest($p_id_alat, $p_id_ruang, $p_nama_peminjam, $p_tanggal_pinjam, $p_waktu_pinjam = null, $p_waktu_kembali = null, $p_keterangan = null, $p_jumlah = 1) {
     try {
         $conn = getDBConnection();
@@ -127,10 +115,7 @@ function callCreateRequest($p_id_alat, $p_id_ruang, $p_nama_peminjam, $p_tanggal
     }
 }
 
-/**
- * Call proc_update_absensi procedure
- * @return array ['success' => bool, 'id_absensi' => int|null, 'code' => int, 'message' => string]
- */
+// Call proc_update_absensi procedure
 function callUpdateAbsensi($p_nim, $p_action, $p_keterangan = null) {
     try {
         $conn = getDBConnection();
@@ -171,10 +156,7 @@ function callUpdateAbsensi($p_nim, $p_action, $p_keterangan = null) {
     }
 }
 
-/**
- * Direct implementation of proc_update_absensi logic
- * (Fallback if procedure call doesn't work)
- */
+// implementasi proc_update_absensi logic
 function callProcUpdateAbsensiDirect($p_nim, $p_action, $p_keterangan = null) {
     try {
         $conn = getDBConnection();
@@ -222,8 +204,7 @@ function callProcUpdateAbsensiDirect($p_nim, $p_action, $p_keterangan = null) {
             ];
         }
         
-        // Use CURRENT_DATE from PostgreSQL for consistency with queries
-        // Get existing absensi - dynamically use the detected column, use CAST to ensure date comparison works correctly
+        // Get existing absensi
         $stmt = $conn->prepare("SELECT * FROM absensi WHERE " . $student_col . " = :nim AND CAST(tanggal AS DATE) = CAST(CURRENT_DATE AS DATE)");
         $stmt->execute(['nim' => $p_nim]);
         $v_absensi_hari_ini = $stmt->fetch();
@@ -295,9 +276,7 @@ function callProcUpdateAbsensiDirect($p_nim, $p_action, $p_keterangan = null) {
     }
 }
 
-/**
- * Call proc_return_peminjaman procedure
- */
+// Call proc_return_peminjaman procedure
 function callReturnPeminjaman($p_id_peminjaman, $p_id_admin_return, $p_kondisi_barang = 'baik', $p_catatan_return = null) {
     try {
         $conn = getDBConnection();
@@ -348,9 +327,7 @@ function callReturnPeminjaman($p_id_peminjaman, $p_id_admin_return, $p_kondisi_b
     }
 }
 
-/**
- * Direct implementation of proc_return_peminjaman
- */
+// Direct implementation of proc_return_peminjaman
 function callReturnPeminjamanDirect($p_id_peminjaman, $p_id_admin_return, $p_kondisi_barang = 'baik', $p_catatan_return = null) {
     try {
         $conn = getDBConnection();
@@ -426,9 +403,7 @@ function callReturnPeminjamanDirect($p_id_peminjaman, $p_id_admin_return, $p_kon
     }
 }
 
-/**
- * Call proc_reject_request procedure
- */
+// Call proc_reject_request procedure
 function callRejectRequest($p_id_request, $p_id_admin, $p_alasan_reject) {
     try {
         $conn = getDBConnection();
@@ -485,9 +460,7 @@ function callRejectRequest($p_id_request, $p_id_admin, $p_alasan_reject) {
     }
 }
 
-/**
- * Approve request and create peminjaman record
- */
+// Approve request and create peminjaman record
 function callApproveRequest($p_id_request, $p_id_admin) {
     try {
         $conn = getDBConnection();
