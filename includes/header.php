@@ -242,8 +242,7 @@ if (!empty($site_logo) && !preg_match('#^https?://#i', $site_logo)) {
     .btn-admin {
         color: #ffffff !important;
         background-color: #0d6efd;
-        border: 1.5px solid #0d6efd;
-        padding: 0.7rem 1.2rem;
+        padding: 0.2rem 1.2rem;
         font-weight: 500;
         font-size: 1rem;
         border-radius: 8px;
@@ -268,7 +267,8 @@ if (!empty($site_logo) && !preg_match('#^https?://#i', $site_logo)) {
     }
 
     .btn-admin:hover {
-        color: #ffffff !important;
+        color: darkblue !important;
+        background-color: grey;
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
     }
