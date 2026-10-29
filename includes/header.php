@@ -17,7 +17,9 @@ if (!empty($site_logo) && !preg_match('#^https?://#i', $site_logo)) {
 }
 ?>
 
-<link rel="stylesheet" href="<?= $root_base ?>css/inline-cleanup.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top shadow-sm">
@@ -33,54 +35,54 @@ if (!empty($site_logo) && !preg_match('#^https?://#i', $site_logo)) {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link <?= ($current_page == 'index.php') ? 'active text-primary fw-bold' : ''; ?>"
+                        <a class="nav-link <?= ($current_page === 'index.php') ? 'active' : ''; ?>"
                             href="<?= $root_base ?>index.php">
                             Home
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link <?= ($current_page == 'research.php') ? 'active text-primary fw-bold' : ''; ?>"
+                        <a class="nav-link <?= ($current_page === 'research.php') ? 'active' : ''; ?>"
                             href="<?= $root_base ?>research.php">
                             Research
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link <?= ($current_page == 'member.php') ? 'active text-primary fw-bold' : ''; ?>"
+                        <a class="nav-link <?= ($current_page === 'member.php') ? 'active' : ''; ?>"
                             href="<?= $root_base ?>member.php">
                             Members
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link <?= ($current_page == 'news.php') ? 'active text-primary fw-bold' : ''; ?>"
+                        <a class="nav-link <?= ($current_page === 'news.php') ? 'active' : ''; ?>"
                             href="<?= $root_base ?>news.php">
                             News
                         </a>
                     </li>
 
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle <?= ($current_page == 'servise.php' || $current_page == 'peminjaman.php' || $current_page == 'absen.php' || $current_page == 'buku_tamu.php') ? 'active text-primary fw-bold' : 'fw-500'; ?>"
+                        <a class="nav-link dropdown-toggle <?= (in_array($current_page, ['peminjaman.php', 'absen.php', 'buku_tamu.php', 'service.php', 'servise.php'])) ? 'active' : ''; ?>"
                             href="#" id="serviceDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Service
                         </a>
 
                         <ul class="dropdown-menu custom-dropdown shadow-sm border-0" aria-labelledby="serviceDropdown">
                             <li>
-                                <a class="dropdown-item <?= ($current_page == 'peminjaman.php') ? 'active text-primary fw-bold' : ''; ?>"
+                                <a class="dropdown-item <?= ($current_page === 'peminjaman.php') ? 'active' : ''; ?>"
                                     href="<?= $service_base ?>peminjaman.php">
                                     Tool Loan
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item <?= ($current_page == 'absen.php') ? 'active text-primary fw-bold' : ''; ?>"
+                                <a class="dropdown-item <?= ($current_page === 'absen.php') ? 'active' : ''; ?>"
                                     href="<?= $service_base ?>absen.php">
                                     Attendance
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item <?= ($current_page == 'buku_tamu.php') ? 'active text-primary fw-bold' : ''; ?>"
+                                <a class="dropdown-item <?= ($current_page === 'buku_tamu.php') ? 'active' : ''; ?>"
                                     href="<?= $service_base ?>buku_tamu.php">
                                     Guestbook
                                 </a>
@@ -89,7 +91,7 @@ if (!empty($site_logo) && !preg_match('#^https?://#i', $site_logo)) {
                     </li>
 
                     <li class="nav-item ms-lg-1">
-                        <a class="nav-link btn-admin <?= ($current_page == 'login.php') ? 'active' : ''; ?>"
+                        <a class="nav-link btn-admin <?= ($current_page === 'login.php') ? 'active' : ''; ?>"
                             href="<?= $root_base ?>login.php">
                             Admin
                         </a>
@@ -102,26 +104,12 @@ if (!empty($site_logo) && !preg_match('#^https?://#i', $site_logo)) {
 
 <style>
     html {
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    html::-webkit-scrollbar {
-        display: none;
-    }
-
-    body {
+        scrollbar-gutter: stable;
         overflow-y: scroll;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    body::-webkit-scrollbar {
-        display: none;
     }
 
     .navbar {
-        transition: all 0.3s ease-in-out;
+        transition: none;
         font-family: "Poppins", sans-serif;
         background-color: #ffffff;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
@@ -130,53 +118,39 @@ if (!empty($site_logo) && !preg_match('#^https?://#i', $site_logo)) {
     .navbar-brand {
         font-weight: 700;
         color: #1f2937 !important;
+        display: inline-flex;
+        align-items: center;
     }
 
-    .navbar-brand img {
-        height: 40px;
-        width: auto;
-        object-fit: contain;
-    }
-
+    .navbar-brand img,
     .logo-img {
         height: 40px;
         width: auto;
+        aspect-ratio: 4688 / 1250;
         object-fit: contain;
+        display: block;
     }
 
     .navbar-nav .nav-link {
         color: #1f2937;
-        font-weight: 500;
-        padding: 0.7rem 1rem;
+        font-weight: 600;
+        padding: 0.65rem 1rem;
         font-size: 1rem;
-        transition: all 0.25s ease;
+        transition: color 0.2s ease, background-color 0.2s ease;
         border-radius: 8px;
         margin: 0 0.1rem;
-    }
-
-    .navbar-nav .nav-link.fw-500 {
-        font-weight: 500;
+        white-space: nowrap;
     }
 
     .navbar-nav .nav-link:hover {
         color: #0d6efd;
-        background-color: rgba(13, 110, 253, 0.04);
-        transform: translateY(-1px);
+        background-color: rgba(13, 110, 253, 0.05);
     }
 
     .navbar-nav .nav-link.active {
         color: #0d6efd !important;
-        font-weight: 700 !important;
-        background-color: rgba(13, 110, 253, 0.08);
-    }
-
-    .fw-bold {
-        font-weight: 700 !important;
-    }
-
-    .text-primary.fw-bold {
-        color: #0d6efd !important;
-        font-weight: 700 !important;
+        font-weight: 600 !important;
+        background-color: rgba(13, 110, 253, 0.1);
     }
 
     .dropdown-menu {
@@ -202,21 +176,22 @@ if (!empty($site_logo) && !preg_match('#^https?://#i', $site_logo)) {
         padding: 0.55rem 1rem;
         background: transparent;
         font-size: 0.95rem;
+        font-weight: 500;
         border-radius: 8px;
-        transition: all 0.25s ease;
+        transition: background-color 0.2s ease, color 0.2s ease;
+        white-space: nowrap;
     }
 
     .dropdown-item:hover {
         background: rgba(13, 110, 253, 0.08);
         color: #0d6efd;
-        padding-left: 1.2rem;
     }
 
     .dropdown-item.active,
     .dropdown-item.active:hover {
         background: rgba(13, 110, 253, 0.15);
         color: #0d6efd !important;
-        font-weight: 700;
+        font-weight: 600;
     }
 
     @keyframes fadeSlideDown {
@@ -242,15 +217,16 @@ if (!empty($site_logo) && !preg_match('#^https?://#i', $site_logo)) {
     .btn-admin {
         color: #ffffff !important;
         background-color: #0d6efd;
-        padding: 0.2rem 1.2rem;
-        font-weight: 500;
+        padding: 0.65rem 1.25rem;
+        font-weight: 600;
         font-size: 1rem;
         border-radius: 8px;
-        transition: all 0.25s ease;
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
         margin-left: 0.25rem;
         position: relative;
         overflow: hidden;
         z-index: 1;
+        white-space: nowrap;
     }
 
     .btn-admin::before {
@@ -267,9 +243,8 @@ if (!empty($site_logo) && !preg_match('#^https?://#i', $site_logo)) {
     }
 
     .btn-admin:hover {
-        color: darkblue !important;
-        background-color: grey;
-        transform: translateY(-1px);
+        color: #ffffff !important;
+        background-color: #0b5ed7;
         box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
     }
 
@@ -282,7 +257,7 @@ if (!empty($site_logo) && !preg_match('#^https?://#i', $site_logo)) {
     }
 
     .btn-admin.active {
-        color: #2a0492ff !important;
+        color: #ffffff !important;
         background-color: #0b5ed7;
         border-color: #0b5ed7;
         font-weight: 600;

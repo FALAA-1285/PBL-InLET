@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once '../config/database.php';
 require_once '../config/settings.php';
 
@@ -533,93 +533,126 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($page_info['title'] ?: 'Tool Loans - InLET'); ?></title>
+    <title><?= htmlspecialchars($page_info['title'] ?: 'Tool & Room Loans - InLET'); ?></title>
 
-    <!-- Bootstrap -->
+    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/style-peminjaman.css">
+    <!-- RemixIcon -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <?php $css_version = file_exists(__DIR__ . '/../css/style-peminjaman.css') ? filemtime(__DIR__ . '/../css/style-peminjaman.css') : time(); ?>
+    <link rel="stylesheet" href="../css/style-peminjaman.css?v=<?= $css_version ?>">
 </head>
 
 <body>
     <?php include '../includes/header.php'; ?>
 
     <main class="page-main">
+        <!-- Hero Section -->
         <section class="hero d-flex align-items-center" id="home">
             <div class="container text-center text-white">
                 <h1 class="display-4 fw-bold"><?= htmlspecialchars($page_info['title'] ?: 'Lab Borrowing Dashboard'); ?></h1>
                 <?php if (!empty($page_info['subtitle'])): ?>
                     <p class="lead mt-3"><?= htmlspecialchars($page_info['subtitle']); ?></p>
                 <?php else: ?>
-                    <p class="lead mt-3">Easily manage tool and room borrowing from the lab</p>
+                    <p class="lead mt-3">Easily explore available lab equipment and schedule laboratory rooms online.</p>
                 <?php endif; ?>
             </div>
         </section>
 
         <div class="container my-5">
-            <?php if ($message): ?>
-                <div class="alert alert-<?php echo $message_type === 'success' ? 'success' : 'danger'; ?> alert-dismissible fade show"
-                    role="alert">
-                    <?php echo htmlspecialchars($message); ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <!-- Alert / Notification Message -->
+            <?php if (!empty($message)): ?>
+                <div class="message <?= $message_type === 'success' ? 'success' : 'error' ?>" role="alert">
+                    <i class="<?= $message_type === 'success' ? 'ri-checkbox-circle-fill' : 'ri-error-warning-fill' ?>"></i>
+                    <div>
+                        <strong><?= $message_type === 'success' ? 'Success:' : 'Attention:' ?></strong>
+                        <span><?= htmlspecialchars($message) ?></span>
+                    </div>
                 </div>
             <?php endif; ?>
 
-            <!-- Nav Tabs -->
+            <!-- Navigation Tabs (Pills) -->
             <?php
-            // Get active tab from URL or default to 'alat'
             $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'alat';
-            $is_alat_active = $active_tab === 'alat';
+            $is_alat_active = $active_tab !== 'ruang';
             $is_ruang_active = $active_tab === 'ruang';
             ?>
-            <ul class="nav nav-tabs mb-4" id="borrowingTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link <?php echo $is_alat_active ? 'active' : ''; ?>" id="alat-tab" data-bs-toggle="tab" data-bs-target="#alat"
-                        type="button" role="tab">
-                        Borrow Tools
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link <?php echo $is_ruang_active ? 'active' : ''; ?>" id="ruang-tab" data-bs-toggle="tab" data-bs-target="#ruang" type="button"
-                        role="tab">
-                        BorrowRoom
-                    </button>
-                </li>
-            </ul>
+            <div class="d-flex justify-content-center">
+                <ul class="nav custom-loan-tabs" id="borrowingTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link <?= $is_alat_active ? 'active' : '' ?>" id="alat-tab" data-bs-toggle="tab" data-bs-target="#alat" type="button" role="tab" aria-selected="<?= $is_alat_active ? 'true' : 'false' ?>">
+                            <i class="ri-tools-line"></i> Borrow Tools
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link <?= $is_ruang_active ? 'active' : '' ?>" id="ruang-tab" data-bs-toggle="tab" data-bs-target="#ruang" type="button" role="tab" aria-selected="<?= $is_ruang_active ? 'true' : 'false' ?>">
+                            <i class="ri-door-open-line"></i> Borrow Room
+                        </button>
+                    </li>
+                </ul>
+            </div>
 
+            <!-- Tab Content -->
             <div class="tab-content" id="borrowingTabContent">
-                <!-- Tab Alat -->
-                <div class="tab-pane fade <?php echo $is_alat_active ? 'show active' : ''; ?>" id="alat" role="tabpanel">
-                    <div class="section-title">
-                        <h2>Available Tools</h2>
+                <!-- ========================================== -->
+                <!-- Tab 1: Borrow Tools                        -->
+                <!-- ========================================== -->
+                <div class="tab-pane fade <?= $is_alat_active ? 'show active' : '' ?>" id="alat" role="tabpanel" aria-labelledby="alat-tab">
+                    
+                    <!-- Section Header -->
+                    <div class="section-header-modern">
+                        <div class="section-title-group">
+                            <h2><i class="ri-archive-line"></i> Available Lab Tools</h2>
+                            <p>Explore equipment ready for academic research, coursework, and laboratory experiments</p>
+                        </div>
+                        <span class="badge bg-primary px-3 py-2 rounded-pill font-monospace">
+                            <?= count($alat_list) ?> Available Tools
+                        </span>
                     </div>
 
+                    <!-- Available Tools Cards -->
                     <div class="row g-4 mb-5">
                         <?php if (empty($alat_list)): ?>
                             <div class="col-12">
-                                <div class="alert alert-warning">No tools available for borrowing at this time.</div>
+                                <div class="empty-state-card">
+                                    <i class="ri-tools-line"></i>
+                                    <h4>No Tools Available</h4>
+                                    <p>Currently all equipment is either borrowed or undergoing maintenance.</p>
+                                </div>
                             </div>
                         <?php else: ?>
-                            <?php foreach ($alat_list as $alat): ?>
-                                <div class="col-md-4 col-lg-3">
-                                    <div class="card h-100">
-                                        <div class="card-body">
-                                            <h5 class="card-title"><?php echo htmlspecialchars($alat['nama_alat']); ?></h5>
-                                            <?php if ($alat['deskripsi']): ?>
-                                                <p class="card-text text-muted small">
-                                                    <?php echo htmlspecialchars($alat['deskripsi']); ?>
-                                                </p>
-                                            <?php endif; ?>
-                                            <div class="mt-3">
-                                                <span class="badge bg-success">
-                                                    Available: <?php echo $alat['stok_tersedia']; ?> unit(s)
+                            <?php foreach ($alat_list as $alat): 
+                                $stok_tersedia = (int)$alat['stok_tersedia'];
+                                $stock_total = (int)$alat['stock'];
+                                $status_class = $stok_tersedia > 5 ? 'available' : ($stok_tersedia > 0 ? 'low' : 'empty');
+                            ?>
+                                <div class="col-xl-3 col-lg-4 col-md-6">
+                                    <div class="tool-card">
+                                        <div>
+                                            <div class="tool-card-header">
+                                                <div class="tool-icon-wrapper">
+                                                    <i class="ri-cpu-line"></i>
+                                                </div>
+                                                <span class="stock-pill <?= $status_class ?>">
+                                                    <i class="ri-checkbox-circle-fill"></i>
+                                                    <?= $stok_tersedia ?> <?= $stok_tersedia === 1 ? 'unit' : 'units' ?>
                                                 </span>
-                                                <?php if ($alat['stock'] > 0): ?>
-                                                    <br><small class="text-muted">
-                                                        Total Stock: <?php echo $alat['stock']; ?> unit(s)
-                                                    </small>
-                                                <?php endif; ?>
                                             </div>
+                                            <h4 class="tool-title"><?= htmlspecialchars($alat['nama_alat']) ?></h4>
+                                            <p class="tool-desc"><?= htmlspecialchars($alat['deskripsi'] ?: 'No additional description provided.') ?></p>
+                                        </div>
+                                        <div class="tool-card-footer">
+                                            <small class="text-muted">
+                                                <i class="ri-stack-line"></i> Total: <?= $stock_total ?>
+                                            </small>
+                                            <button type="button" class="btn-select-tool" onclick="selectTool(<?= $alat['id_alat_lab'] ?>)">
+                                                Select <i class="ri-arrow-down-line"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -627,1341 +660,513 @@ try {
                         <?php endif; ?>
                     </div>
 
-                    <div class="section-title mt-5">
-                        <h2>Tool Borrowing Form</h2>
-                    </div>
+                    <!-- Tool Borrowing Form Card -->
+                    <div class="card-surface" id="toolFormSection">
+                        <div class="form-header-bar">
+                            <i class="ri-draft-line"></i>
+                            <div>
+                                <h3>Tool Borrowing Form</h3>
+                                <p>Fill in the required information to borrow equipment from Lab InLET</p>
+                            </div>
+                        </div>
 
-                    <div class="card card-surface p-4 mb-5">
                         <form method="POST" id="formPinjamAlat">
                             <input type="hidden" name="action" value="pinjam_alat">
 
-                            <div class="row mb-3">
+                            <div class="row g-4 mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">Borrower Name *</label>
-                                    <input type="text" class="form-control" name="nama_peminjam" 
-                                        placeholder="Enter your name" required>
+                                    <label class="form-label" for="nama_peminjam_alat">
+                                        <i class="ri-user-3-line"></i> Borrower Name <span class="required">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" name="nama_peminjam" id="nama_peminjam_alat" 
+                                        placeholder="Enter your full name" required>
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Select Tool *</label>
-                                    <select class="form-select" name="id_alat" required>
-                                        <option value="">Select Lab Tool</option>
+                                    <label class="form-label" for="select_id_alat">
+                                        <i class="ri-tools-line"></i> Select Tool <span class="required">*</span>
+                                    </label>
+                                    <select class="form-select" name="id_alat" id="select_id_alat" required>
+                                        <option value="">-- Choose Lab Tool --</option>
                                         <?php foreach ($alat_list as $alat): ?>
-                                            <option value="<?php echo $alat['id_alat_lab']; ?>">
-                                                <?php echo htmlspecialchars($alat['nama_alat']); ?>
-                                                (Available: <?php echo $alat['stok_tersedia']; ?> unit(s))
+                                            <option value="<?= $alat['id_alat_lab']; ?>" data-stock="<?= $alat['stok_tersedia']; ?>">
+                                                <?= htmlspecialchars($alat['nama_alat']); ?> (Available: <?= $alat['stok_tersedia']; ?> unit<?= $alat['stok_tersedia'] > 1 ? 's' : '' ?>)
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-                            </div>
 
-                            <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">Borrow Date *</label>
+                                    <label class="form-label" for="tanggal_pinjam_alat">
+                                        <i class="ri-calendar-event-line"></i> Borrow Date <span class="required">*</span>
+                                    </label>
                                     <input type="date" class="form-control" name="tanggal_pinjam" id="tanggal_pinjam_alat"
-                                        value="<?php echo date('Y-m-d'); ?>" 
-                                        min="<?php echo date('Y-m-d'); ?>"
+                                        value="<?= date('Y-m-d'); ?>" 
+                                        min="<?= date('Y-m-d'); ?>"
                                         required>
-                                    <small class="text-muted d-block mt-1">Cannot select past dates</small>
+                                    <div class="form-hint"><i class="ri-information-line"></i> Must be today or a future date</div>
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Return Date *</label>
+                                    <label class="form-label" for="tanggal_kembali_alat">
+                                        <i class="ri-calendar-check-line"></i> Return Date <span class="required">*</span>
+                                    </label>
                                     <input type="date" class="form-control" name="tanggal_kembali" id="tanggal_kembali_alat"
-                                        value="<?php echo date('Y-m-d'); ?>" 
-                                        min="<?php echo date('Y-m-d'); ?>"
+                                        value="<?= date('Y-m-d'); ?>" 
+                                        min="<?= date('Y-m-d'); ?>"
                                         required>
-                                    <small class="text-muted d-block mt-1">Must be on or after borrow date</small>
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Quantity *</label>
-                                    <input type="number" class="form-control" name="jumlah" 
-                                        min="1" value="1" required id="jumlahInput">
-                                    <small class="text-muted" id="stockInfo">Available stock will be shown after selecting a tool</small>
+                                    <div class="form-hint"><i class="ri-information-line"></i> Must be on or after borrow date</div>
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Notes</label>
-                                    <input type="text" class="form-control" name="keterangan"
-                                        placeholder="Notes (optional)">
+                                    <label class="form-label" for="jumlahInput">
+                                        <i class="ri-numbers-line"></i> Quantity <span class="required">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" name="jumlah" id="jumlahInput"
+                                        min="1" value="1" required>
+                                    <div class="form-hint" id="stockInfo">
+                                        <i class="ri-information-line"></i> Stock limit will adapt automatically when you choose a tool
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label" for="keterangan_alat">
+                                        <i class="ri-sticky-note-line"></i> Purpose / Notes
+                                    </label>
+                                    <input type="text" class="form-control" name="keterangan" id="keterangan_alat"
+                                        placeholder="e.g. Practicum, research, final project (optional)">
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn btn-primary w-100">Borrow Tool</button>
+                            <button type="submit" class="btn-submit-loan">
+                                <i class="ri-send-plane-fill"></i> Submit Tool Loan Request
+                            </button>
                         </form>
                     </div>
+
                 </div>
 
-                <!-- Tab Ruang -->
-                <div class="tab-pane fade <?php echo $is_ruang_active ? 'show active' : ''; ?>" id="ruang" role="tabpanel">
-                    <?php if (!empty($ruang_list_all)): ?>
-                        <div class="alert alert-info mb-4">
-                            <h5 class="mb-2">📍 Available Rooms (<?php echo count($ruang_list_all); ?>)</h5>
-                            <div class="d-flex flex-wrap gap-2">
-                                <?php foreach ($ruang_list_all as $ruang): ?>
-                                    <span class="badge bg-<?php echo ($ruang['status'] ?? 'tersedia') === 'tersedia' ? 'success' : 'warning'; ?>">
-                                        <?php echo htmlspecialchars($ruang['nama_ruang']); ?>
-                                    </span>
-                                <?php endforeach; ?>
-                            </div>
+                <!-- ========================================== -->
+                <!-- Tab 2: Borrow Room                         -->
+                <!-- ========================================== -->
+                <div class="tab-pane fade <?= $is_ruang_active ? 'show active' : '' ?>" id="ruang" role="tabpanel" aria-labelledby="ruang-tab">
+                    
+                    <!-- Available Rooms Status Chips -->
+                    <div class="section-header-modern">
+                        <div class="section-title-group">
+                            <h2><i class="ri-community-line"></i> Laboratory Rooms Status</h2>
+                            <p>Real-time room availability status for workshops, meetings, and classes</p>
                         </div>
-                    <?php endif; ?>
-
-                    <div class="section-title">
-                        <h2>Room Booking Calendar</h2>
                     </div>
 
-                    <div class="card card-surface p-4 mb-5">
-                        <div class="calendar-container" id="roomCalendarContainer">
-                            <?php
-                            // Get current month from URL or use current month (using normal date)
-                            $current_month = isset($_GET['month']) ? $_GET['month'] : date('Y-m');
-                            $today = new DateTime();
-                            $view_date = new DateTime($current_month . '-01');
+                    <div class="room-status-grid">
+                        <?php if (empty($ruang_list_all)): ?>
+                            <div class="col-12">
+                                <div class="empty-state-card">
+                                    <i class="ri-door-closed-line"></i>
+                                    <h4>No Rooms Registered</h4>
+                                    <p>No laboratory spaces are currently registered in the system.</p>
+                                </div>
+                            </div>
+                        <?php else: ?>
+                            <?php foreach ($ruang_list_all as $ruang): 
+                                $r_status = strtolower($ruang['status'] ?? 'tersedia');
+                                $status_label = $r_status === 'tersedia' ? 'Available' : ($r_status === 'maintenance' ? 'Maintenance' : 'Not Available');
+                                $icon_class = $r_status === 'tersedia' ? 'available' : ($r_status === 'maintenance' ? 'maintenance' : 'unavailable');
+                                $badge_bg = $r_status === 'tersedia' ? 'success' : ($r_status === 'maintenance' ? 'warning' : 'danger');
+                            ?>
+                                <div class="room-chip-card">
+                                    <div class="room-chip-info">
+                                        <div class="room-chip-icon <?= $icon_class ?>">
+                                            <i class="ri-door-open-line"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="room-chip-title"><?= htmlspecialchars($ruang['nama_ruang']); ?></h5>
+                                            <span class="room-chip-status text-<?= $badge_bg ?>">
+                                                <i class="ri-record-circle-fill me-1"></i><?= $status_label ?>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-<?= $badge_bg ?> text-white rounded-pill px-3 py-1">
+                                        <?= $status_label ?>
+                                    </span>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Room Booking Calendar Section -->
+                    <div class="section-header-modern">
+                        <div class="section-title-group">
+                            <h2><i class="ri-calendar-2-line"></i> Room Booking Schedule</h2>
+                            <p>Select any available date on the calendar to quickly prefill your booking form</p>
+                        </div>
+                    </div>
+
+                    <div class="calendar-card" id="roomCalendarContainer">
+                        <?php
+                        $current_month = isset($_GET['month']) ? $_GET['month'] : date('Y-m');
+                        $today = new DateTime();
+                        $view_date = new DateTime($current_month . '-01');
+                        
+                        $start_date = clone $view_date;
+                        $start_date->modify('first day of this month');
+                        $end_date = clone $view_date;
+                        $end_date->modify('last day of this month');
+                        
+                        $today->setTime(0, 0, 0);
+                        
+                        $current = clone $start_date;
+                        $calendar_days = [];
+                        while ($current <= $end_date) {
+                            $current->setTime(0, 0, 0);
+                            $date_str = $current->format('Y-m-d');
+                            $is_today = $date_str === $today->format('Y-m-d');
+                            $is_past = $current < $today;
+                            $is_today_or_past = $current <= $today;
                             
-                            // Generate calendar for selected month
-                            $start_date = clone $view_date;
-                            $start_date->modify('first day of this month');
-                            $end_date = clone $view_date;
-                            $end_date->modify('last day of this month');
-                            
-                            // Set today to start of day for accurate comparison
-                            $today->setTime(0, 0, 0);
-                            
-                            $current = clone $start_date;
-                            $calendar_days = [];
-                            while ($current <= $end_date) {
-                                $current->setTime(0, 0, 0); // Set to start of day for comparison
-                                $date_str = $current->format('Y-m-d');
-                                $is_today = $date_str === $today->format('Y-m-d');
-                                $is_past = $current < $today;
-                                $is_today_or_past = $current <= $today;
-                                
-                                $calendar_days[] = [
-                                    'date' => $date_str,
-                                    'day' => $current->format('d'),
-                                    'day_name' => $current->format('D'),
-                                    'month' => $current->format('M'),
-                                    'is_today' => $is_today,
-                                    'is_past' => $is_past,
-                                    'is_today_or_past' => $is_today_or_past,
-                                    'bookings' => $bookings_by_date[$date_str] ?? []
-                                ];
-                                $current->modify('+1 day');
+                            $calendar_days[] = [
+                                'date' => $date_str,
+                                'day' => $current->format('d'),
+                                'day_name' => $current->format('D'),
+                                'month' => $current->format('M'),
+                                'is_today' => $is_today,
+                                'is_past' => $is_past,
+                                'is_today_or_past' => $is_today_or_past,
+                                'bookings' => $bookings_by_date[$date_str] ?? []
+                            ];
+                            $current->modify('+1 day');
+                        }
+                        
+                        $weeks = [];
+                        $week = [];
+                        $first_day = clone $start_date;
+                        $first_day->modify('first day of this month');
+                        $day_of_week = (int)$first_day->format('w'); // 0 = Sunday
+                        
+                        for ($i = 0; $i < $day_of_week; $i++) {
+                            $week[] = null;
+                        }
+                        
+                        foreach ($calendar_days as $day) {
+                            $week[] = $day;
+                            if (count($week) == 7) {
+                                $weeks[] = $week;
+                                $week = [];
                             }
-                            
-                            // Group by week
-                            $weeks = [];
-                            $week = [];
-                            $first_day = clone $start_date;
-                            $first_day->modify('first day of this month');
-                            $day_of_week = (int)$first_day->format('w'); // 0 = Sunday
-                            
-                            // Add empty cells for days before month starts
-                            for ($i = 0; $i < $day_of_week; $i++) {
+                        }
+                        
+                        if (!empty($week)) {
+                            while (count($week) < 7) {
                                 $week[] = null;
                             }
-                            
-                            foreach ($calendar_days as $day) {
-                                $week[] = $day;
-                                if (count($week) == 7) {
-                                    $weeks[] = $week;
-                                    $week = [];
-                                }
-                            }
-                            
-                            // Add remaining days
-                            if (!empty($week)) {
-                                while (count($week) < 7) {
-                                    $week[] = null;
-                                }
-                                $weeks[] = $week;
-                            }
-                            
-                            // Calculate prev/next month
-                            $prev_month = clone $view_date;
-                            $prev_month->modify('-1 month');
-                            $next_month = clone $view_date;
-                            $next_month->modify('+1 month');
-                            ?>
-                            
-                            <div class="calendar-navigation mb-3">
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="changeMonth('<?php echo $prev_month->format('Y-m'); ?>')">
-                                    ← Previous
+                            $weeks[] = $week;
+                        }
+                        
+                        $prev_month = clone $view_date;
+                        $prev_month->modify('-1 month');
+                        $next_month = clone $view_date;
+                        $next_month->modify('+1 month');
+                        ?>
+                        
+                        <!-- Navigation Bar -->
+                        <div class="calendar-navigation-bar">
+                            <h4 class="calendar-month-title">
+                                <i class="ri-calendar-check-line"></i> <?= $view_date->format('F Y'); ?>
+                            </h4>
+                            <div class="calendar-nav-buttons">
+                                <button type="button" class="btn-calendar-nav" onclick="changeMonth('<?= $prev_month->format('Y-m'); ?>')">
+                                    <i class="ri-arrow-left-s-line"></i> Previous
                                 </button>
-                                <h4 class="calendar-month-title mb-0">
-                                    <?php echo $view_date->format('F Y'); ?>
-                                </h4>
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="changeMonth('<?php echo $next_month->format('Y-m'); ?>')">
-                                    Next →
+                                <?php if ($current_month !== date('Y-m')): ?>
+                                    <button type="button" class="btn-calendar-nav" onclick="changeMonth('<?= date('Y-m'); ?>')">
+                                        <i class="ri-time-line"></i> Today
+                                    </button>
+                                <?php endif; ?>
+                                <button type="button" class="btn-calendar-nav" onclick="changeMonth('<?= $next_month->format('Y-m'); ?>')">
+                                    Next <i class="ri-arrow-right-s-line"></i>
                                 </button>
                             </div>
+                        </div>
+                        
+                        <!-- Calendar Grid -->
+                        <div class="calendar-grid-modern">
+                            <div class="calendar-header-row">
+                                <div class="calendar-day-label">Sun</div>
+                                <div class="calendar-day-label">Mon</div>
+                                <div class="calendar-day-label">Tue</div>
+                                <div class="calendar-day-label">Wed</div>
+                                <div class="calendar-day-label">Thu</div>
+                                <div class="calendar-day-label">Fri</div>
+                                <div class="calendar-day-label">Sat</div>
+                            </div>
                             
-                            <div class="calendar-grid">
-                                <div class="calendar-header">
-                                    <div class="calendar-day-header">Sun</div>
-                                    <div class="calendar-day-header">Mon</div>
-                                    <div class="calendar-day-header">Tue</div>
-                                    <div class="calendar-day-header">Wed</div>
-                                    <div class="calendar-day-header">Thu</div>
-                                    <div class="calendar-day-header">Fri</div>
-                                    <div class="calendar-day-header">Sat</div>
-                                </div>
-                                
-                                <?php foreach ($weeks as $week): ?>
-                                    <div class="calendar-week">
-                                        <?php foreach ($week as $day): ?>
-                                            <?php if ($day === null): ?>
-                                                <div class="calendar-day empty"></div>
-                                            <?php else: ?>
-                                                <div class="calendar-day <?php echo $day['is_today'] ? 'today' : ''; ?> <?php echo $day['is_today_or_past'] ? 'past' : ''; ?> <?php echo !$day['is_today_or_past'] ? 'selectable' : ''; ?>" 
-                                                     data-date="<?php echo $day['date']; ?>"
-                                                     data-is-past="<?php echo $day['is_today_or_past'] ? 'true' : 'false'; ?>">
-                                                    <div class="calendar-day-number">
-                                                        <?php echo $day['day']; ?>
-                                                        <!-- Today badge will be added by JavaScript -->
-                                                    </div>
-                                                    <div class="calendar-day-name"><?php echo $day['day_name']; ?></div>
-                                                    <div class="calendar-bookings">
-                                                        <?php if (!empty($day['bookings'])): ?>
-                                                            <?php foreach ($day['bookings'] as $booking): ?>
-                                                                <div class="booking-item" 
-                                                                     title="<?php echo htmlspecialchars($booking['nama_peminjam']); ?> - <?php echo substr($booking['waktu_pinjam'], 0, 5); ?>-<?php echo substr($booking['waktu_kembali'], 0, 5); ?>">
-                                                                    <small class="booking-time">
-                                                                        <?php echo substr($booking['waktu_pinjam'], 0, 5); ?>-<?php echo substr($booking['waktu_kembali'], 0, 5); ?>
-                                                                    </small>
-                                                                    <small class="booking-name">
-                                                                        <?php echo htmlspecialchars($booking['nama_peminjam']); ?>
-                                                                    </small>
-                                                                </div>
-                                                            <?php endforeach; ?>
-                                                        <?php else: ?>
-                                                            <div class="booking-empty">Available</div>
-                                                        <?php endif; ?>
-                                                    </div>
+                            <?php foreach ($weeks as $week): ?>
+                                <div class="calendar-week-row">
+                                    <?php foreach ($week as $day): ?>
+                                        <?php if ($day === null): ?>
+                                            <div class="calendar-cell empty"></div>
+                                        <?php else: 
+                                            $cell_classes = ['calendar-cell'];
+                                            if ($day['is_today']) $cell_classes[] = 'today';
+                                            if ($day['is_past']) $cell_classes[] = 'past';
+                                            if (!$day['is_today_or_past']) $cell_classes[] = 'selectable';
+                                        ?>
+                                            <div class="<?= implode(' ', $cell_classes); ?>" 
+                                                 data-date="<?= $day['date']; ?>"
+                                                 <?= (!$day['is_today_or_past']) ? 'onclick="selectRoomDate(\'' . $day['date'] . '\')"' : ''; ?>>
+                                                
+                                                <div class="cell-top-bar">
+                                                    <span class="cell-day-num"><?= (int)$day['day']; ?></span>
+                                                    <?php if ($day['is_today']): ?>
+                                                        <span class="badge-today-pill">Today</span>
+                                                    <?php endif; ?>
                                                 </div>
-                                            <?php endif; ?>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php endforeach; ?>
+
+                                                <div class="cell-bookings-list">
+                                                    <?php if (!empty($day['bookings'])): ?>
+                                                        <?php foreach ($day['bookings'] as $booking): ?>
+                                                            <div class="booking-pill" 
+                                                                 title="<?= htmlspecialchars($booking['nama_peminjam']); ?> (<?= substr($booking['waktu_pinjam'], 0, 5); ?> - <?= substr($booking['waktu_kembali'], 0, 5); ?>)">
+                                                                <span class="booking-pill-time">
+                                                                    <i class="ri-time-line"></i>
+                                                                    <?= substr($booking['waktu_pinjam'], 0, 5); ?>-<?= substr($booking['waktu_kembali'], 0, 5); ?>
+                                                                </span>
+                                                                <span class="booking-pill-name">
+                                                                    <?= htmlspecialchars($booking['nama_peminjam']); ?>
+                                                                </span>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    <?php elseif (!$day['is_today_or_past']): ?>
+                                                        <div class="cell-available-indicator">
+                                                            <i class="ri-checkbox-circle-line"></i> Available
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <!-- Calendar Legend Bar -->
+                        <div class="calendar-legend-bar">
+                            <div class="legend-item">
+                                <span class="legend-dot today-dot"></span>
+                                <span>Today</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot available-dot"></span>
+                                <span>Available (Click to Select)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot booked-dot"></span>
+                                <span>Booked Session</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot past-dot"></span>
+                                <span>Past Date (Closed)</span>
                             </div>
                         </div>
                     </div>
-                    
-                    <style>
-                        .calendar-container {
-                            width: 100%;
-                        }
-                        
-                        .calendar-grid {
-                            display: flex;
-                            flex-direction: column;
-                            gap: 0.5rem;
-                        }
-                        
-                        .calendar-header {
-                            display: grid;
-                            grid-template-columns: repeat(7, 1fr);
-                            gap: 0.5rem;
-                            margin-bottom: 0.5rem;
-                        }
-                        
-                        .calendar-day-header {
-                            text-align: center;
-                            font-weight: 600;
-                            color: var(--primary, #4f46e5);
-                            padding: 0.5rem;
-                            background: #f8f9fa;
-                            border-radius: 8px;
-                        }
-                        
-                        .calendar-week {
-                            display: grid;
-                            grid-template-columns: repeat(7, 1fr);
-                            gap: 0.5rem;
-                        }
-                        
-                        .calendar-day {
-                            border: 2px solid #e2e8f0;
-                            border-radius: 12px;
-                            padding: 0.75rem;
-                            min-height: 80px;
-                            background: white;
-                            transition: all 0.3s;
-                            position: relative;
-                        }
-                        
-                        .calendar-day.empty {
-                            border: none;
-                            background: transparent;
-                        }
-                        
-                        .calendar-day:hover:not(.empty):not(.past) {
-                            border-color: var(--primary, #4f46e5);
-                            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
-                            transform: translateY(-2px);
-                        }
-                        
-                        .calendar-day.today {
-                            border-color: var(--primary, #4f46e5);
-                            background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(79, 70, 229, 0.1) 100%);
-                        }
-                        
-                        .calendar-day.past {
-                            opacity: 0.5;
-                            background: #f8f9fa;
-                            cursor: not-allowed !important;
-                            pointer-events: none;
-                        }
-                        
-                        .calendar-day.selectable {
-                            cursor: pointer;
-                        }
-                        
-                        .calendar-day.selectable:hover {
-                            background: #f0f9ff;
-                        }
-                        
-                        .calendar-day.past:hover {
-                            background: #f8f9fa !important;
-                            transform: none !important;
-                            box-shadow: none !important;
-                        }
-                        
-                        .calendar-navigation {
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            margin-bottom: 1rem;
-                        }
-                        
-                        .calendar-month-title {
-                            font-size: 1.5rem;
-                            font-weight: 600;
-                            color: var(--primary, #4f46e5);
-                        }
-                        
-                        .calendar-day-number {
-                            font-size: 1.1rem;
-                            font-weight: 700;
-                            color: var(--dark, #1e293b);
-                            margin-bottom: 0.25rem;
-                            display: flex;
-                            align-items: center;
-                            justify-content: space-between;
-                        }
-                        
-                        .today-badge {
-                            font-size: 0.65rem;
-                            background: var(--primary, #4f46e5);
-                            color: white;
-                            padding: 0.15rem 0.4rem;
-                            border-radius: 4px;
-                            font-weight: 600;
-                        }
-                        
-                        .calendar-day-name {
-                            font-size: 0.75rem;
-                            color: #64748b;
-                            margin-bottom: 0.5rem;
-                            text-transform: uppercase;
-                            letter-spacing: 0.5px;
-                        }
-                        
-                        .calendar-bookings {
-                            display: flex;
-                            flex-direction: column;
-                            gap: 0.25rem;
-                            max-height: 60px;
-                            overflow-y: auto;
-                        }
-                        
-                        .booking-item {
-                            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-                            color: white;
-                            padding: 0.35rem 0.5rem;
-                            border-radius: 6px;
-                            font-size: 0.7rem;
-                            cursor: pointer;
-                            transition: all 0.2s;
-                        }
-                        
-                        .booking-item:hover {
-                            transform: scale(1.05);
-                            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
-                        }
-                        
-                        .booking-time {
-                            display: block;
-                            font-weight: 600;
-                            margin-bottom: 0.1rem;
-                        }
-                        
-                        .booking-name {
-                            display: block;
-                            opacity: 0.9;
-                            white-space: nowrap;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                        }
-                        
-                        .booking-empty {
-                            font-size: 0.7rem;
-                            color: #94a3b8;
-                            text-align: center;
-                            padding: 0.25rem;
-                            font-style: italic;
-                        }
-                        
-                        @media (max-width: 768px) {
-                            .calendar-day {
-                                min-height: 70px;
-                                padding: 0.5rem;
-                            }
-                            
-                            .calendar-day-number {
-                                font-size: 0.9rem;
-                            }
-                            
-                            .booking-item {
-                                font-size: 0.65rem;
-                                padding: 0.25rem 0.4rem;
-                            }
-                        }
-                    </style>
 
-                    <div class="section-title mt-5">
-                        <h2>Room Borrowing Form</h2>
-                    </div>
+                    <!-- Room Borrowing Form Card -->
+                    <div class="card-surface" id="roomFormSection">
+                        <div class="form-header-bar">
+                            <i class="ri-door-lock-line"></i>
+                            <div>
+                                <h3>Room Borrowing Request Form</h3>
+                                <p>Submit a room reservation request for laboratory spaces and meeting rooms</p>
+                            </div>
+                        </div>
 
-                    <div class="card card-surface p-4 mb-5">
                         <form method="POST" id="formPinjamRuang">
                             <input type="hidden" name="action" value="pinjam_ruang">
 
-                            <div class="row mb-3">
+                            <div class="row g-4 mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label">Select Room *</label>
-                                    <select class="form-select" name="id_ruang" required>
-                                        <option value="">Select Room</option>
+                                    <label class="form-label" for="select_id_ruang">
+                                        <i class="ri-community-line"></i> Select Room <span class="required">*</span>
+                                    </label>
+                                    <select class="form-select" name="id_ruang" id="select_id_ruang" required>
+                                        <option value="">-- Choose Lab Room --</option>
                                         <?php if (!empty($ruang_list_all)): ?>
                                             <?php foreach ($ruang_list_all as $ruang): ?>
-                                                <option value="<?php echo $ruang['id_ruang_lab']; ?>">
-                                                    <?php echo htmlspecialchars($ruang['nama_ruang']); ?>
+                                                <option value="<?= $ruang['id_ruang_lab']; ?>">
+                                                    <?= htmlspecialchars($ruang['nama_ruang']); ?>
                                                 </option>
                                             <?php endforeach; ?>
                                         <?php endif; ?>
                                     </select>
                                 </div>
+
                                 <div class="col-md-6">
-                                    <label class="form-label">Borrower Name *</label>
-                                    <input type="text" class="form-control" name="nama_peminjam" required>
+                                    <label class="form-label" for="nama_peminjam_ruang">
+                                        <i class="ri-user-3-line"></i> Borrower Name <span class="required">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" name="nama_peminjam" id="nama_peminjam_ruang" 
+                                        placeholder="Enter your full name or team coordinator" required>
                                 </div>
-                            </div>
 
-                            <div class="row mb-3">
                                 <div class="col-md-4">
-                                    <label class="form-label">Borrow Date *</label>
+                                    <label class="form-label" for="tanggal_pinjam_ruang">
+                                        <i class="ri-calendar-event-line"></i> Booking Date <span class="required">*</span>
+                                    </label>
+                                    <?php 
+                                    $tomorrow = date('Y-m-d', strtotime('+1 day'));
+                                    ?>
                                     <input type="date" class="form-control" name="tanggal_pinjam" id="tanggal_pinjam_ruang"
-                                        value="<?php echo date('Y-m-d'); ?>" 
-                                        min="<?php echo date('Y-m-d'); ?>"
+                                        value="<?= $tomorrow; ?>" 
+                                        min="<?= $tomorrow; ?>"
                                         required>
-                                    <small class="text-muted d-block mt-1">Cannot book for today or past dates</small>
+                                    <div class="form-hint"><i class="ri-information-line"></i> Room reservations must be made at least 1 day in advance</div>
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label">Borrow Time *</label>
-                                    <input type="time" class="form-control" name="waktu_pinjam" required>
+                                    <label class="form-label" for="waktu_pinjam_ruang">
+                                        <i class="ri-time-line"></i> Start Time <span class="required">*</span>
+                                    </label>
+                                    <input type="time" class="form-control" name="waktu_pinjam" id="waktu_pinjam_ruang" required>
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label">Return Time *</label>
-                                    <input type="time" class="form-control" name="waktu_kembali" required>
+                                    <label class="form-label" for="waktu_kembali_ruang">
+                                        <i class="ri-time-line"></i> End Time <span class="required">*</span>
+                                    </label>
+                                    <input type="time" class="form-control" name="waktu_kembali" id="waktu_kembali_ruang" required>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label" for="keterangan_ruang">
+                                        <i class="ri-file-text-line"></i> Purpose / Activity Details
+                                    </label>
+                                    <textarea class="form-control" name="keterangan" id="keterangan_ruang" rows="2"
+                                        placeholder="e.g. Research group coordination, software demo, thesis preparation (optional)"></textarea>
                                 </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Purpose/Notes</label>
-                                <textarea class="form-control" name="keterangan" rows="2"
-                                    placeholder="Example: Meeting, practicum, etc. (optional)"></textarea>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary w-100">
-                                Request Room Booking
+                            <button type="submit" class="btn-submit-loan">
+                                <i class="ri-send-plane-fill"></i> Submit Room Reservation Request
                             </button>
                         </form>
                     </div>
 
-                    <!-- Info Box -->
-                    <div class="alert alert-warning">
-                        <strong>Important:</strong> Please ensure to return the room on time to avoid interfering with
-                        other room bookings.
+                    <!-- Guidelines Notice Box -->
+                    <div class="guidelines-box">
+                        <i class="ri-information-line"></i>
+                        <div class="guidelines-content">
+                            <h5>Important Guidelines & Etiquette:</h5>
+                            <p>Please arrive punctually according to your reserved schedule. Keep all lab stations clean, organized, and ensure equipment power is safely switched off when your session ends. For booking cancellations or adjustments, please inform the lab administrator immediately.</p>
+                        </div>
                     </div>
+
                 </div>
             </div>
 
         </div>
-
     </main>
 
     <?php include '../includes/footer.php'; ?>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Update stock info when tool is selected
-        const toolSelect = document.querySelector('select[name="id_alat"]');
-        const jumlahInput = document.getElementById('jumlahInput');
-        const stockInfo = document.getElementById('stockInfo');
-        const alatList = <?php echo json_encode($alat_list); ?>;
-
-        if (toolSelect && jumlahInput && stockInfo) {
-            toolSelect.addEventListener('change', function() {
-                const selectedId = parseInt(this.value);
-                const selectedAlat = alatList.find(alat => alat.id_alat_lab == selectedId);
-                
-                if (selectedAlat) {
-                    const availableStock = selectedAlat.stok_tersedia;
-                    stockInfo.textContent = `Available: ${availableStock} unit(s)`;
-                    stockInfo.className = 'text-success';
-                    jumlahInput.setAttribute('max', availableStock);
-                    
-                    // Reset quantity if it exceeds available stock
-                    if (parseInt(jumlahInput.value) > availableStock) {
-                        jumlahInput.value = availableStock > 0 ? availableStock : 1;
-                    }
-                } else {
-                    stockInfo.textContent = 'Available stock will be shown after selecting a tool';
-                    stockInfo.className = 'text-muted';
-                    jumlahInput.removeAttribute('max');
-                }
-            });
-
-            // Validate quantity on input
-            jumlahInput.addEventListener('input', function() {
-                const selectedId = parseInt(toolSelect.value);
-                if (selectedId) {
-                    const selectedAlat = alatList.find(alat => alat.id_alat_lab == selectedId);
-                    if (selectedAlat) {
-                        const availableStock = selectedAlat.stok_tersedia;
-                        const enteredQty = parseInt(this.value);
-                        
-                        if (enteredQty > availableStock) {
-                            this.setCustomValidity(`Maximum ${availableStock} unit(s) available`);
-                            stockInfo.textContent = `⚠️ Maximum ${availableStock} unit(s) available`;
-                            stockInfo.className = 'text-danger';
-                        } else if (enteredQty <= 0) {
-                            this.setCustomValidity('Quantity must be greater than 0');
-                            stockInfo.className = 'text-danger';
-                        } else {
-                            this.setCustomValidity('');
-                            stockInfo.textContent = `Available: ${availableStock} unit(s)`;
-                            stockInfo.className = 'text-success';
-                        }
-                    }
-                }
-            });
-
-            // Date validation for tool borrowing with real-time validation
-            function initDateValidation() {
-                const tanggalPinjamAlat = document.getElementById('tanggal_pinjam_alat');
-                const tanggalKembaliAlat = document.getElementById('tanggal_kembali_alat');
-                
-                if (!tanggalPinjamAlat || !tanggalKembaliAlat) {
-                    // Elements not ready yet, try again
-                    setTimeout(initDateValidation, 100);
-                    return;
-                }
-                
-                // Function to get today's date in YYYY-MM-DD format (using normal date, not from table)
-                function getTodayDate() {
-                    // Get current date using normal JavaScript Date (browser's local time)
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const todayStr = today.toISOString().split('T')[0];
-                    // Debug: log today's date
-                    console.log('Today\'s date:', todayStr);
-                    return todayStr;
-                }
-                
-                // Update min attributes for borrow date and return date (from today onwards - cannot select past dates)
-                function updateBorrowDateLimits() {
-                    // Double check elements still exist
-                    if (!tanggalPinjamAlat || !tanggalKembaliAlat) {
-                        return;
-                    }
-                    
-                    const currentToday = getTodayDate();
-                    
-                    // ALWAYS update (force update) - don't check if already set
-                    // This ensures it's always current even if page was loaded yesterday
-                    
-                    // Borrow date: min = today (cannot select past dates)
-                    // Method 1: Update property first
-                    tanggalPinjamAlat.min = currentToday;
-                    // Remove max attribute (no maximum limit)
-                    tanggalPinjamAlat.removeAttribute('max');
-                    
-                    // Method 2: ALWAYS force update attribute HTML (remove then set)
-                    tanggalPinjamAlat.removeAttribute('min');
-                    tanggalPinjamAlat.setAttribute('min', currentToday);
-                    
-                    // Method 3: Also set via setAttribute directly (redundant but ensures update)
-                    tanggalPinjamAlat.setAttribute('min', currentToday);
-                    
-                    // Debug: Verify what was set (check in console)
-                    const actualMin = tanggalPinjamAlat.getAttribute('min');
-                    if (actualMin !== currentToday) {
-                        console.warn('WARNING: min attribute mismatch! Expected:', currentToday, 'Got:', actualMin);
-                        // Force update again
-                        tanggalPinjamAlat.removeAttribute('min');
-                        tanggalPinjamAlat.setAttribute('min', currentToday);
-                    } else {
-                        console.log('✓ Borrow date min updated successfully to:', currentToday);
-                    }
-                    
-                    // Update value if it's in the past (force to today) - ALWAYS CHECK
-                    // This handles case where page was loaded yesterday and value is still old
-                    if (!tanggalPinjamAlat.value || tanggalPinjamAlat.value < currentToday) {
-                        if (tanggalPinjamAlat.value && tanggalPinjamAlat.value < currentToday) {
-                            console.log('Updating past date value in updateBorrowDateLimits:', tanggalPinjamAlat.value, 'to:', currentToday);
-                        }
-                        tanggalPinjamAlat.value = currentToday;
-                    }
-                    
-                    // Return date: min = today (cannot select past dates, but must be >= borrow date)
-                    // Update return date min to today
-                    tanggalKembaliAlat.min = currentToday;
-                    tanggalKembaliAlat.removeAttribute('min');
-                    tanggalKembaliAlat.setAttribute('min', currentToday);
-                    tanggalKembaliAlat.setAttribute('min', currentToday); // Set twice to ensure
-                    
-                    // Also update return date min based on borrow date if borrow date is set
-                    if (tanggalPinjamAlat.value && tanggalPinjamAlat.value >= currentToday) {
-                        const borrowDate = tanggalPinjamAlat.value;
-                        if (tanggalKembaliAlat.min !== borrowDate) {
-                            tanggalKembaliAlat.min = borrowDate;
-                            tanggalKembaliAlat.removeAttribute('min');
-                            tanggalKembaliAlat.setAttribute('min', borrowDate);
-                        }
-                    }
-                    
-                    // Update return date value if it's in the past
-                    if (tanggalKembaliAlat.value && tanggalKembaliAlat.value < currentToday) {
-                        tanggalKembaliAlat.value = currentToday;
-                    }
-                }
-                
-                // CRITICAL: Set value and min FIRST before anything else
-                const currentToday = getTodayDate();
-                
-                // Set borrow date value to today (if empty or past)
-                // Note: HTML already has value="<?php echo date('Y-m-d'); ?>" but we still validate in JS
-                if (!tanggalPinjamAlat.value || tanggalPinjamAlat.value < currentToday) {
-                    tanggalPinjamAlat.value = currentToday;
-                    console.log('Set borrow date value to:', currentToday);
-                }
-                
-                // Set borrow date min to today
-                tanggalPinjamAlat.min = currentToday;
-                tanggalPinjamAlat.removeAttribute('min');
-                tanggalPinjamAlat.setAttribute('min', currentToday);
-                console.log('Set borrow date min to:', currentToday);
-                
-                // Set return date min to today (will be updated based on borrow date later)
-                tanggalKembaliAlat.min = currentToday;
-                tanggalKembaliAlat.removeAttribute('min');
-                tanggalKembaliAlat.setAttribute('min', currentToday);
-                console.log('Set return date min to:', currentToday);
-                
-                // Now run update function
-                updateBorrowDateLimits();
-                
-                // Run again after short delays to ensure it sticks
-                setTimeout(function() {
-                    updateBorrowDateLimits();
-                    const today = getTodayDate();
-                    if (tanggalPinjamAlat.value && tanggalPinjamAlat.value < today) {
-                        tanggalPinjamAlat.value = today;
-                    }
-                }, 10);
-                setTimeout(function() {
-                    updateBorrowDateLimits();
-                    const today = getTodayDate();
-                    if (tanggalPinjamAlat.value && tanggalPinjamAlat.value < today) {
-                        tanggalPinjamAlat.value = today;
-                    }
-                }, 50);
-                setTimeout(function() {
-                    updateBorrowDateLimits();
-                    const today = getTodayDate();
-                    if (tanggalPinjamAlat.value && tanggalPinjamAlat.value < today) {
-                        tanggalPinjamAlat.value = today;
-                    }
-                }, 100);
-                setTimeout(function() {
-                    updateBorrowDateLimits();
-                    const today = getTodayDate();
-                    if (tanggalPinjamAlat.value && tanggalPinjamAlat.value < today) {
-                        tanggalPinjamAlat.value = today;
-                    }
-                }, 200);
-                
-                // Update limits every 200ms to ensure it's always current (very frequent)
-                setInterval(updateBorrowDateLimits, 200);
-                
-                // Use MutationObserver to watch for value changes
-                const observerBorrow = new MutationObserver(function(mutations) {
-                    const currentToday = getTodayDate();
-                    if (tanggalPinjamAlat.value && tanggalPinjamAlat.value < currentToday) {
-                        console.warn('MutationObserver detected past date:', tanggalPinjamAlat.value);
-                        tanggalPinjamAlat.value = currentToday;
-                        tanggalPinjamAlat.removeAttribute('min');
-                        tanggalPinjamAlat.setAttribute('min', currentToday);
-                    }
-                    // Also check min attribute
-                    const actualMin = tanggalPinjamAlat.getAttribute('min');
-                    if (actualMin && actualMin < currentToday) {
-                        console.warn('MutationObserver detected old min (past):', actualMin);
-                        tanggalPinjamAlat.removeAttribute('min');
-                        tanggalPinjamAlat.setAttribute('min', currentToday);
-                    }
-                });
-                
-                // Observe the input element for attribute and value changes
-                observerBorrow.observe(tanggalPinjamAlat, {
-                    attributes: true,
-                    attributeFilter: ['value', 'min', 'max'],
-                    childList: false,
-                    subtree: false
-                });
-                
-                // Also watch for property changes using a proxy-like approach
-                let lastValue = tanggalPinjamAlat.value;
-                setInterval(function() {
-                    const currentValue = tanggalPinjamAlat.value;
-                    if (currentValue !== lastValue) {
-                        lastValue = currentValue;
-                        const currentToday = getTodayDate();
-                        if (currentValue && currentValue < currentToday) {
-                            console.warn('Value change detected - past date:', currentValue);
-                            tanggalPinjamAlat.value = currentToday;
-                            updateBorrowDateLimits();
-                        }
-                    }
-                }, 100);
-                
-                // Update limits when date picker is about to open (focus event)
-                tanggalPinjamAlat.addEventListener('focus', function() {
-                    updateBorrowDateLimits();
-                    // Force to today if in the past
-                    const currentToday = getTodayDate();
-                    if (this.value && this.value < currentToday) {
-                        this.value = currentToday;
-                    }
-                    // Double-check min attribute is set correctly
-                    setTimeout(function() {
-                        const actualMin = tanggalPinjamAlat.getAttribute('min');
-                        if (actualMin !== currentToday) {
-                            tanggalPinjamAlat.removeAttribute('min');
-                            tanggalPinjamAlat.setAttribute('min', currentToday);
-                        }
-                    }, 50);
-                });
-                
-                // Update limits when date picker is clicked
-                tanggalPinjamAlat.addEventListener('click', function() {
-                    updateBorrowDateLimits();
-                    const currentToday = getTodayDate();
-                    if (this.value && this.value < currentToday) {
-                        this.value = currentToday;
-                    }
-                    // Double-check min attribute is set correctly
-                    setTimeout(function() {
-                        const actualMin = tanggalPinjamAlat.getAttribute('min');
-                        if (actualMin !== currentToday) {
-                            tanggalPinjamAlat.removeAttribute('min');
-                            tanggalPinjamAlat.setAttribute('min', currentToday);
-                        }
-                    }, 50);
-                });
-                
-                // Additional: Intercept before date picker opens (mousedown)
-                tanggalPinjamAlat.addEventListener('mousedown', function(e) {
-                    updateBorrowDateLimits();
-                    const currentToday = getTodayDate();
-                    // Ensure min is set before picker opens
-                    this.min = currentToday;
-                    this.removeAttribute('min');
-                    this.setAttribute('min', currentToday);
-                });
-                
-                // Store function reference for use in other event handlers
-                window.updateBorrowDateLimits = updateBorrowDateLimits;
-                
-                // Same for return date
-                tanggalKembaliAlat.addEventListener('focus', function() {
-                    updateBorrowDateLimits();
-                    const currentToday = getTodayDate();
-                    const borrowDate = tanggalPinjamAlat.value || currentToday;
-                    if (this.value && this.value < currentToday) {
-                        this.value = currentToday;
-                    }
-                });
-                
-                tanggalKembaliAlat.addEventListener('click', function() {
-                    updateBorrowDateLimits();
-                    const currentToday = getTodayDate();
-                    const borrowDate = tanggalPinjamAlat.value || currentToday;
-                    if (this.value && this.value < currentToday) {
-                        this.value = currentToday;
-                    }
-                });
-                
-                // Prevent selecting past dates - input event (real-time)
-                tanggalPinjamAlat.addEventListener('input', function() {
-                    const currentToday = getTodayDate();
-                    
-                    // Cannot select past dates - reset to today if past date is selected
-                    if (this.value && this.value < currentToday) {
-                        console.warn('Past date detected:', this.value, 'Resetting to:', currentToday);
-                        this.value = currentToday;
-                        this.setCustomValidity('Cannot select past dates');
-                        alert('Cannot select past dates. Date has been reset to today.');
-                        // Force update min again
-                        this.removeAttribute('min');
-                        this.setAttribute('min', currentToday);
-                    } else {
-                        this.setCustomValidity('');
-                    }
-                    
-                    // Update return date min based on borrow date
-                    updateBorrowDateLimits();
-                });
-                
-                // Also validate on keydown (when user types)
-                tanggalPinjamAlat.addEventListener('keydown', function(e) {
-                    // If user tries to type a date, validate immediately
-                    setTimeout(function() {
-                        const currentToday = getTodayDate();
-                        if (tanggalPinjamAlat.value && tanggalPinjamAlat.value < currentToday) {
-                            tanggalPinjamAlat.value = currentToday;
-                            tanggalPinjamAlat.setCustomValidity('Cannot select past dates');
-                        }
-                    }, 10);
-                });
-                
-                // Additional validation: check value periodically and on any interaction
-                function validateBorrowDate() {
-                    const currentToday = getTodayDate();
-                    // Cannot select past dates
-                    if (tanggalPinjamAlat.value && tanggalPinjamAlat.value < currentToday) {
-                        console.warn('Past date detected in validation:', tanggalPinjamAlat.value, 'Resetting to:', currentToday);
-                        tanggalPinjamAlat.value = currentToday;
-                        tanggalPinjamAlat.setCustomValidity('Cannot select past dates');
-                        // Force update min
-                        tanggalPinjamAlat.removeAttribute('min');
-                        tanggalPinjamAlat.setAttribute('min', currentToday);
-                        updateBorrowDateLimits();
-                        return false;
-                    }
-                    // Also verify min attribute is correct
-                    const actualMin = tanggalPinjamAlat.getAttribute('min');
-                    if (actualMin !== currentToday) {
-                        console.warn('Min attribute incorrect:', actualMin, 'Expected:', currentToday);
-                        tanggalPinjamAlat.removeAttribute('min');
-                        tanggalPinjamAlat.setAttribute('min', currentToday);
-                    }
-                    return true;
-                }
-                
-                // Check value periodically as backup (every 200ms - more frequent)
-                setInterval(function() {
-                    validateBorrowDate();
-                }, 200);
-                
-                // Validate on any mouse/keyboard interaction
-                ['mousedown', 'keydown', 'keyup', 'mouseup'].forEach(function(eventType) {
-                    tanggalPinjamAlat.addEventListener(eventType, function() {
-                        setTimeout(validateBorrowDate, 10);
-                    });
-                });
-                
-                // Prevent selecting past dates - change event
-                tanggalPinjamAlat.addEventListener('change', function() {
-                    const currentToday = getTodayDate();
-                    const selectedDate = this.value;
-                    
-                    // Cannot select past dates - STRICT VALIDATION
-                    if (selectedDate && selectedDate < currentToday) {
-                        console.warn('Past date selected in change event:', selectedDate, 'Resetting to:', currentToday);
-                        this.value = currentToday;
-                        this.setCustomValidity('Cannot select past dates');
-                        alert('Cannot select past dates. Date has been reset to today.');
-                        // Force update min
-                        this.removeAttribute('min');
-                        this.setAttribute('min', currentToday);
-                        updateBorrowDateLimits();
-                        return;
-                    } else {
-                        this.setCustomValidity('');
-                    }
-                    
-                    // Double-check min is still correct
-                    const actualMin = this.getAttribute('min');
-                    if (actualMin !== currentToday) {
-                        this.removeAttribute('min');
-                        this.setAttribute('min', currentToday);
-                    }
-                    
-                    // Update return date min when borrow date changes
-                    updateBorrowDateLimits();
-                    
-                    // If current return date is before borrow date, adjust it
-                    if (tanggalKembaliAlat.value && tanggalKembaliAlat.value < this.value) {
-                        tanggalKembaliAlat.value = this.value;
-                    }
-                });
-                
-                // Additional protection: validate on blur (when date picker closes)
-                tanggalPinjamAlat.addEventListener('blur', function() {
-                    const currentToday = getTodayDate();
-                    if (this.value && this.value < currentToday) {
-                        this.value = currentToday;
-                        this.setCustomValidity('Cannot select past dates');
-                        alert('Cannot select past dates. Date has been reset to today.');
-                        updateBorrowDateLimits();
-                    }
-                });
-                
-                // Prevent selecting past dates on return date - input event (real-time)
-                tanggalKembaliAlat.addEventListener('input', function() {
-                    const currentToday = getTodayDate();
-                    const borrowDate = tanggalPinjamAlat.value || currentToday;
-                    
-                    // Cannot select past dates
-                    if (this.value && this.value < currentToday) {
-                        this.value = currentToday;
-                        this.setCustomValidity('Cannot select past dates');
-                    } else if (this.value && this.value < borrowDate) {
-                        // Return date must be on or after borrow date
-                        this.value = borrowDate;
-                        this.setCustomValidity('Return date must be on or after borrow date');
-                    } else {
-                        this.setCustomValidity('');
-                    }
-                });
-                
-                // Validate return date - change event
-                tanggalKembaliAlat.addEventListener('change', function() {
-                    const currentToday = getTodayDate();
-                    const borrowDate = tanggalPinjamAlat.value || currentToday;
-                    const returnDate = this.value;
-                    
-                    // Cannot select past dates
-                    if (returnDate && returnDate < currentToday) {
-                        this.setCustomValidity('Cannot select past dates');
-                        this.value = currentToday;
-                        alert('Cannot select past dates. Date has been reset to today.');
-                    } else if (returnDate && returnDate < borrowDate) {
-                        // Return date must be on or after borrow date
-                        this.setCustomValidity('Return date must be on or after borrow date');
-                        this.value = borrowDate;
-                        alert('Return date must be on or after borrow date. Date has been adjusted.');
-                    } else {
-                        this.setCustomValidity('');
-                    }
-                });
-            }
-            
-            // Initialize date validation when DOM is ready - MULTIPLE METHODS
-            function runInitDateValidation() {
-                // Try immediately
-                initDateValidation();
-                
-                // Try after DOM ready
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', function() {
-                        initDateValidation();
-                        setTimeout(initDateValidation, 50);
-                        setTimeout(initDateValidation, 100);
-                        setTimeout(initDateValidation, 200);
-                    });
-                } else {
-                    // DOM already ready
-                    setTimeout(initDateValidation, 10);
-                    setTimeout(initDateValidation, 50);
-                    setTimeout(initDateValidation, 100);
-                    setTimeout(initDateValidation, 200);
-                }
-            }
-            
-            // Run immediately
-            runInitDateValidation();
-            
-            // Also run when window loads
-            window.addEventListener('load', function() {
-                setTimeout(initDateValidation, 100);
-                setTimeout(initDateValidation, 300);
-            });
-            
-            // Also run when tab is shown (Bootstrap tab event)
-            const alatTab = document.getElementById('alat-tab');
-            if (alatTab) {
-                alatTab.addEventListener('shown.bs.tab', function() {
-                    // Tab is now visible, ensure date validation is initialized
-                    setTimeout(initDateValidation, 10);
-                    setTimeout(initDateValidation, 50);
-                    setTimeout(initDateValidation, 150);
-                });
-            }
-            
-            // Also run when tab content is visible (MutationObserver)
-            const alatTabPane = document.getElementById('alat');
-            if (alatTabPane) {
-                const observer = new MutationObserver(function(mutations) {
-                    // Check if tab is visible
-                    if (alatTabPane.classList.contains('active') && alatTabPane.classList.contains('show')) {
-                        setTimeout(initDateValidation, 10);
-                        setTimeout(initDateValidation, 50);
-                    }
-                });
-                
-                observer.observe(alatTabPane, {
-                    attributes: true,
-                    attributeFilter: ['class']
-                });
-            }
-            
-            // Also run periodically as ultimate backup (every 2 seconds)
-            setInterval(function() {
-                const tanggalPinjamAlat = document.getElementById('tanggal_pinjam_alat');
-                if (tanggalPinjamAlat) {
-                    initDateValidation();
-                }
-            }, 2000);
-
-            // Date validation for room borrowing
-            const tanggalPinjamRuang = document.getElementById('tanggal_pinjam_ruang');
-            
-            if (tanggalPinjamRuang) {
-                // Get today's date (normal date, not from table)
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const todayStr = today.toISOString().split('T')[0];
-                const tomorrow = new Date(today);
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                const tomorrowStr = tomorrow.toISOString().split('T')[0];
-                
-                // Prevent selecting past dates or today on input
-                tanggalPinjamRuang.addEventListener('input', function() {
-                    const selectedDate = this.value;
-                    
-                    if (selectedDate <= todayStr) {
-                        this.value = tomorrowStr;
-                        this.setCustomValidity('Room cannot be booked for today or past dates');
-                    } else {
-                        this.setCustomValidity('');
-                    }
-                });
-                
-                tanggalPinjamRuang.addEventListener('change', function() {
-                    const selectedDate = this.value;
-                    
-                    if (selectedDate <= todayStr) {
-                        this.setCustomValidity('Room cannot be booked for today or past dates');
-                        this.value = tomorrowStr;
-                    } else {
-                        this.setCustomValidity('');
-                    }
-                });
-            }
-
-            // Calendar navigation function
-            function changeMonth(month) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('month', month);
-                url.searchParams.set('tab', 'ruang'); // Keep room tab active
-                window.location.href = url.toString();
-            }
-            
-            // Function to ensure calendar is updated after page load/navigation
-            function ensureCalendarUpdated() {
-                // Wait for calendar to be rendered
-                setTimeout(function() {
-                    setupCalendarDays();
-                }, 100);
-                setTimeout(function() {
-                    setupCalendarDays();
-                }, 300);
-                setTimeout(function() {
-                    setupCalendarDays();
-                }, 500);
-                setTimeout(function() {
-                    setupCalendarDays();
-                }, 1000);
-            }
-
-            // Save active tab to URL when tab is clicked
+        // Tab switching and preserving URL state
+        document.addEventListener('DOMContentLoaded', function () {
             const tabButtons = document.querySelectorAll('#borrowingTabs button[data-bs-toggle="tab"]');
             tabButtons.forEach(button => {
                 button.addEventListener('shown.bs.tab', function (e) {
-                    const tabId = e.target.getAttribute('data-bs-target').substring(1); // Remove #
+                    const tabId = e.target.getAttribute('data-bs-target').replace('#', '');
                     const url = new URL(window.location.href);
                     url.searchParams.set('tab', tabId);
-                    // Preserve month parameter if exists
                     window.history.replaceState({}, '', url.toString());
                 });
             });
 
-            // Select date from calendar with real-time validation (using normal date, not from table)
-            function selectDate(date) {
-                const tanggalPinjamRuang = document.getElementById('tanggal_pinjam_ruang');
-                if (tanggalPinjamRuang) {
-                    // Get real-time today's date (normal date, not from table)
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const todayStr = today.toISOString().split('T')[0];
-                    
-                    const selectedDate = new Date(date + 'T00:00:00');
-                    selectedDate.setHours(0, 0, 0, 0);
-                    const tomorrow = new Date(today);
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    const tomorrowStr = tomorrow.toISOString().split('T')[0];
-                    
-                    // Only allow dates after today (room cannot be booked for today or past dates)
-                    if (date > todayStr) {
-                        tanggalPinjamRuang.value = date;
-                        tanggalPinjamRuang.setCustomValidity('');
-                        // Scroll to form
-                        tanggalPinjamRuang.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        // Highlight the input briefly
-                        tanggalPinjamRuang.style.borderColor = '#4f46e5';
-                        setTimeout(() => {
-                            tanggalPinjamRuang.style.borderColor = '';
-                        }, 1000);
-                    } else {
-                        // If somehow a past date or today is selected, set to tomorrow
-                        tanggalPinjamRuang.value = tomorrowStr;
-                        tanggalPinjamRuang.setCustomValidity('Room cannot be booked for today or past dates');
-                        alert('Room cannot be booked for today or past dates. Please select a future date.');
-                    }
-                }
-            }
-            
-            // Function to validate and setup calendar days with real-time validation
-            // Using normal date (not from table, not WIB calculation)
-            function setupCalendarDays() {
-                const calendarDays = document.querySelectorAll('.calendar-day[data-date]');
-                
-                // Get current date using normal JavaScript Date (browser's local time)
-                // ALWAYS get fresh date to ensure accuracy
-                const now = new Date();
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                today.setHours(0, 0, 0, 0);
-                
-                // Format as YYYY-MM-DD for comparison
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                const todayStr = `${year}-${month}-${day}`;
-                
-                console.log('Today (real-time):', todayStr, 'Current time:', now.toLocaleString());
-                
-                calendarDays.forEach(function(dayElement) {
-                    const dateStr = dayElement.getAttribute('data-date');
-                    if (!dateStr) return;
-                    
-                    // Real-time validation: check if date is actually past or today
-                    // Compare date strings directly (YYYY-MM-DD format)
-                    const isToday = dateStr === todayStr;
-                    
-                    // For past/future comparison, convert to Date objects
-                    const dayDate = new Date(dateStr + 'T00:00:00');
-                    dayDate.setHours(0, 0, 0, 0);
-                    const isActuallyPast = dayDate < today; // Past (not including today)
-                    const isTodayOrPast = dayDate <= today; // Today or past
-                    
-                    // Remove any existing onclick attribute
-                    dayElement.removeAttribute('onclick');
-                    
-                    // Update "Today" badge - only show on actual today (real-time)
-                    // ALWAYS check and update badge, even if it already exists
-                    // This ensures badge moves when day changes (e.g., from 7th to 8th)
-                    const dayNumberDiv = dayElement.querySelector('.calendar-day-number');
-                    if (dayNumberDiv) {
-                        // Remove ALL existing "Today" badges first (to handle duplicates and old badges)
-                        const allBadges = dayNumberDiv.querySelectorAll('.today-badge');
-                        allBadges.forEach(badge => badge.remove());
-                        
-                        // Then add badge ONLY if it's actually today (real-time check)
-                        // Double-check with fresh date comparison
-                        if (isToday && dateStr === todayStr) {
-                            const todayBadge = document.createElement('span');
-                            todayBadge.className = 'today-badge';
-                            todayBadge.textContent = 'Today';
-                            dayNumberDiv.appendChild(todayBadge);
-                            console.log('✓ Added "Today" badge to:', dateStr, '(Current date:', todayStr, ')');
-                        } else {
-                            // Ensure no badge exists for non-today dates
-                            // (already removed above, but double-check)
-                            const remainingBadges = dayNumberDiv.querySelectorAll('.today-badge');
-                            remainingBadges.forEach(badge => badge.remove());
+            // Tool stock dynamic info
+            const toolSelect = document.getElementById('select_id_alat');
+            const jumlahInput = document.getElementById('jumlahInput');
+            const stockInfo = document.getElementById('stockInfo');
+
+            if (toolSelect && jumlahInput && stockInfo) {
+                toolSelect.addEventListener('change', function () {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const stock = parseInt(selectedOption.getAttribute('data-stock') || '0');
+                    if (this.value && stock > 0) {
+                        stockInfo.innerHTML = `<i class="ri-checkbox-circle-line text-success"></i> <span class="text-success fw-semibold">Available stock: ${stock} unit(s)</span>`;
+                        jumlahInput.max = stock;
+                        if (parseInt(jumlahInput.value) > stock) {
+                            jumlahInput.value = stock;
                         }
-                    }
-                    
-                    // Update visual state based on real-time check
-                    if (isToday) {
-                        // Today: add today class, remove past class, but make it non-clickable
-                        dayElement.classList.add('today');
-                        dayElement.classList.remove('past');
-                        dayElement.classList.remove('selectable');
-                        dayElement.style.cursor = 'not-allowed';
-                        dayElement.style.opacity = '0.7';
-                        dayElement.style.pointerEvents = 'none';
-                    } else if (isActuallyPast) {
-                        // Past: add past class, remove today and selectable
-                        dayElement.classList.remove('today');
-                        dayElement.classList.add('past');
-                        dayElement.classList.remove('selectable');
-                        dayElement.style.cursor = 'not-allowed';
-                        dayElement.style.opacity = '0.5';
-                        dayElement.style.pointerEvents = 'none';
+                    } else if (this.value) {
+                        stockInfo.innerHTML = `<i class="ri-alert-line text-danger"></i> <span class="text-danger fw-semibold">No stock available currently</span>`;
+                        jumlahInput.max = 0;
+                        jumlahInput.value = 0;
                     } else {
-                        // Future: remove past and today, add selectable
-                        dayElement.classList.remove('today');
-                        dayElement.classList.remove('past');
-                        dayElement.classList.add('selectable');
-                        dayElement.style.cursor = 'pointer';
-                        dayElement.style.opacity = '1';
-                        dayElement.style.pointerEvents = 'auto';
-                    }
-                    
-                    // Update data-is-past attribute
-                    dayElement.setAttribute('data-is-past', isTodayOrPast ? 'true' : 'false');
-                    
-                    // Remove old event listeners by cloning
-                    const newElement = dayElement.cloneNode(true);
-                    dayElement.parentNode.replaceChild(newElement, dayElement);
-                    
-                    // Add click event listener with real-time validation (only for future dates)
-                    if (!isTodayOrPast) {
-                        newElement.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            
-                            // Double-check with real-time date (normal date, not from table)
-                            const clickedDate = new Date(dateStr + 'T00:00:00');
-                            clickedDate.setHours(0, 0, 0, 0);
-                            const now = new Date();
-                            now.setHours(0, 0, 0, 0);
-                            
-                            // Real-time validation: prevent clicking past dates or today
-                            if (clickedDate <= now) {
-                                alert('Cannot select past dates or today. Please select a future date.');
-                                return false;
-                            }
-                            
-                            // Only call selectDate if date is valid
-                            selectDate(dateStr);
-                        });
+                        stockInfo.innerHTML = `<i class="ri-information-line"></i> Stock limit will adapt automatically when you choose a tool`;
+                        jumlahInput.removeAttribute('max');
                     }
                 });
             }
-            
-            // Setup calendar days when page loads
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', function() {
-                    setupCalendarDays();
-                    ensureCalendarUpdated();
-                });
-            } else {
-                // Page already loaded, run immediately
-                setupCalendarDays();
-                ensureCalendarUpdated();
-            }
-            
-            // Also run after short delays to ensure calendar is fully rendered
-            setTimeout(setupCalendarDays, 100);
-            setTimeout(setupCalendarDays, 300);
-            setTimeout(setupCalendarDays, 500);
-            setTimeout(setupCalendarDays, 1000);
-            setTimeout(setupCalendarDays, 2000);
-            
-            // Update calendar every 10 seconds to ensure "Today" badge is always correct and moves when day changes
-            setInterval(setupCalendarDays, 10000); // Every 10 seconds (very frequent to catch day changes)
-            
-            // Also update every minute as backup
-            setInterval(setupCalendarDays, 60000); // Every 60 seconds
-            
-            // Also update when tab is shown (in case user switches tabs)
-            const ruangTab = document.getElementById('ruang-tab');
-            if (ruangTab) {
-                ruangTab.addEventListener('shown.bs.tab', function() {
-                    setTimeout(setupCalendarDays, 100);
-                    setTimeout(setupCalendarDays, 300);
-                    setTimeout(setupCalendarDays, 500);
-                });
-            }
-            
-            // Update when window gains focus (user comes back to tab)
-            window.addEventListener('focus', function() {
-                setupCalendarDays();
-                setTimeout(setupCalendarDays, 100);
-                setTimeout(setupCalendarDays, 500);
-            });
-            
-            // Update when visibility changes (user switches tabs)
-            document.addEventListener('visibilitychange', function() {
-                if (!document.hidden) {
-                    setupCalendarDays();
-                    setTimeout(setupCalendarDays, 100);
-                    setTimeout(setupCalendarDays, 500);
-                }
-            });
 
-            // Prevent auto-scroll on page load/reload
-            (function() {
-                // Disable browser's automatic scroll restoration
-                if ('scrollRestoration' in history) {
-                    history.scrollRestoration = 'manual';
-                }
+            // Tool dates consistency
+            const tanggalPinjamAlat = document.getElementById('tanggal_pinjam_alat');
+            const tanggalKembaliAlat = document.getElementById('tanggal_kembali_alat');
+            if (tanggalPinjamAlat && tanggalKembaliAlat) {
+                tanggalPinjamAlat.addEventListener('change', function () {
+                    tanggalKembaliAlat.min = this.value;
+                    if (tanggalKembaliAlat.value < this.value) {
+                        tanggalKembaliAlat.value = this.value;
+                    }
+                });
+            }
+        });
+
+        // Quick Select Tool from Card
+        function selectTool(id) {
+            const select = document.getElementById('select_id_alat');
+            if (select) {
+                select.value = id;
+                select.dispatchEvent(new Event('change'));
+            }
+            const formSection = document.getElementById('toolFormSection');
+            if (formSection) {
+                formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                select.focus();
+            }
+        }
+
+        // Calendar Month Navigation
+        function changeMonth(month) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('month', month);
+            url.searchParams.set('tab', 'ruang');
+            window.location.href = url.toString();
+        }
+
+        // Click Calendar Date to Prefill Form
+        function selectRoomDate(dateStr) {
+            const inputDate = document.getElementById('tanggal_pinjam_ruang');
+            if (inputDate) {
+                inputDate.value = dateStr;
                 
-                // Remove hash from URL if exists (prevents anchor scroll)
-                if (window.location.hash) {
-                    window.history.replaceState('', document.title, window.location.pathname + window.location.search);
+                // Highlight active cell visually
+                document.querySelectorAll('.calendar-cell').forEach(c => c.classList.remove('selected-date'));
+                const targetCell = document.querySelector(`.calendar-cell[data-date="${dateStr}"]`);
+                if (targetCell) {
+                    targetCell.classList.add('selected-date');
                 }
-                
-                // Scroll to top on load
-                window.addEventListener('load', function() {
-                    window.scrollTo(0, 0);
-                    // Prevent auto-focus on inputs
-                    if (document.activeElement && document.activeElement.tagName === 'INPUT') {
-                        document.activeElement.blur();
-                    }
-                });
 
-                // Also prevent scroll on DOMContentLoaded
-                document.addEventListener('DOMContentLoaded', function() {
-                    window.scrollTo(0, 0);
-                });
-
-                // Prevent scroll when tab is shown via Bootstrap
-                const tabButtons = document.querySelectorAll('#borrowingTabs button[data-bs-toggle="tab"]');
-                tabButtons.forEach(button => {
-                    button.addEventListener('shown.bs.tab', function() {
-                        // Scroll to top after tab is shown
-                        setTimeout(() => {
-                            window.scrollTo({ top: 0, behavior: 'instant' });
-                        }, 50);
-                    });
-                });
-            })();
+                // Scroll smoothly to form and focus
+                const formSection = document.getElementById('roomFormSection');
+                if (formSection) {
+                    formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    inputDate.focus();
+                }
+            }
         }
     </script>
-
 </body>
 
 </html>

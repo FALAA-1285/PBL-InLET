@@ -7,41 +7,6 @@ $conn = getDBConnection();
 $message = '';
 $message_type = '';
 
-// Create video table if it doesn't exist
-try {
-    $conn->exec("
-        CREATE TABLE IF NOT EXISTS video (
-            id_video SERIAL PRIMARY KEY,
-            title VARCHAR(255) NOT NULL,
-            href_link TEXT,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        )
-    ");
-    
-    // Create sequence if it doesn't exist
-    $conn->exec("
-        CREATE SEQUENCE IF NOT EXISTS video_id_video_seq
-        AS integer
-        START WITH 1
-        INCREMENT BY 1
-        NO MINVALUE
-        NO MAXVALUE
-        CACHE 1
-    ");
-    
-    // Set sequence owner
-    $conn->exec("
-        ALTER SEQUENCE video_id_video_seq OWNED BY video.id_video
-    ");
-    
-    // Set default value for id_video
-    $conn->exec("
-        ALTER TABLE video ALTER COLUMN id_video SET DEFAULT nextval('video_id_video_seq')
-    ");
-} catch (PDOException $e) {
-    // Table might already exist, continue
-}
-
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';

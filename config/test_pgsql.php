@@ -1,8 +1,19 @@
 <?php
+/**
+ * Test PostgreSQL Connection
+ * Restricted to development mode with APP_DEBUG enabled.
+ */
+require_once __DIR__ . '/database.php';
+
+if (defined('APP_DEBUG') && !APP_DEBUG) {
+    http_response_code(403);
+    die("Access Denied: Diagnostics disabled in production.");
+}
+
 try {
-    $pdo = new PDO("pgsql:host=localhost;port=5433;dbname=inlet_pbl", "postgres", "sileysa-984");
-    echo "✅ Connection successful!";
+    $conn = getDBConnection();
+    echo "✅ Connection successful to " . htmlspecialchars(DB_NAME) . " on " . htmlspecialchars(DB_HOST) . "!";
 } catch (PDOException $e) {
-    echo "❌ Gagal: " . $e->getMessage();
+    echo "❌ Error: " . htmlspecialchars($e->getMessage());
 }
 ?>

@@ -4,69 +4,6 @@ requireAdmin();
 
 $conn = getDBConnection();
 
-// Helper function untuk cek dan buat view jika belum ada
-function ensureViewExists($conn, $viewName, $viewSQL)
-{
-    try {
-        // Cek apakah view sudah ada
-        $stmt = $conn->query("SELECT COUNT(*) FROM information_schema.views WHERE table_name = '$viewName' AND table_schema = 'public'");
-        $exists = $stmt->fetchColumn() > 0;
-
-        if (!$exists) {
-            // Buat view jika belum ada
-            $conn->exec($viewSQL);
-        }
-        return true;
-    } catch (PDOException $e) {
-        return false;
-    }
-}
-
-// Pastikan views ada
-$view_dipinjam_sql = "CREATE OR REPLACE VIEW view_alat_dipinjam AS
-    SELECT 
-        pj.id_peminjaman,
-        pj.id_alat,
-        alat.nama_alat,
-        alat.deskripsi,
-        pj.nama_peminjam,
-        pj.tanggal_pinjam,
-        pj.waktu_pinjam,
-        pj.keterangan,
-        pj.status
-    FROM peminjaman pj
-    JOIN alat_lab alat ON alat.id_alat_lab = pj.id_alat
-    WHERE pj.status = 'dipinjam'";
-
-$view_tersedia_sql = "CREATE OR REPLACE VIEW view_alat_tersedia AS
-    SELECT 
-        alat.id_alat,
-        alat.nama_alat,
-        alat.deskripsi,
-        alat.stock,
-        COALESCE(pj.jumlah_dipinjam, 0) AS jumlah_dipinjam,
-        (alat.stock - COALESCE(pj.jumlah_dipinjam, 0)) AS stok_tersedia
-    FROM alat_lab alat
-    LEFT JOIN (
-        SELECT id_alat, COUNT(*) AS jumlah_dipinjam
-        FROM peminjaman
-        WHERE status = 'dipinjam'
-        GROUP BY id_alat
-    ) pj ON pj.id_alat = alat.id_alat";
-
-// Coba buat views jika belum ada (silent fail jika sudah ada)
-try {
-    $conn->exec($view_dipinjam_sql);
-} catch (PDOException $e) {
-    // View mungkin sudah ada, ignore error
-}
-
-try {
-    $conn->exec($view_tersedia_sql);
-} catch (PDOException $e) {
-    // View mungkin sudah ada, ignore error
-}
-
 // Statistik
 $stats = [];
 

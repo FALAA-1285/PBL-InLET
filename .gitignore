@@ -1,0 +1,37 @@
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Vercel Cache & Local Metadata
+.vercel
+
+# Database Dumps and Backups
+*.dump
+*.sql.gz
+*.bak
+assets/*.sql
+!database/schema.sql
+
+# Logs & Temporary Files
+*.log
+logs/
+temp/
+tmp/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# IDE & Editor Configurations
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# Composer Dependencies (if added)
+/vendor/

@@ -6,7 +6,16 @@
  * File ini hanya untuk setup awal atau reset admin.
  */
 
-require_once '../config/database.php';
+require_once __DIR__ . '/../config/database.php';
+
+// Security guard: Disable in production or without explicit environment authorization
+$app_env = defined('APP_ENV') ? APP_ENV : 'development';
+$allow_reset = (getenv('ALLOW_ADMIN_RESET') === 'true' || (isset($_ENV['ALLOW_ADMIN_RESET']) && $_ENV['ALLOW_ADMIN_RESET'] === 'true'));
+
+if ($app_env === 'production' && !$allow_reset) {
+    http_response_code(403);
+    die("Access Denied: Admin reset script is disabled in production for security. Set ALLOW_ADMIN_RESET=true in your environment if you need to use this.");
+}
 
 $message = '';
 $message_type = '';

@@ -6,55 +6,6 @@ $conn = getDBConnection();
 $message = '';
 $message_type = '';
 
-// Pastikan views ada - buat jika belum ada
-try {
-    // View untuk melihat alat yang sedang dipinjam
-    $view_dipinjam_sql = "CREATE OR REPLACE VIEW view_alat_dipinjam AS
-        SELECT
-            pj.id_peminjaman,
-            pj.id_alat,
-            alat.id_alat_lab,
-            alat.nama_alat,
-            alat.deskripsi,
-            pj.nama_peminjam,
-            pj.tanggal_pinjam,
-            pj.tanggal_kembali,
-            pj.keterangan,
-            pj.status,
-            pj.created_at
-        FROM peminjaman pj
-        JOIN alat_lab alat
-            ON alat.id_alat_lab = pj.id_alat
-        WHERE pj.status = 'dipinjam'";
-    $conn->exec($view_dipinjam_sql);
-} catch (PDOException $e) {
-    // View mungkin sudah ada atau ada error, ignore
-}
-
-try {
-    // View untuk melihat alat yang tersedia dengan informasi stok
-    $view_tersedia_sql = "CREATE OR REPLACE VIEW view_alat_tersedia AS
-        SELECT
-            alat.id_alat_lab,
-            alat.nama_alat,
-            alat.deskripsi,
-            alat.stock,
-            COALESCE(pj.jumlah_dipinjam, 0) AS jumlah_dipinjam,
-            (alat.stock - COALESCE(pj.jumlah_dipinjam, 0)) AS stok_tersedia
-        FROM alat_lab alat
-        LEFT JOIN (
-            SELECT id_alat, COUNT(*) AS jumlah_dipinjam
-            FROM peminjaman
-            WHERE status = 'dipinjam'
-            GROUP BY id_alat
-        ) pj ON pj.id_alat = alat.id_alat_lab";
-    $conn->exec($view_tersedia_sql);
-} catch (PDOException $e) {
-    // View mungkin sudah ada atau ada error, ignore
-}
-
-// Admin ID no longer needed for alat_lab operations
-
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';

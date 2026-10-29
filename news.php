@@ -105,6 +105,9 @@ function getPaginationUrl($page, $search = '')
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <?php $news_css_version = file_exists(__DIR__ . '/css/style-news.css') ? filemtime(__DIR__ . '/css/style-news.css') : time(); ?>
     <link rel="stylesheet" href="css/style-news.css?v=<?= $news_css_version ?>">
