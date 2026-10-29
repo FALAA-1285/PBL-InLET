@@ -1,7 +1,6 @@
 <?php
-// Prevent caching to ensure fresh data
-header("Cache-Control: no-cache, must-revalidate");
-header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+// Enable Edge CDN caching with background stale-while-revalidate for fast page loads
+header("Cache-Control: public, max-age=10, s-maxage=60, stale-while-revalidate=300");
 
 require_once 'config/database.php';
 require_once 'config/settings.php';

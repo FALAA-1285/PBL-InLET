@@ -13,6 +13,23 @@ require_once __DIR__ . '/database.php';
 function getSettings() {
     static $settings = null;
     
+    if ($settings !== null) {
+        return $settings;
+    }
+
+    // Fast temp cache for serverless environments (60s TTL)
+    $cache_file = sys_get_temp_dir() . '/inlet_settings_cache.json';
+    if (file_exists($cache_file) && (time() - filemtime($cache_file) < 60)) {
+        $cached = @file_get_contents($cache_file);
+        if ($cached) {
+            $data = json_decode($cached, true);
+            if (is_array($data)) {
+                $settings = $data;
+                return $settings;
+            }
+        }
+    }
+
     if ($settings === null) {
         try {
             $conn = getDBConnection();
@@ -24,6 +41,7 @@ function getSettings() {
                 $settings = [];
             }
             
+            @file_put_contents($cache_file, json_encode($settings));
             // Parse page_titles JSON if exists
             if (!empty($settings['page_titles'])) {
                 if (is_string($settings['page_titles'])) {

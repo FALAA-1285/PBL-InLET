@@ -6,6 +6,14 @@
 
 // 1. Resolve request URI and sanitize path
 $request_uri = $_SERVER['REQUEST_URI'] ?? '/';
+
+// Suppress display of PHP warnings and notices in production to protect UI/UX
+$is_debug = getenv('APP_DEBUG') === 'true' || (isset($_ENV['APP_DEBUG']) && $_ENV['APP_DEBUG'] === 'true');
+if (!$is_debug) {
+    ini_set('display_errors', '0');
+    error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_WARNING);
+}
+
 $parsed_url = parse_url($request_uri);
 $path = $parsed_url['path'] ?? '/';
 
@@ -91,6 +99,9 @@ if (isset($mime_types[$target_ext])) {
 
 // 9. Execute PHP Script in its native execution context
 if ($target_ext === 'php') {
+    // Enable Output Buffering to prevent "headers already sent" warnings
+    ob_start();
+
     // Reconfigure server globals so that relative includes and links behave identically to native Apache
     $_SERVER['SCRIPT_FILENAME'] = $target_full;
     $_SERVER['SCRIPT_NAME'] = '/' . $target_rel;
@@ -101,6 +112,10 @@ if ($target_ext === 'php') {
 
     // Execute script
     require $target_full;
+
+    if (ob_get_level() > 0) {
+        ob_end_flush();
+    }
     exit;
 }
 
