@@ -11,6 +11,7 @@
 *.sql.gz
 *.bak
 assets/*.sql
+database/*.sql
 !database/schema.sql
 
 # Logs & Temporary Files
@@ -35,3 +36,6 @@ desktop.ini
 
 # Composer Dependencies (if added)
 /vendor/
+
+# Project Documentation (local only)
+docs/

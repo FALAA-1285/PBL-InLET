@@ -15,7 +15,7 @@ main {
 
 .hero {
     min-height: 50vh;
-    background-image: url("../assets/Teknik-Polinema.jpg");
+    background-image: url("../Teknik-Polinema.jpg");
     background-position: center center;
     background-repeat: no-repeat;
     background-size: cover;

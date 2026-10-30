@@ -3,7 +3,7 @@
  * Test PostgreSQL Connection
  * Restricted to development mode with APP_DEBUG enabled.
  */
-require_once __DIR__ . '/database.php';
+require_once __DIR__ . '/../../config/database.php';
 
 if (defined('APP_DEBUG') && !APP_DEBUG) {
     http_response_code(403);

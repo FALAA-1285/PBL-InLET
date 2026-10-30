@@ -10,7 +10,7 @@
   },
   "routes": [
     {
-      "src": "/(assets|css|uploads)/(.*)",
+      "src": "/(assets|uploads)/(.*)",
       "dest": "/$1/$2",
       "headers": {
         "cache-control": "public, max-age=86400, stale-while-revalidate=604800"

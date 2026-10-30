@@ -4,10 +4,8 @@
 .env
 .env.*
 *.md
+docs/
 setup/
-test_db.php
-test_joins.php
-config/test_pgsql.php
 assets/*.sql
 *.sql
 logs/

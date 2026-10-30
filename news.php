@@ -109,8 +109,8 @@ function getPaginationUrl($page, $search = '')
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <?php $news_css_version = file_exists(__DIR__ . '/css/style-news.css') ? filemtime(__DIR__ . '/css/style-news.css') : time(); ?>
-    <link rel="stylesheet" href="css/style-news.css?v=<?= $news_css_version ?>">
+    <?php $news_css_version = file_exists(__DIR__ . '/assets/css/style-news.css') ? filemtime(__DIR__ . '/assets/css/style-news.css') : time(); ?>
+    <link rel="stylesheet" href="assets/css/style-news.css?v=<?= $news_css_version ?>">
 </head>
 
 <body>

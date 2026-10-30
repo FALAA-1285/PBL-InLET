@@ -129,7 +129,7 @@ if (isset($_GET['edit'])) {
     <title>Manage Students - CMS InLET</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
     <style>
         .cms-content {
             max-width: 1200px;

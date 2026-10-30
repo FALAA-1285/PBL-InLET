@@ -4,7 +4,7 @@
  * Diagnostic file for development use only.
  */
 
-require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/../../config/database.php';
 
 if (defined('APP_DEBUG') && !APP_DEBUG) {
     http_response_code(403);

@@ -544,8 +544,8 @@ try {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <?php $css_version = file_exists(__DIR__ . '/../css/style-peminjaman.css') ? filemtime(__DIR__ . '/../css/style-peminjaman.css') : time(); ?>
-    <link rel="stylesheet" href="../css/style-peminjaman.css?v=<?= $css_version ?>">
+    <?php $css_version = file_exists(__DIR__ . '/../assets/css/style-peminjaman.css') ? filemtime(__DIR__ . '/../assets/css/style-peminjaman.css') : time(); ?>
+    <link rel="stylesheet" href="../assets/css/style-peminjaman.css?v=<?= $css_version ?>">
 </head>
 
 <body>
