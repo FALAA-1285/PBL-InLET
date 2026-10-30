@@ -1,0 +1,257 @@
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.content-header h1 {
+    color: #000000;
+    font-size: 2rem;
+    margin: 0;
+}
+
+.content-header h1 i {
+    color: #000000;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 0.5rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.filter-tab {
+    padding: 0.5rem 1.25rem;
+    border: none;
+    background: transparent;
+    color: var(--gray);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.filter-tab:hover {
+    background: var(--light);
+    color: var(--primary);
+}
+
+.filter-tab.active {
+    background: var(--primary);
+    color: white;
+}
+
+.badge-unread {
+    background: #ef4444;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.table-wrapper {
+    background: white;
+    border-radius: 18px;
+    padding: 0;
+    box-shadow: 0 10px 35px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+}
+
+.messages-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 900px;
+}
+
+.messages-table thead th {
+    background: var(--light);
+    padding: 1.1rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray);
+}
+
+.messages-table tbody td {
+    padding: 1.1rem;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+    background: white;
+}
+
+.messages-table tbody tr.unread {
+    background: rgba(79, 70, 229, 0.04);
+}
+
+.messages-table tbody tr:hover td {
+    background: rgba(79, 70, 229, 0.03);
+}
+
+.messages-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.message-text {
+    background: var(--light);
+    padding: 0.75rem;
+    border-radius: 10px;
+    color: var(--dark);
+    line-height: 1.5;
+    white-space: pre-line;
+}
+
+.message-text.empty {
+    background: #f1f5f9;
+    color: var(--gray);
+    font-style: italic;
+}
+
+.guest-info {
+    font-weight: 600;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.guest-meta {
+    margin-top: 0.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    color: var(--gray);
+    font-size: 0.9rem;
+}
+
+.guest-meta span i {
+    margin-right: 0.35rem;
+}
+
+.actions-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 180px;
+}
+
+.actions-cell form {
+    margin: 0;
+}
+
+
+.btn-action {
+    padding: 0.45rem 0.85rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: white;
+}
+
+.btn-read {
+    background: #10b981;
+}
+
+.btn-read:hover {
+    background: #059669;
+}
+
+.btn-unread {
+    background: #f59e0b;
+}
+
+.btn-unread:hover {
+    background: #d97706;
+}
+
+.btn-delete {
+    background: #ef4444;
+}
+
+.btn-delete:hover {
+    background: #dc2626;
+}
+
+.btn-view {
+    background: #3b82f6;
+}
+
+.btn-view:hover {
+    background: #2563eb;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-badge.unread {
+    background: rgba(79, 70, 229, 0.15);
+    color: var(--primary);
+}
+
+.status-badge.read {
+    background: rgba(16, 185, 129, 0.15);
+    color: #047857;
+}
+
+.status-cell {
+    min-width: 200px;
+}
+
+.status-time {
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-top: 0.4rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--gray);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.message {
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.message.success {
+    background: #d1fae5;
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.message.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}

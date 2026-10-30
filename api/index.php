@@ -46,7 +46,7 @@ if (!pathinfo($target_rel, PATHINFO_EXTENSION)) {
 }
 
 // 6. Security block: Prevent direct execution of internal includes and configs
-$blocked_prefixes = ['config/', 'includes/', 'admin/partials/', '.git', 'setup/', 'database/'];
+$blocked_prefixes = ['config/', 'views/', '.git', 'setup/', 'database/', 'docs/'];
 foreach ($blocked_prefixes as $prefix) {
     if (strpos($target_rel, $prefix) === 0) {
         http_response_code(403);

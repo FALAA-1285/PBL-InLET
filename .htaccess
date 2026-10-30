@@ -1,0 +1,9 @@
+# Apache/Laragon: block direct access to internal folders and sensitive files
+# (mirrors the blocklist in api/index.php used on Vercel)
+Options -Indexes
+
+RedirectMatch 403 /(config|views|database|docs)(/|$)
+
+<FilesMatch "(^\.env|\.(sql|md|log)$)">
+    Require all denied
+</FilesMatch>

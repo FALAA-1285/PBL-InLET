@@ -6,16 +6,18 @@ Website Lab InLET (PHP native + PostgreSQL), dapat dijalankan di Laragon maupun 
 
 ```
 PBL-InLET/
-├── index.php, member.php, news.php,     # Halaman publik (URL tetap /member, /news, dst.)
-│   research.php, login.php, register.php
-├── admin/                # Panel admin (butuh login)
-│   └── partials/         # Komponen admin yang di-include (sidebar)
-├── service/              # Layanan publik: absensi, buku tamu, peminjaman
-├── includes/             # Header & footer halaman publik
+├── index.php, member.php, news.php,     # Controller halaman publik: logika & query saja
+│   research.php, login.php, register.php  (URL tetap /member, /news, dst.)
+├── admin/                # Controller panel admin (butuh login)
+├── service/              # Controller layanan publik: absensi, buku tamu, peminjaman
+├── views/                # Tampilan (HTML) untuk setiap controller, struktur sama
+│   ├── admin/, service/
+│   └── partials/         # header, footer, admin_sidebar
 ├── config/               # Koneksi DB, auth, upload, settings, stored procedure
 ├── api/index.php         # Front controller untuk Vercel
 ├── assets/
-│   ├── css/              # Seluruh stylesheet (publik + admin.css)
+│   ├── css/              # Stylesheet halaman publik + admin.css
+│   │   └── admin/        # Stylesheet per halaman admin
 │   └── *.png, *.jpg      # Logo & gambar statis
 ├── uploads/              # File unggahan dari admin (gallery, members, news, ...)
 ├── database/
@@ -28,7 +30,8 @@ PBL-InLET/
 
 Catatan:
 - Gambar di `assets/` sengaja tidak dipindah ke subfolder karena path-nya (`assets/logo.png`, dll.) juga tersimpan di tabel pengaturan database.
-- `config/`, `includes/`, `admin/partials/`, `setup/`, dan `database/` diblokir dari akses langsung oleh `api/index.php` saat berjalan di Vercel.
+- Setiap halaman dipisah menjadi controller (mis. `admin/news.php`) yang memproses data, lalu memanggil view-nya (`views/admin/news.php`) di baris terakhir.
+- `config/`, `views/`, `setup/`, dan `database/` diblokir dari akses langsung oleh `api/index.php` (Vercel). Di Apache/Laragon, `.htaccess` memblokir `config/`, `views/`, `database/`, dan `docs/`; `setup/` tetap bisa dibuka karena dibutuhkan untuk setup lokal dan sudah punya pengecekan environment sendiri.
 
 ## Menjalankan Lokal
 

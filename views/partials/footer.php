@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config/settings.php';
+require_once __DIR__ . '/../../config/settings.php';
 
 $is_service_page = str_contains($_SERVER['PHP_SELF'], '/service/');
 $root_base = $is_service_page ? '../' : '';

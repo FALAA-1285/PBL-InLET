@@ -41,7 +41,6 @@ function getSettings() {
                 $settings = [];
             }
             
-            @file_put_contents($cache_file, json_encode($settings));
             // Parse page_titles JSON if exists
             if (!empty($settings['page_titles'])) {
                 if (is_string($settings['page_titles'])) {
@@ -50,6 +49,9 @@ function getSettings() {
             } else {
                 $settings['page_titles'] = [];
             }
+
+            // Cache after parsing so cached reads get page_titles as an array too
+            @file_put_contents($cache_file, json_encode($settings));
         } catch (PDOException $e) {
             error_log("Error fetching settings: " . $e->getMessage());
             // Return empty array instead of false
@@ -158,5 +160,3 @@ function getContactInfo() {
         'address' => $settings['contact_address'] ?? ''
     ];
 }
-?>
-
